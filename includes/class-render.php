@@ -1,6 +1,7 @@
 <?php
 /**
- * Front-end rendering: the block template, the internal content block, and asset enqueues.
+ * Front-end rendering: the two page templates, the full-width wrapper for the
+ * Custom HTML block, and the wptexturize guard for canvas pages.
  *
  * @package Ai_Canvas
  */
@@ -10,125 +11,121 @@ defined( 'ABSPATH' ) || exit;
 class AI_Canvas_Render {
 
 	public static function init(): void {
-		add_action( 'init', array( __CLASS__, 'register' ) );
-		add_action( 'wp_enqueue_scripts', array( __CLASS__, 'enqueue_assets' ) );
-		add_action( 'enqueue_block_editor_assets', array( __CLASS__, 'enqueue_editor_notice' ) );
-		// Registry-provided templates come back keyed by name ("ai-canvas//canvas"),
+		add_action( 'init', array( __CLASS__, 'register_templates' ) );
+		// Registry-provided templates come back keyed by name ("ai-canvas//…"),
 		// but core reads $templates[0] (e.g. wp_get_post_content_block_attributes()),
 		// spraying warnings on the edit screen. Normalize to the documented list shape.
 		add_filter( 'get_block_templates', fn( $templates ) => array_values( (array) $templates ) );
-		add_filter( 'block_editor_settings_all', array( __CLASS__, 'lock_canvas_editor' ), 10, 2 );
+		add_filter( 'render_block_core/html', array( __CLASS__, 'wrap_html_block' ), 10, 2 );
+		add_filter( 'register_block_type_args', array( __CLASS__, 'add_html_align_support' ), 10, 2 );
+		add_filter( 'the_content', array( __CLASS__, 'suspend_texturize' ), 1 );
+		add_filter( 'run_wptexturize', array( __CLASS__, 'run_texturize' ) );
 	}
 
 	/**
-	 * Canvas post content is exactly one ai-canvas/content block (seeded by
-	 * create-canvas); lock the editor so it can't be removed or added to.
+	 * Jamie's Visual HTML Editor wraps aligned Custom HTML blocks itself and adds
+	 * the editor-side alignment control; defer to it when active.
 	 */
-	public static function lock_canvas_editor( array $settings, $context ): array {
-		if ( ! empty( $context->post ) && AI_Canvas_Files::is_canvas( $context->post->ID ) ) {
-			$settings['template']     = array( array( 'ai-canvas/content' ) );
-			$settings['templateLock'] = 'all';
-		}
-		return $settings;
+	public static function jvhe_active(): bool {
+		return class_exists( 'JVHE_Plugin' );
 	}
 
-	public static function register(): void {
+	public static function register_templates(): void {
 		// core/template-part blocks (not PHP block_template_part()) so the theme's
 		// wrapper element and attributes are preserved; core injects the theme attribute.
 		register_block_template(
-			'ai-canvas//' . AI_Canvas_Files::TEMPLATE_SLUG,
+			'ai-canvas//' . AI_Canvas_Content::TEMPLATE_FRAMED,
 			array(
-				'title'       => __( 'AI Canvas', 'ai-canvas' ),
-				'description' => __( 'Theme header and footer around an AI-written HTML/CSS/JS canvas.', 'ai-canvas' ),
+				'title'       => __( 'AI Canvas (with header and footer)', 'ai-canvas' ),
+				'description' => __( 'Site header, the page content, site footer. No page title.', 'ai-canvas' ),
 				'post_types'  => array( 'page', 'post' ),
 				'content'     => '<!-- wp:template-part {"slug":"header","tagName":"header"} /-->'
-					. '<!-- wp:ai-canvas/content /-->'
+					. '<!-- wp:group {"tagName":"main","layout":{"type":"constrained"}} --><main class="wp-block-group">'
+					. '<!-- wp:post-content {"align":"full","layout":{"type":"constrained"}} /-->'
+					. '</main><!-- /wp:group -->'
 					. '<!-- wp:template-part {"slug":"footer","tagName":"footer"} /-->',
 			)
 		);
 
-		// No template parts at all: the canvas supplies its own header/footer.
-		// wp_head/wp_footer still fire, so style.css/script.js enqueues work.
 		register_block_template(
-			'ai-canvas//' . AI_Canvas_Files::TEMPLATE_SLUG_BLANK,
+			'ai-canvas//' . AI_Canvas_Content::TEMPLATE_BLANK,
 			array(
-				'title'       => __( 'AI Canvas (Blank)', 'ai-canvas' ),
-				'description' => __( 'An AI-written HTML/CSS/JS canvas with no theme header or footer; the canvas controls the whole page.', 'ai-canvas' ),
+				'title'       => __( 'AI Canvas (blank)', 'ai-canvas' ),
+				'description' => __( 'Only the page content. No header, footer, or page title.', 'ai-canvas' ),
 				'post_types'  => array( 'page', 'post' ),
-				'content'     => '<!-- wp:ai-canvas/content /-->',
-			)
-		);
-
-		// Plumbing block: renders index.html on the front end; in editors it shows
-		// an "AI-controlled" placeholder card (assets/editor.js). Not inserter-visible.
-		wp_register_script(
-			'ai-canvas-editor',
-			plugins_url( 'assets/editor.js', AI_CANVAS_FILE ),
-			array( 'wp-blocks', 'wp-element' ),
-			AI_CANVAS_VERSION,
-			true
-		);
-		register_block_type(
-			'ai-canvas/content',
-			array(
-				'api_version'           => 3,
-				'render_callback'       => array( __CLASS__, 'render_content' ),
-				'editor_script_handles' => array( 'ai-canvas-editor' ),
+				'content'     => '<!-- wp:post-content {"align":"full","layout":{"type":"constrained"}} /-->',
 			)
 		);
 	}
 
 	/**
-	 * Pin a notice in the post editor when the open post is a canvas.
+	 * core/html has no save wrapper, so its `align` attribute never reaches the
+	 * front end. Wrap the rendered HTML so the theme's constrained-layout CSS
+	 * breaks it out. $content is core's raw block output and is deliberately not
+	 * escaped; the only value added is a hard-coded class from an allow-list.
 	 */
-	public static function enqueue_editor_notice(): void {
-		global $post;
-		if ( ! $post || ! AI_Canvas_Files::is_canvas( $post->ID ) ) {
-			return;
+	public static function wrap_html_block( string $content, array $block ): string {
+		if ( self::jvhe_active() ) {
+			return $content;
 		}
-		wp_register_script( 'ai-canvas-editor-notice', false, array( 'wp-data', 'wp-dom-ready', 'wp-notices' ), AI_CANVAS_VERSION, true );
-		wp_enqueue_script( 'ai-canvas-editor-notice' );
-		wp_add_inline_script(
-			'ai-canvas-editor-notice',
-			'wp.domReady( function () {
-				wp.data.dispatch( "core/notices" ).createNotice(
-					"warning",
-					"' . esc_js( __( 'AI-controlled page: its content, styles, and scripts live in AI-Canvas files written by an agent over MCP. Nothing typed in this editor appears on the page.', 'ai-canvas' ) ) . '",
-					{ id: "ai-canvas-notice", isDismissible: false }
-				);
-			} );'
-		);
+		$align = $block['attrs']['align'] ?? '';
+		if ( 'full' === $align ) {
+			return '<div class="wp-block-html alignfull">' . $content . '</div>';
+		}
+		if ( 'wide' === $align ) {
+			return '<div class="wp-block-html alignwide">' . $content . '</div>';
+		}
+		return $content;
 	}
 
-	public static function render_content(): string {
+	/**
+	 * Declare align support on core/html so the editor keeps {"align":"full"}
+	 * when the owner saves the page in wp-admin, and shows the alignment control.
+	 */
+	public static function add_html_align_support( array $args, string $name ): array {
+		if ( 'core/html' === $name && ! self::jvhe_active() ) {
+			$args['supports']          = $args['supports'] ?? array();
+			$args['supports']['align'] = array( 'wide', 'full' );
+		}
+		return $args;
+	}
+
+	/**
+	 * wptexturize treats any bare "<" as a tag opener and rewrites "&" to
+	 * "&#038;" up to the next ">", which breaks scripts inside the block.
+	 * Block themes texturize the whole rendered template
+	 * (get_the_block_template_html()), not just the_content, so the only lever
+	 * that covers a canvas page is the once-per-request run_wptexturize
+	 * short-circuit. It is decided on the first wptexturize() call, which on
+	 * the front end happens after the main query is parsed.
+	 */
+	public static function run_texturize( $run ) {
+		if ( $run && is_singular() && AI_Canvas_Content::is_canvas( (int) get_queried_object_id() ) ) {
+			return false;
+		}
+		return $run;
+	}
+
+	/**
+	 * Belt and braces for contexts where texturize was already switched on
+	 * before the canvas post rendered (REST, CLI, feeds): suspend it around
+	 * the_content the same way core's do_blocks() suspends wpautop.
+	 */
+	public static function suspend_texturize( $content ) {
 		$post_id = get_the_ID();
-		if ( ! $post_id || ! AI_Canvas_Files::is_canvas( $post_id ) ) {
-			return '';
+		if ( $post_id && AI_Canvas_Content::is_canvas( (int) $post_id ) ) {
+			$priority = has_filter( 'the_content', 'wptexturize' );
+			if ( false !== $priority && $priority < 11 ) {
+				remove_filter( 'the_content', 'wptexturize', $priority );
+				add_filter( 'the_content', array( __CLASS__, 'restore_texturize' ), 11 );
+			}
 		}
-		$html = AI_Canvas_Files::read( $post_id, 'html' );
-		// Deliberately unescaped: AI-Canvas trusts canvas output by design (see README).
-		return is_wp_error( $html ) ? '' : $html;
+		return $content;
 	}
 
-	public static function enqueue_assets(): void {
-		if ( ! is_singular() ) {
-			return;
-		}
-		$post_id = get_queried_object_id();
-		if ( ! $post_id || ! AI_Canvas_Files::is_canvas( $post_id ) ) {
-			return;
-		}
-
-		// mtimes() reaches the filesystem through WP_Filesystem and returns null
-		// for a file that isn't there, so it doubles as the existence check.
-		$mtimes = AI_Canvas_Files::mtimes( $post_id );
-
-		if ( null !== $mtimes['css'] ) {
-			wp_enqueue_style( 'ai-canvas-' . $post_id, AI_Canvas_Files::url( $post_id, 'css' ), array(), (string) $mtimes['css'] );
-		}
-
-		if ( null !== $mtimes['js'] ) {
-			wp_enqueue_script( 'ai-canvas-' . $post_id, AI_Canvas_Files::url( $post_id, 'js' ), array(), (string) $mtimes['js'], array( 'in_footer' => true ) );
-		}
+	public static function restore_texturize( $content ) {
+		remove_filter( 'the_content', array( __CLASS__, 'restore_texturize' ), 11 );
+		add_filter( 'the_content', 'wptexturize' );
+		return $content;
 	}
 }

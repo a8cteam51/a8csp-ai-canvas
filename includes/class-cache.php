@@ -1,6 +1,6 @@
 <?php
 /**
- * Page-cache invalidation after a canvas write. Only public visitors see page
+ * Page-cache invalidation after a canvas write, restore or trash. Only public visitors see page
  * caches; all of this no-ops on hosts without the relevant layer.
  *
  * @package Ai_Canvas
@@ -12,8 +12,8 @@ class AI_Canvas_Cache {
 
 	/**
 	 * @param int   $post_id The canvas post.
-	 * @param array $change  The recorded change (user, action, file, bytes,
-	 *                       sha256, time), passed through to listeners so the
+	 * @param array $change  The recorded change (action, post_id, revision_id,
+	 *                       user, time), passed through to listeners so the
 	 *                       action is useful for logging and not just caching.
 	 */
 	public static function purge( int $post_id, array $change = array() ): void {
@@ -52,7 +52,7 @@ class AI_Canvas_Cache {
 		if ( class_exists( 'Edge_Cache_Plugin' ) && method_exists( 'Edge_Cache_Plugin', 'get_instance' ) ) {
 			$edge = Edge_Cache_Plugin::get_instance();
 			if ( method_exists( $edge, 'purge_domain_now' ) ) {
-				$edge->purge_domain_now( 'ai-canvas file write' );
+				$edge->purge_domain_now( 'ai-canvas content write' );
 			}
 		}
 	}
