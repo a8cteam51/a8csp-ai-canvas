@@ -36,6 +36,8 @@ The endpoint is `https://your-site.tld/wp-json/ai-canvas/mcp`. Without credentia
 4. Under **Request headers**, add `authorization` with the value `Basic <base64 username:app-password>`, marked required.
 5. Add, then enable the connector in a chat.
 
+The value must start with `Basic ` (with the space). If the prefix is left off, the plugin still recognises a bare base64 `username:app-password` on its own endpoint, but only there.
+
 Request-header authentication is a claude.ai beta and is enabled per organization. If the **Request headers** section is missing from the dialog, your organization does not have it yet; there is no OAuth server in this plugin, so the connector cannot be added until it is.
 
 ### Claude Code
@@ -88,6 +90,7 @@ The full contract (scoping, `.is-js` gating, editor behaviour, performance rules
 - Two block templates are registered from PHP: **AI Canvas (with header and footer)** (`ai-canvas-framed`: header template part, `wp:post-content`, footer template part, no page title) and **AI Canvas (blank)** (`ai-canvas-blank`: the content only). Both appear in the editor's Template panel for pages and posts.
 - `core/html` has no wrapper element, so its `align` attribute never reaches the front end. The plugin wraps aligned Custom HTML blocks in `<div class="wp-block-html alignfull">` (or `alignwide`) on render, and declares `align` support on the block so wp-admin saves keep the attribute. Both are skipped when Jamie's Visual HTML Editor is active.
 - Block themes run the whole rendered template through `wptexturize()`, which turns a bare `<` inside a script into a fake tag and rewrites every `&` up to the next `>` as `&#038;`, breaking the script. On requests for a canvas page the plugin short-circuits `wptexturize` (`run_wptexturize`), and suspends it around `the_content` elsewhere. `check-page` still reports `script_ampersand_rewritten` because feeds and other plugins can run it.
+- The MCP Adapter requires an `Mcp-Session-Id` on every request after `initialize`. Clients that do not echo it back (stateless connectors) would fail every tool call, so the plugin mints a session for the authenticated user on the fly for its own route (`AI_Canvas_Compat`).
 - After every create, update, restore or trash the plugin bumps the page's Batcache version key, purges Pressable's edge cache when present, and fires `ai_canvas_after_write( $post_id, $change )`.
 
 ## Not in v1 (on purpose)
@@ -95,6 +98,10 @@ The full contract (scoping, `.is-js` gating, editor behaviour, performance rules
 OAuth, output sanitization, classic themes, an embedded chat UI, settings screens.
 
 ## Changelog
+
+### 1.0.1
+
+- Endpoint tolerates stateless MCP clients (missing `Mcp-Session-Id`) and a bare base64 Authorization value without the `Basic ` scheme.
 
 ### 1.0.0
 
