@@ -1,4 +1,0 @@
-Significance: major
-Type: removed
-
-The `upload-media` tool: the MCP tools no longer add files to the Media Library, from a URL or as base64. A client could only send a file by writing its bytes out, which does not work for a photo. `list-media` still searches the library for pictures to reuse.
