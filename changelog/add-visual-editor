@@ -1,4 +1,0 @@
-Significance: minor
-Type: added
-
-A visual editor for the Custom HTML block: in the WordPress editor, a page's text, links, images and background images are changed by clicking on them. Text is typed over in place, with bold, italic and link on a toolbar; an image is replaced from the Media Library and given alternative text; a button shows where it goes. Each change is written into the block's HTML where the change is, and the rest of the code is left as it was.

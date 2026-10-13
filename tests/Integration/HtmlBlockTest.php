@@ -17,6 +17,22 @@ final class HtmlBlockTest extends TestCase {
 	// region LIFECYCLE.
 
 	/**
+	 * Loads the screen API, which WordPress loads in the admin only and the bootstrap's
+	 * `wp-load.php` therefore leaves out.
+	 *
+	 * @since   1.0.0
+	 * @version 1.0.0
+	 *
+	 * @return  void
+	 */
+	protected function setUp(): void {
+		parent::setUp();
+
+		require_once ABSPATH . 'wp-admin/includes/class-wp-screen.php';
+		require_once ABSPATH . 'wp-admin/includes/screen.php';
+	}
+
+	/**
 	 * Takes the editor script and stylesheet back off the queue, and leaves the admin.
 	 *
 	 * @since   1.0.0
