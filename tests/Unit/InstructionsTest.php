@@ -10,7 +10,7 @@ use PHPUnit\Framework\TestCase;
  * Pins what the authoring guide has to carry: the rule that a design reaches the site only on the
  * user's approval, what a client needs to produce content the page tools accept — the block's
  * delimiters, the attributes the editor reads the CSS and JS by, both template names, and every
- * page and media tool — and where a picture the site does not have goes.
+ * page and media tool — and where a page's pictures come from.
  *
  * @since   1.0.0
  * @version 2.0.0
@@ -20,15 +20,14 @@ final class InstructionsTest extends TestCase {
 	// region FIELDS AND CONSTANTS.
 
 	/**
-	 * A stand-in for the URL of the plugin's placeholder image, which the component passes to the
-	 * guide.
+	 * A stand-in for the site's own upload screen, which the component passes to the guide.
 	 *
 	 * @since   2.0.0
 	 * @version 2.0.0
 	 *
 	 * @var     string
 	 */
-	private const PLACEHOLDER_IMAGE_URL = 'https://example.org/wp-content/plugins/a8csp-ai-canvas/assets/images/placeholder.svg';
+	private const MEDIA_UPLOAD_LINK = 'https://example.org/wp-admin/media-new.php';
 
 	// endregion.
 
@@ -44,7 +43,7 @@ final class InstructionsTest extends TestCase {
 	 * @return  void
 	 */
 	public function test_the_guide_puts_approval_ahead_of_the_format(): void {
-		$text = Instructions::text( self::PLACEHOLDER_IMAGE_URL );
+		$text = Instructions::text( self::MEDIA_UPLOAD_LINK );
 
 		$rule   = \strpos( $text, 'Do not write to the site until the user approves.' );
 		$format = \strpos( $text, '## The content format' );
@@ -78,7 +77,7 @@ final class InstructionsTest extends TestCase {
 	 * @return  void
 	 */
 	public function test_the_guide_shows_the_block_in_serialized_order(): void {
-		$text = Instructions::text( self::PLACEHOLDER_IMAGE_URL );
+		$text = Instructions::text( self::MEDIA_UPLOAD_LINK );
 
 		$open   = \strpos( $text, '<!-- wp:html {"align":"full"} -->' );
 		$style  = \strpos( $text, '<style data-wp-block-html="css">' );
@@ -103,7 +102,7 @@ final class InstructionsTest extends TestCase {
 	 * @return  void
 	 */
 	public function test_the_guide_names_the_templates_and_the_tools(): void {
-		$text = Instructions::text( self::PLACEHOLDER_IMAGE_URL );
+		$text = Instructions::text( self::MEDIA_UPLOAD_LINK );
 
 		foreach ( array( '`header-footer`', '`content-only`', '`create-page`', '`update-page`', '`get-page`', '`list-pages`', '`delete-page`', '`list-media`' ) as $name ) {
 			self::assertStringContainsString( $name, $text );
@@ -111,48 +110,49 @@ final class InstructionsTest extends TestCase {
 	}
 
 	/**
-	 * The guide says these tools add nothing to the site, and puts a placeholder wherever a
-	 * picture is not in the Media Library: it names this site's placeholder image in place of its
-	 * token, and says how to write the placeholder so a click in the editor can replace it.
+	 * The guide says these tools add nothing to the site and that every picture on a page is a
+	 * Media Library file, and has the client ask for a picture to be put there first, at this
+	 * site's upload screen, named in place of its token.
 	 *
 	 * @since   2.0.0
 	 * @version 2.0.0
 	 *
 	 * @return  void
 	 */
-	public function test_the_guide_puts_a_placeholder_where_the_library_has_no_picture(): void {
-		$text = Instructions::text( self::PLACEHOLDER_IMAGE_URL );
+	public function test_the_guide_takes_every_picture_from_the_media_library(): void {
+		$text = Instructions::text( self::MEDIA_UPLOAD_LINK );
 
-		self::assertStringContainsString( 'A picture is in the Media Library, or it is a placeholder.', $text );
+		self::assertStringContainsString( "Every picture on a page is a file in this site's Media Library.", $text );
 		self::assertStringContainsString( 'These tools cannot add a file to the site.', $text );
-		self::assertStringContainsString( "goes onto the page as this site's placeholder image: `" . self::PLACEHOLDER_IMAGE_URL . '`.', $text );
-		self::assertStringNotContainsString( '{placeholder_image_url}', $text );
-		self::assertStringContainsString( 'as the `src` of an `<img>`, or as the `url()` of a CSS `background-image`', $text );
-		self::assertStringContainsString( 'Before you publish a page that still has placeholders', $text );
+		self::assertStringContainsString( 'ask them to add it to the Media Library at `' . self::MEDIA_UPLOAD_LINK . '`, and then to tell you, or to paste its URL', $text );
+		self::assertStringNotContainsString( '{media_upload_link}', $text );
+		self::assertStringContainsString( 'while the design is still being worked on', $text );
 		self::assertStringNotContainsString( 'upload-media', $text );
 		self::assertStringNotContainsString( 'base64', $text );
 	}
 
 	/**
-	 * The guide has the client hand the pictures over with the page: one archive of the files the
-	 * placeholders stand for, and which file belongs in which.
+	 * The guide tells the client that a copy it downloaded to design with is not what the page
+	 * references: the page gets the Media Library URL back, and never a file of the client's own.
 	 *
 	 * @since   2.0.0
 	 * @version 2.0.0
 	 *
 	 * @return  void
 	 */
-	public function test_the_guide_hands_the_pictures_over_with_the_page(): void {
-		$text = Instructions::text( self::PLACEHOLDER_IMAGE_URL );
+	public function test_the_guide_sends_the_media_library_url_and_not_the_copy(): void {
+		$text = Instructions::text( self::MEDIA_UPLOAD_LINK );
 
-		self::assertStringContainsString( 'give the user one `.zip` of the pictures they stand for', $text );
-		self::assertStringContainsString( 'unchanged and under their own names', $text );
-		self::assertStringContainsString( 'Tell the user which file belongs in which placeholder.', $text );
+		self::assertStringContainsString( "Design with a copy, send the original's URL.", $text );
+		self::assertStringContainsString( "put that file's Media Library URL back in its place", $text );
+		self::assertStringContainsString( 'still use its Media Library URL in the page', $text );
+		self::assertStringContainsString( 'Never send a page that points at a file of your own.', $text );
+		self::assertStringContainsString( 'leave that picture out and tell them which is missing', $text );
 	}
 
 	/**
-	 * The pointer the write tools carry states the block's shape, says where a picture the site
-	 * does not have goes, and sends the client to the full guide.
+	 * The pointer the write tools carry states the block's shape, says where the content's
+	 * pictures come from, and sends the client to the full guide.
 	 *
 	 * @since   1.0.0
 	 * @version 2.0.0
@@ -165,7 +165,7 @@ final class InstructionsTest extends TestCase {
 		self::assertStringContainsString( '<!-- wp:html {"align":"full"} -->', $pointer );
 		self::assertStringContainsString( 'data-wp-block-html="css"', $pointer );
 		self::assertStringContainsString( 'data-wp-block-html="js"', $pointer );
-		self::assertStringContainsString( 'goes in as the placeholder image named in get-instructions', $pointer );
+		self::assertStringContainsString( "every picture in the content is the URL of a file in this site's Media Library", $pointer );
 		self::assertStringContainsString( 'Call get-instructions', $pointer );
 	}
 

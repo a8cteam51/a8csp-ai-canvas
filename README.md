@@ -71,17 +71,20 @@ Every tool needs the `edit_pages` capability, and the MCP endpoint itself refuse
 
 ### Pictures
 
-A page uses a picture the Media Library already has, or a placeholder. A model can only put a file into a tool call by writing its bytes out, which does not work for a photo, so the tools do not take files at all. For a picture the site does not have, the guide has the client:
+Every picture on a page is a file in the site's Media Library. A model can only put a file into a tool call by writing its bytes out, which does not work for a photo, so the tools do not take files at all: the site owner adds pictures to the library, and the client finds them with `list-media` or is given their URLs.
 
-- put the plugin's placeholder image, `assets/images/placeholder.svg`, in the picture's place, as an `<img>` or a CSS background, sized and cropped as the design has it;
-- give the user one `.zip` of the pictures the placeholders stand for, the user's own files unchanged, and say which belongs where;
-- ask before publishing a page that still has placeholders.
+The guide has the client:
 
-The site owner then [clicks each placeholder in the editor](#editing-a-page-by-clicking) and puts the real picture in, uploading it there if the library does not have it yet.
+- ask for a picture to be added to the Media Library as soon as it comes up, with the link to the site's upload screen;
+- download a copy of a library picture to design with, and put the library's URL back in the page it sends, never the address of its own copy;
+- crop in CSS, since the site has only the original;
+- leave a picture out, and say so, if the page is to be sent before the picture is in the library.
+
+Downloading a copy needs the client's workspace to be able to reach the site. In Claude, that is the network egress setting, which is off for other sites by default. Without it the design shows a stand-in; the page on the site still references the real picture.
 
 ### The authoring instructions
 
-The server sends the model a guide, as the MCP `instructions`, and again through `get-instructions`. It opens with one rule: design in Claude Design first, and write to the site only once the user has approved the design and asked for it to go there. `create-page` and `update-page` repeat that rule in their own descriptions, with a short summary of the content format and of where a picture the site does not have goes. The guide lives in [`src/Mcp/Instructions.php`](src/Mcp/Instructions.php). Its core is the block shape WordPress itself writes for a Custom HTML block, aligned to the full width:
+The server sends the model a guide, as the MCP `instructions`, and again through `get-instructions`. It opens with one rule: design in Claude Design first, and write to the site only once the user has approved the design and asked for it to go there. `create-page` and `update-page` repeat that rule in their own descriptions, with a short summary of the content format and of where its pictures come from. The guide lives in [`src/Mcp/Instructions.php`](src/Mcp/Instructions.php). Its core is the block shape WordPress itself writes for a Custom HTML block, aligned to the full width:
 
 ```html
 <!-- wp:html {"align":"full"} -->
@@ -124,7 +127,7 @@ A page a model built is still the site owner's to change. Open it in the WordPre
 
 - **Text.** Click a heading, a paragraph or a button and type. Select a stretch of text for a small toolbar with bold, italic and link; <kbd>Ctrl</kbd>/<kbd>⌘</kbd> + <kbd>B</kbd>, <kbd>I</kbd> and <kbd>K</kbd> do the same. <kbd>Enter</kbd> starts a new line, and in a button finishes the edit.
 - **Links and buttons.** Click one and its toolbar shows where it goes. Choose it to type a new address, or search for a page of the site by its title, and to have the link open in a new tab. A link inside a sentence can also be removed.
-- **Images.** Click one to replace it from the Media Library or to change its alternative text. The replacement keeps the size of the spot it fills. A grey box with a picture mark is a placeholder for a picture the site did not have when the page was made: click it to put the real one in.
+- **Images.** Click one to replace it from the Media Library or to change its alternative text. The replacement keeps the size of the spot it fills.
 - **Background images.** Click an empty part of a section that has one, and replace it.
 
 Moving the pointer over the page outlines what a click would change, and names it. <kbd>Esc</kbd> lets go of what is selected. Everything is an ordinary edit to the page: **Save**, undo and redo work as they do for any other, and nothing reaches visitors until the page is saved.

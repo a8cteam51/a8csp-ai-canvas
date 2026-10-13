@@ -9,8 +9,8 @@ namespace A8C\SpecialProjects\AICanvas\Mcp;
  * pictures the site already has.
  *
  * Nothing here adds to the library. A client can only put a file into tool input by writing its
- * bytes out, which does not work for a picture, so a picture the site does not have yet goes onto
- * the page as a placeholder and the site owner puts the real one in from the editor.
+ * bytes out, which does not work for a picture, so the site owner adds pictures to the library
+ * and a page references them from there.
  *
  * Every result carries the image's pixel dimensions and its generated smaller sizes, so a client
  * can reference a right-sized variant with explicit dimensions instead of the full-size original.

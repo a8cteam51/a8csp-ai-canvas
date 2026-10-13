@@ -423,7 +423,7 @@ final class Component implements ComponentInterface {
 
 	/**
 	 * Returns the authoring guide for this site: the one text behind the server's instructions
-	 * and the `get-instructions` tool, carrying the URL of the placeholder image this plugin ships.
+	 * and the `get-instructions` tool, carrying the link to this site's own upload screen.
 	 *
 	 * @since   2.0.0
 	 * @version 2.0.0
@@ -431,7 +431,7 @@ final class Component implements ComponentInterface {
 	 * @return  string
 	 */
 	private static function guide(): string {
-		return Instructions::text( \constant( 'A8CSP_AI_CANVAS_DIR_URL' ) . 'assets/images/placeholder.svg' );
+		return Instructions::text( admin_url( 'media-new.php' ) );
 	}
 
 	/**

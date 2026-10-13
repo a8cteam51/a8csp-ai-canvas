@@ -116,7 +116,7 @@ final class PluginBootTest extends TestCase {
 
 	/**
 	 * No tool adds a file to the site: the upload tool earlier versions had is gone, and the two
-	 * tools that write a page say where a picture the site does not have goes.
+	 * tools that write a page say where its pictures come from.
 	 *
 	 * @since   2.0.0
 	 * @version 2.0.0
@@ -130,14 +130,13 @@ final class PluginBootTest extends TestCase {
 			$ability = wp_get_ability( 'a8csp-ai-canvas/' . $tool );
 
 			self::assertInstanceOf( \WP_Ability::class, $ability );
-			self::assertStringContainsString( 'These tools cannot add a picture to the site', $ability->get_description(), "the '{$tool}' tool must say where a picture goes" );
+			self::assertStringContainsString( 'These tools cannot add a picture to the site', $ability->get_description(), "the '{$tool}' tool must say where pictures come from" );
 		}
 	}
 
 	/**
 	 * The MCP server answers `initialize` on its own route with the authoring guide as its
-	 * instructions, carrying the URL of the placeholder image the plugin ships, for a user who can
-	 * edit pages.
+	 * instructions, carrying the link to this site's upload screen, for a user who can edit pages.
 	 *
 	 * @since   1.0.0
 	 * @version 2.0.0
@@ -173,8 +172,7 @@ final class PluginBootTest extends TestCase {
 
 		self::assertSame( 200, $response->get_status() );
 		self::assertIsArray( $data );
-		self::assertSame( Mcp\Instructions::text( \constant( 'A8CSP_AI_CANVAS_DIR_URL' ) . 'assets/images/placeholder.svg' ), $data['result']['instructions'] ?? null );
-		self::assertFileExists( \constant( 'A8CSP_AI_CANVAS_DIR_PATH' ) . 'assets/images/placeholder.svg' );
+		self::assertSame( Mcp\Instructions::text( admin_url( 'media-new.php' ) ), $data['result']['instructions'] ?? null );
 	}
 
 	/**

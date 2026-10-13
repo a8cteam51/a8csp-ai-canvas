@@ -32,8 +32,8 @@ final class Instructions {
 
 	/**
 	 * Returns the contract appended to the write tools' descriptions, for a client that reads tool
-	 * descriptions but not server instructions: the shape of the content, and where a picture the
-	 * site does not have goes.
+	 * descriptions but not server instructions: the shape of the content, and where its pictures
+	 * come from.
 	 *
 	 * @since   1.0.0
 	 * @version 2.0.0
@@ -41,7 +41,7 @@ final class Instructions {
 	 * @return  string
 	 */
 	public static function pointer(): string {
-		return 'The content must be exactly one WordPress Custom HTML block aligned to the full width: <!-- wp:html {"align":"full"} -->, then a <style data-wp-block-html="css"> element, a <script data-wp-block-html="js"> element, and one root element with a unique class, then <!-- /wp:html -->. Vanilla HTML, CSS and JS only. These tools cannot add a picture to the site: one that list-media does not find goes in as the placeholder image named in get-instructions. Call get-instructions once per conversation before the first write for the full rules.';
+		return 'The content must be exactly one WordPress Custom HTML block aligned to the full width: <!-- wp:html {"align":"full"} -->, then a <style data-wp-block-html="css"> element, a <script data-wp-block-html="js"> element, and one root element with a unique class, then <!-- /wp:html -->. Vanilla HTML, CSS and JS only. These tools cannot add a picture to the site: every picture in the content is the URL of a file in this site\'s Media Library, as list-media returns it, never the address of a copy of your own. Call get-instructions once per conversation before the first write for the full rules.';
 	}
 
 	/**
@@ -50,11 +50,11 @@ final class Instructions {
 	 * @since   1.0.0
 	 * @version 2.0.0
 	 *
-	 * @param   string $placeholder_image_url The URL of the image this plugin ships to stand in for a picture the client cannot send.
+	 * @param   string $media_upload_link The URL of this site's screen for adding a file to the Media Library.
 	 *
 	 * @return  string
 	 */
-	public static function text( string $placeholder_image_url ): string {
+	public static function text( string $media_upload_link ): string {
 		$guide = <<<'MD'
 # AI Canvas: publishing pages to this WordPress site
 
@@ -115,9 +115,10 @@ The `content` you send to `create-page` and `update-page` is exactly one block i
 - **Readable without JavaScript.** The WordPress editor previews the block without running its script, so anything the CSS hides until the script runs shows there as blank space. The default CSS state shows every section, and a state only the script can leave (hidden until revealed, inactive tab panels) goes under a class the script adds to the root, such as `.canvas-spring-launch.is-js`.
 - **Avoid a bare `<` in the script, the style and the text.** WordPress can take a `<` that does not start a tag for one, and then corrupts the `&` characters after it, which breaks `a && b`. The two templates here switch that off, but the site owner can move the page to another template. Flip comparisons (`10 > i` in place of `i < 10`), and write `&lt;` in text.
 - **The block spans the full width of the viewport** on both templates. Give each section its own inner wrapper with a `max-width` and side padding, and make the layout work from phone width up.
-- **A picture is in the Media Library, or it is a placeholder.** These tools cannot add a file to the site. Call `list-media` to reuse what the Media Library already has, and reference the URLs it returns, exactly as returned. Every other picture, whether the user gave it to you, you found it on the web, or you made it, goes onto the page as this site's placeholder image: `{placeholder_image_url}`. The site owner swaps it for the real picture by clicking it in the WordPress editor. Design with the real picture in Claude Design as usual. Do not embed images as `data:` URIs or link to images on other sites. Inline SVG is fine for icons and simple illustrations.
-- **Write a placeholder so a click can replace it.** Use it as the `src` of an `<img>`, or as the `url()` of a CSS `background-image`. An inline SVG or an empty box standing in for a picture cannot be swapped by clicking. Size and crop the spot in CSS as the design has it (`aspect-ratio`, `object-fit`, `object-position`), so the real picture drops into the same shape. Give the `<img>` the `width` and `height` of that shape, the `alt` text of the real picture, and no `srcset`.
-- **Hand the pictures over with the page.** When you send a page that has placeholders, give the user one `.zip` of the pictures they stand for: the files the user gave you in the conversation, unchanged and under their own names, and any picture you made for the design. For a picture you only have a web address for, give the address. Tell the user which file belongs in which placeholder.
+- **Every picture on a page is a file in this site's Media Library.** These tools cannot add a file to the site. Find pictures with `list-media`, or take the URL of a Media Library file when the user gives you one, and reference those URLs in the page, exactly as returned. Do not embed images as `data:` URIs or link to images on other sites. Inline SVG is fine for icons and simple illustrations.
+- **Ask for a picture to be put in the Media Library first.** When the user gives you a picture file, or wants a picture `list-media` does not find, ask them to add it to the Media Library at `{media_upload_link}`, and then to tell you, or to paste its URL. Say so as soon as the picture comes up, while the design is still being worked on, not when the page is ready to send.
+- **Design with a copy, send the original's URL.** To show a Media Library picture in your design, download a copy from its URL and work with that. The copy is yours alone: its path or address means nothing on the site. Keep track of which Media Library file each copy came from, and in the page you send put that file's Media Library URL back in its place. Do not crop or edit the copy and expect the change on the site, which has only the original: crop in CSS (`aspect-ratio`, `object-fit`, `object-position`). If you cannot download a picture, design around a stand-in and still use its Media Library URL in the page.
+- **Never send a page that points at a file of your own.** Before you send, check the content for the address of any copy, upload or generated file from your workspace. If the user wants a page sent while one of its pictures is still not in the Media Library, leave that picture out and tell them which is missing.
 - **Keep images light.** `list-media` returns an image's generated smaller sizes: reference the smallest one that covers the space it fills. Put that size's `width` and `height` on the `<img>`, give it `alt` text, and add `loading="lazy"` to images below the first screen.
 - **Accessible markup.** One `<h1>`, headings in order, real `<button>` and `<a>` elements with visible focus styles, and sufficient colour contrast.
 
@@ -136,7 +137,7 @@ Neither template prints the page title, so the content needs its own `<h1>`.
 2. **Read before you change.** Call `get-page` before every `update-page`: the site owner may have edited the page since you last saw it. `update-page` replaces the whole block, so always send the complete content.
 3. **Find** the pages you can work on with `list-pages`.
 4. **Remove** a page with `delete-page`, only when the user asks. It moves to the Trash, where the site owner can restore it from wp-admin.
-5. **Sort out the images** before you write the page: reuse what `list-media` finds, and put the placeholder everywhere else. Before you publish a page that still has placeholders, tell the user which are left and ask whether to go ahead.
+5. **Sort out the pictures** before you write the page: each one is a Media Library URL that `list-media` returned or the user gave you, in the smallest size that covers its spot, and none is a copy of your own.
 
 You can only read, change or delete the pages `list-pages` returns: the ones created through these tools, and any the site owner has opened to you from the page editor. Every other page on the site is off limits, and the tools refuse it.
 
@@ -145,7 +146,7 @@ A page the site owner opened may be built from ordinary WordPress blocks, not on
 After each change, tell the user what changed and give them the page's `link` and `edit_link`. While a page is a draft, its `link` is a preview that needs a wp-admin login.
 MD;
 
-		return \strtr( $guide, array( '{placeholder_image_url}' => $placeholder_image_url ) );
+		return \strtr( $guide, array( '{media_upload_link}' => $media_upload_link ) );
 	}
 
 	// endregion
