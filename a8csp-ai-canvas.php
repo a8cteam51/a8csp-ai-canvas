@@ -7,7 +7,7 @@
  * directly against the older PHP versions.
  *
  * @since       1.0.0
- * @version     1.0.0
+ * @version     2.0.0
  * @package     A8C\SpecialProjects\AICanvas
  * @author      A8C Special Projects
  * @license     GPL-2.0-or-later
@@ -19,7 +19,7 @@
  * Plugin URI:              https://specialprojects.automattic.com
  * Update URI:              https://github.com/a8cteam51/a8csp-ai-canvas
  * Description:             Lets Claude Design, or any MCP client, build pages on this site as a single Custom HTML block, and adds the page templates those pages render on.
- * Version:                 1.0.0
+ * Version:                 2.0.0
  * Requires at least:       7.1
  * Tested up to:            7.1
  * Requires PHP:            8.3

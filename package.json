@@ -1,6 +1,6 @@
 {
   "name": "a8csp-ai-canvas",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "Lets Claude Design, or any MCP client, build pages on this site as a single Custom HTML block, and adds the page templates those pages render on.",
   "author": {
     "name": "A8C Special Projects",
