@@ -1,0 +1,27 @@
+name: CodeQL
+
+on:
+  pull_request:
+  push:
+    branches: [trunk]
+  schedule:
+    # Catches newly published CodeQL query findings between code changes.
+    - cron: '0 8 * * 1'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions: {}
+
+jobs:
+  codeql:
+    name: CodeQL
+    # A caller must grant every permission the called jobs declare, or the call fails at startup.
+    permissions:
+      contents: read
+      actions: read
+      security-events: write
+    uses: a8cteam51/a8csp-configs/.github/workflows/reusable-codeql.yml@295fdb54961eb5a95ec9ed52f183cb44a16e004b # v1.1.0
+    with:
+      languages: '["actions", "javascript-typescript"]'

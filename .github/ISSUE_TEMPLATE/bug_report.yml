@@ -1,0 +1,50 @@
+name: Bug report
+description: Create a bug report to help us improve.
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Activate the plugin alongside MCP Adapter.
+        2. Connect an MCP client and call create-page.
+        3. ...
+
+        Attach any media by drag and dropping or selecting upload.
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: What you expected to happen
+      placeholder: |
+        e.g. The page is created as a draft on the header and footer template.
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: What actually happened
+      placeholder: |
+        e.g. The tool returns an error and the error log shows a warning.
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: The versions the bug occurred on, plus anything unusual about the setup (multisite, other plugins involved).
+      placeholder: |
+        - WordPress version:
+        - PHP version:
+        - MCP Adapter version:
+        - MCP client:
+        - Theme:
+        - Plugin version:
+        - Multisite: yes/no
+    validations:
+      required: true

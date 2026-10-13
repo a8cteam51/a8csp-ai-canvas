@@ -1,0 +1,25 @@
+includes:
+    - vendor/a8csp/configs/php/quality-assurance/phpstan.dist.neon
+
+parameters:
+    # The plugin runs from PHP 8.3; the tooling runs on a newer PHP. Without this range the analysis
+    # takes the running PHP's built-ins as given and passes a function the floor does not have.
+    phpVersion:
+        min: 80300
+        max: 80599
+    scanDirectories:
+        - vendor/wp-plugin/mcp-adapter
+    # The entry file's name is per-repository, footprint.php is a root data manifest, and tests/
+    # is outside the shared config's conventional directories, so all three are listed here.
+    paths:
+        - %currentWorkingDirectory%/a8csp-ai-canvas.php
+        - %currentWorkingDirectory%/footprint.php
+        - %currentWorkingDirectory%/tests
+    excludePaths:
+        # The unit-test stubs redeclare WordPress functions with test bodies; even scanned alone,
+        # they replace the real signatures and skew the analysis of the plugin's own code.
+        analyseAndScan:
+            - %currentWorkingDirectory%/tests/Unit/*-stubs.php
+    WPCompat:
+        # wp-compat's fallback finds the entry file only when the checkout directory shares its name.
+        pluginFile: %currentWorkingDirectory%/a8csp-ai-canvas.php
