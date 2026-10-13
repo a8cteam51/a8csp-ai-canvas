@@ -1,0 +1,36 @@
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+  # With publish off, a dispatch rehearses the release before a tag exists.
+  workflow_dispatch:
+    inputs:
+      publish:
+        description: 'Create the GitHub release (run from a tag)'
+        type: boolean
+        required: false
+        default: false
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions: {}
+
+jobs:
+  release:
+    name: Release
+    # The template's immutable ID: the template never releases, and every generated plugin has its own ID.
+    if: github.repository_id != '1297277915'
+    permissions:
+      actions: read
+      contents: write
+    uses: a8cteam51/a8csp-configs/.github/workflows/reusable-release.yml@295fdb54961eb5a95ec9ed52f183cb44a16e004b # v1.1.0
+    with:
+      plugin-slug: ${{ github.event.repository.name }}
+      # The version the build's dev tooling needs. It is above the plugin header's Requires PHP (8.3), so the smoke test does not prove the floor.
+      php-version: '8.5'
+      # The plugin header requires MCP Adapter: without it WordPress refuses to activate the artifact, and with it the MCP component boots during the smoke request.
+      extra-plugins: '["https://downloads.wordpress.org/plugin/mcp-adapter.zip"]'
+      publish: ${{ github.event_name == 'push' || inputs.publish }}

@@ -1,0 +1,144 @@
+{
+  "name": "a8csp/a8csp-ai-canvas",
+  "type": "wordpress-plugin",
+
+  "description": "Lets Claude Design, or any MCP client, build pages on this site as a single Custom HTML block, and adds the page templates those pages render on.",
+  "homepage": "https://github.com/a8cteam51/a8csp-ai-canvas",
+  "license": "GPL-2.0-or-later",
+  "authors": [
+    {
+      "name": "A8C Special Projects",
+      "homepage": "https://specialprojects.automattic.com/"
+    },
+    {
+      "name": "Contributors",
+      "homepage": "https://github.com/a8cteam51/a8csp-ai-canvas/graphs/contributors"
+    }
+  ],
+
+  "repositories": [
+    {
+      "type": "vcs",
+      "url": "https://github.com/a8cteam51/a8csp-configs"
+    },
+    {
+      "type": "composer",
+      "url": "https://repo.wp-packages.org"
+    }
+  ],
+  "require": {
+    "php": ">=8.3",
+    "ext-json": "*"
+  },
+  "require-dev": {
+    "a8csp/configs": "^1",
+    "automattic/jetpack-changelogger": "^7",
+
+    "phpcompatibility/phpcompatibility-wp": "^3@alpha",
+    "phpcompatibility/php-compatibility": "^10@alpha",
+    "phpcompatibility/phpcompatibility-paragonie": "^2@alpha",
+
+    "infection/infection": "^0.35",
+    "phpunit/phpunit": "^13",
+    "wp-cli/i18n-command": "^2",
+
+    "wp-plugin/mcp-adapter": "^0.7",
+    "roave/security-advisories": "dev-latest"
+  },
+
+  "autoload": {
+    "psr-4": {
+      "A8C\\SpecialProjects\\AICanvas\\": "src/"
+    },
+    "classmap": [
+      "models/"
+    ]
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "A8C\\SpecialProjects\\AICanvas\\Tests\\": "tests/"
+    }
+  },
+
+  "scripts": {
+    "generate-autoloader": "@composer dump-autoload -o",
+    "packages-install": "@composer install --ignore-platform-req=php+ --no-interaction",
+    "packages-update": [
+      "@composer clear-cache",
+      "@composer update --prefer-stable --ignore-platform-req=php+ --no-interaction"
+    ],
+
+    "format:php": "phpcbf --standard=./.phpcs.xml --basepath=. --runtime-set testVersion 8.3- ./ -v",
+    "lint:php": [
+      "@lint:php:phpcs",
+      "@lint:php:phpcs:tests",
+      "@lint:php:phpstan"
+    ],
+    "lint:php:phpcs": "phpcs --standard=./.phpcs.xml --basepath=. --runtime-set testVersion 8.3- ./ -v",
+    "lint:php:phpcs:tests": "phpcs --standard=./.phpcs.tests.xml --basepath=. ./tests -v",
+    "lint:php:phpstan": "phpstan analyse -c ./.phpstan.neon -v --memory-limit=1G",
+
+    "internationalize": [
+      "@i18n:makepot",
+      "@i18n:updatepo",
+      "@i18n:makemo",
+      "@i18n:makejson",
+      "@i18n:makephp"
+    ],
+    "i18n:makepot": "wp i18n make-pot ./ --slug=a8csp-ai-canvas",
+    "i18n:updatepo": "wp i18n update-po ./languages/a8csp-ai-canvas.pot",
+    "i18n:makemo": "wp i18n make-mo ./languages/",
+    "i18n:makejson": "wp i18n make-json ./languages/",
+    "i18n:makephp": "wp i18n make-php ./languages/",
+
+    "test": "@php vendor/bin/phpunit",
+    "test:unit": "@php vendor/bin/phpunit --testsuite=Unit",
+    "test:unit:mutation": "@php vendor/bin/infection --threads=max",
+    "test:integration": [
+      "./node_modules/.bin/wp-env --config .wp-env.tests.json start",
+      "npm --prefix=. run test:integration"
+    ],
+    "test:requirements": [
+      "./node_modules/.bin/wp-env --config .wp-env.belowfloor.json start",
+      "npm --prefix=. run test:requirements"
+    ],
+    "test:multisite": [
+      "./node_modules/.bin/wp-env --config .wp-env.multisite.json start",
+      "npm --prefix=. run test:multisite"
+    ],
+
+    "quality-check": [
+      "@composer validate --strict",
+      "@lint:php",
+      "@test:unit"
+    ],
+    "quality-check:all": [
+      "@quality-check",
+      "@test:unit:mutation"
+    ],
+
+    "changelog:add": "@php vendor/bin/changelogger add",
+    "changelog:validate": "@php vendor/bin/changelogger validate",
+    "changelog:write": "@php vendor/bin/changelogger write"
+  },
+  "config": {
+    "allow-plugins": {
+      "composer/*": true,
+      "dealerdirect/phpcodesniffer-composer-installer": true,
+      "phpstan/extension-installer": true,
+      "infection/extension-installer": true
+    },
+    "platform-check": false
+  },
+
+  "extra": {
+    "installer-paths": {
+      "vendor/wp-plugin/{$name}/": [
+        "type:wordpress-plugin"
+      ],
+      "vendor/wp-theme/{$name}/": [
+        "type:wordpress-theme"
+      ]
+    }
+  }
+}

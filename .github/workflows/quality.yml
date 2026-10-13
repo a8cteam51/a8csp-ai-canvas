@@ -1,0 +1,147 @@
+name: Quality
+
+on:
+  pull_request:
+  push:
+    branches: [trunk]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  php-lint:
+    name: PHP Lint
+    uses: a8cteam51/a8csp-configs/.github/workflows/reusable-php-lint.yml@295fdb54961eb5a95ec9ed52f183cb44a16e004b # v1.1.0
+    with:
+      scripts: '["lint:php:phpcs", "lint:php:phpcs:tests", "lint:php:phpstan", "changelog:validate"]'
+
+  lint-scripts-styles:
+    name: JS + CSS Lint
+    uses: a8cteam51/a8csp-configs/.github/workflows/reusable-scripts-styles-lint.yml@295fdb54961eb5a95ec9ed52f183cb44a16e004b # v1.1.0
+
+  block-json:
+    name: block.json schema
+    uses: a8cteam51/a8csp-configs/.github/workflows/reusable-block-json-check.yml@295fdb54961eb5a95ec9ed52f183cb44a16e004b # v1.1.0
+
+  # Every PHP file must parse from the plugin's PHP floor up. The test suites cannot prove the floor:
+  # their tooling needs a newer PHP than the plugin does.
+  php-syntax:
+    name: PHP Syntax
+    uses: a8cteam51/a8csp-configs/.github/workflows/reusable-php-syntax-check.yml@295fdb54961eb5a95ec9ed52f183cb44a16e004b # v1.1.0
+    with:
+      php-versions: '["8.3", "8.4", "8.5", "8.6"]'
+
+  belowfloor-syntax:
+    name: Below-floor syntax (PHP ${{ matrix.php }})
+    strategy:
+      fail-fast: false
+      matrix:
+        php: ['7.4', '8.0', '8.1', '8.2']
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # 2.37.2
+        with:
+          php-version: ${{ matrix.php }}
+          coverage: none
+          tools: none
+
+      # These four files must parse below the plugin's PHP floor. Generation renames the entry file
+      # without rewriting .github/, so it is found by its "Plugin Name:" header.
+      - name: Check the below-floor files for syntax errors
+        id: syntax
+        run: |
+          set -euo pipefail
+
+          mapfile -t entry_files < <(grep -l 'Plugin Name:' "$GITHUB_WORKSPACE"/*.php || true)
+          entry_count=${#entry_files[@]}
+          if [ "$entry_count" -ne 1 ]; then
+            echo "::error::expected exactly one root *.php file with a 'Plugin Name:' header, found $entry_count" >&2
+            exit 1
+          fi
+          php -l "${entry_files[0]}"
+          php -l "$GITHUB_WORKSPACE/functions-bootstrap.php"
+          php -l "$GITHUB_WORKSPACE/uninstall.php"
+          php -l "$GITHUB_WORKSPACE/footprint.php"
+          echo "entry-file=${entry_files[0]}" >> "$GITHUB_OUTPUT"
+
+      # Parsing is not running: this includes the entry file against stubs of the WordPress calls it
+      # makes, and requires the requirements gate to stage its notice without loading functions.php.
+      # An empty autoloader gets past the missing-dependencies branch.
+      - name: Run the requirements gate below the floor
+        env:
+          ENTRY_FILE: ${{ steps.syntax.outputs.entry-file }}
+        run: |
+          set -euo pipefail
+
+          mkdir -p "$GITHUB_WORKSPACE/vendor"
+          echo '<?php' > "$GITHUB_WORKSPACE/vendor/autoload.php"
+          cat > "$RUNNER_TEMP/requirements-gate.php" <<'PHP'
+          <?php
+          define( 'ABSPATH', __DIR__ . '/' );
+          $GLOBALS['notice_staged'] = false;
+          function plugin_basename( $file ) { return basename( dirname( $file ) ) . '/' . basename( $file ); }
+          function plugin_dir_path( $file ) { return dirname( $file ) . '/'; }
+          function plugin_dir_url( $file ) { return 'https://example.test/'; }
+          function add_filter() {}
+          function add_action( $hook ) { $GLOBALS['notice_staged'] = $GLOBALS['notice_staged'] || 'all_admin_notices' === $hook; }
+          function load_plugin_textdomain() {}
+          function did_action() { return 0; }
+          function get_plugin_data() { return array( 'RequiresPHP' => '8.3', 'RequiresWP' => '7.1' ); }
+          function is_php_version_compatible( $required ) { return version_compare( PHP_VERSION, $required, '>=' ); }
+          function is_wp_version_compatible() { return true; }
+          function is_wp_error( $thing ) { return $thing instanceof WP_Error; }
+          class WP_Error {
+            private $codes = array();
+            public function add( $code ) { $this->codes[] = $code; }
+            public function has_errors() { return array() !== $this->codes; }
+          }
+          require getenv( 'ENTRY_FILE' );
+          if ( ! $GLOBALS['notice_staged'] || in_array( dirname( getenv( 'ENTRY_FILE' ) ) . '/functions.php', get_included_files(), true ) ) {
+            fwrite( STDERR, '::error::the requirements gate did not stop at its notice on PHP ' . PHP_VERSION . "\n" );
+            exit( 1 );
+          }
+          echo 'The requirements gate stopped at its notice on PHP ' . PHP_VERSION . "\n";
+          PHP
+          php "$RUNNER_TEMP/requirements-gate.php"
+
+  build-integrity:
+    name: Build integrity
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: 'package.json'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build assets
+        run: npm run build
+
+      - name: Verify the committed build output is byte-stable
+        run: |
+          set -euo pipefail
+
+          build_status=$(git status --porcelain)
+          if [ -n "$build_status" ]; then
+            printf '%s\n' "$build_status"
+            echo "::error::the committed build output must match a fresh build from source; rebuild and commit the result." >&2
+            exit 1
+          fi

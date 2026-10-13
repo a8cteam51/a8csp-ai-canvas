@@ -1,0 +1,85 @@
+name: Tests
+
+on:
+  pull_request:
+  push:
+    branches: [trunk]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  unit:
+    name: Unit (PHP ${{ matrix.php }})
+    strategy:
+      fail-fast: false
+      matrix:
+        php: ['8.5', '8.6']
+    uses: a8cteam51/a8csp-configs/.github/workflows/reusable-phpunit.yml@295fdb54961eb5a95ec9ed52f183cb44a16e004b # v1.1.0
+    with:
+      php-version: ${{ matrix.php }}
+      composer-script: 'test:unit'
+      needs-wp-env: false
+
+  # The visual editor's own logic: no WordPress, no browser.
+  javascript:
+    name: JavaScript
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: 'package.json'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run the JavaScript unit tests
+        run: npm run test:unit
+
+  integration:
+    name: Integration (${{ matrix.name }})
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: 'WP floor (7.1)'
+            wp-version: '7.1'
+          # wp-env defaults to latest stable.
+          - name: 'WP latest'
+          - name: 'WP nightly'
+            wp-env-core: 'https://wordpress.org/nightly-builds/wordpress-latest.zip'
+    uses: a8cteam51/a8csp-configs/.github/workflows/reusable-phpunit.yml@295fdb54961eb5a95ec9ed52f183cb44a16e004b # v1.1.0
+    with:
+      wp-version: ${{ matrix.wp-version || '' }}
+      wp-env-core: ${{ matrix.wp-env-core || '' }}
+      wp-env-config-file: '.wp-env.tests.json'
+      composer-script: 'test:integration'
+
+  requirements:
+    name: Requirements (below-floor WP)
+    uses: a8cteam51/a8csp-configs/.github/workflows/reusable-phpunit.yml@295fdb54961eb5a95ec9ed52f183cb44a16e004b # v1.1.0
+    with:
+      wp-env-config-file: '.wp-env.belowfloor.json'
+      composer-script: 'test:requirements'
+
+  multisite:
+    name: Multisite (converted network)
+    uses: a8cteam51/a8csp-configs/.github/workflows/reusable-phpunit.yml@295fdb54961eb5a95ec9ed52f183cb44a16e004b # v1.1.0
+    with:
+      wp-env-config-file: '.wp-env.multisite.json'
+      composer-script: 'test:multisite'
+
+  e2e:
+    name: End-to-End
+    uses: a8cteam51/a8csp-configs/.github/workflows/reusable-playwright-e2e.yml@295fdb54961eb5a95ec9ed52f183cb44a16e004b # v1.1.0

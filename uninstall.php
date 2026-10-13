@@ -1,52 +1,66 @@
-<?php
+<?php declare( strict_types=1 );
 /**
- * Remove all canvas file sets on plugin uninstall. Canvas posts themselves are
- * left in place (they're regular pages/posts); only the served files go.
+ * Uninstall handler. WordPress runs this file directly when the plugin is deleted, in a cold
+ * bootstrap without the plugin loaded, so the durable keys it deletes come from a dependency-free
+ * manifest.
  *
- * Self-contained by design — the plugin's classes are not loaded here, so the
- * WP_Filesystem bootstrap is repeated rather than shared with AI_Canvas_Files.
- *
- * @package Ai_Canvas
+ * @since       1.0.0
+ * @version     1.0.0
+ * @package     A8C\SpecialProjects\AICanvas
  */
 
-defined( 'WP_UNINSTALL_PLUGIN' ) || exit;
+\defined( 'WP_UNINSTALL_PLUGIN' ) || exit;
 
-global $wp_filesystem;
+// The persisted footprint lives in the dependency-free `footprint.php` manifest, which the uninstall proofs read too.
+$a8csp_ai_canvas_footprint = require __DIR__ . '/footprint.php';
 
-require_once ABSPATH . 'wp-admin/includes/file.php';
+/*
+ * Options and post meta are stored per site, and a multisite uninstall runs only once,
+ * network-wide — so the sweep visits every site of the network. It pages through the sites in
+ * batches so memory stays flat on large networks while the sweep still visits every site.
+ */
+if ( is_multisite() ) {
+	$a8csp_ai_canvas_uninstall_offset = 0;
 
-$ai_canvas_uploads = wp_upload_dir();
+	do {
+		$a8csp_ai_canvas_uninstall_site_ids = get_sites(
+			array(
+				'fields' => 'ids',
+				'number' => 100,
+				'offset' => $a8csp_ai_canvas_uninstall_offset,
+			)
+		);
 
-// delete_plugins() has usually initialised this already; WP-CLI's
-// `plugin uninstall` has not, so ask for it either way.
-if ( ! WP_Filesystem( false, $ai_canvas_uploads['basedir'], true ) || ! $wp_filesystem instanceof WP_Filesystem_Base ) {
-	return;
-}
+		foreach ( $a8csp_ai_canvas_uninstall_site_ids as $a8csp_ai_canvas_uninstall_site_id ) {
+			switch_to_blog( $a8csp_ai_canvas_uninstall_site_id );
 
-$ai_canvas_base = trailingslashit( $ai_canvas_uploads['basedir'] ) . 'ai-canvas';
-if ( ! $wp_filesystem->is_dir( $ai_canvas_base ) ) {
-	return;
-}
-
-$ai_canvas_entries = $wp_filesystem->dirlist( $ai_canvas_base );
-if ( ! is_array( $ai_canvas_entries ) ) {
-	return;
-}
-
-// Each subdirectory holds at most the three known files (+ temp leftovers);
-// anything unexpected is left untouched rather than recursively deleted.
-foreach ( $ai_canvas_entries as $ai_canvas_entry ) {
-	if ( 'd' !== ( $ai_canvas_entry['type'] ?? '' ) ) {
-		continue;
-	}
-	$ai_canvas_dir = $ai_canvas_base . '/' . $ai_canvas_entry['name'];
-	foreach ( array( 'index.html', 'style.css', 'script.js' ) as $ai_canvas_file ) {
-		foreach ( array( $ai_canvas_dir . '/' . $ai_canvas_file, $ai_canvas_dir . '/.' . $ai_canvas_file . '.tmp', $ai_canvas_dir . '/.' . $ai_canvas_file . '.prev' ) as $ai_canvas_path ) {
-			if ( $wp_filesystem->exists( $ai_canvas_path ) ) {
-				$wp_filesystem->delete( $ai_canvas_path, false, 'f' );
+			foreach ( $a8csp_ai_canvas_footprint['options'] as $a8csp_ai_canvas_uninstall_option ) {
+				delete_option( $a8csp_ai_canvas_uninstall_option );
 			}
+			foreach ( $a8csp_ai_canvas_footprint['post_meta'] as $a8csp_ai_canvas_uninstall_meta_key ) {
+				delete_post_meta_by_key( $a8csp_ai_canvas_uninstall_meta_key );
+			}
+			delete_transient( 'a8csp_ai_canvas_github_latest_release_stable' );
+			delete_transient( 'a8csp_ai_canvas_github_latest_release_prerelease' );
+
+			restore_current_blog();
 		}
+
+		$a8csp_ai_canvas_uninstall_offset    += 100;
+		$a8csp_ai_canvas_uninstall_batch_size = \count( $a8csp_ai_canvas_uninstall_site_ids );
+	} while ( 100 === $a8csp_ai_canvas_uninstall_batch_size );
+} else {
+	foreach ( $a8csp_ai_canvas_footprint['options'] as $a8csp_ai_canvas_uninstall_option ) {
+		delete_option( $a8csp_ai_canvas_uninstall_option );
 	}
-	$wp_filesystem->rmdir( $ai_canvas_dir );
+	foreach ( $a8csp_ai_canvas_footprint['post_meta'] as $a8csp_ai_canvas_uninstall_meta_key ) {
+		delete_post_meta_by_key( $a8csp_ai_canvas_uninstall_meta_key );
+	}
+	delete_transient( 'a8csp_ai_canvas_github_latest_release_stable' );
+	delete_transient( 'a8csp_ai_canvas_github_latest_release_prerelease' );
 }
-$wp_filesystem->rmdir( $ai_canvas_base );
+
+// User meta is stored network-globally, so one pass covers every site.
+foreach ( $a8csp_ai_canvas_footprint['user_meta'] as $a8csp_ai_canvas_uninstall_meta_key ) {
+	delete_metadata( 'user', 0, $a8csp_ai_canvas_uninstall_meta_key, '', true );
+}

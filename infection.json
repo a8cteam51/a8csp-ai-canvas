@@ -1,0 +1,15 @@
+{
+  "$schema": "vendor/infection/infection/resources/schema.json",
+  "source": {
+    "directories": ["src", "models", "includes"]
+  },
+  "logs": {
+    "text": "build/infection/infection.log",
+    "html": "build/infection/infection.html"
+  },
+  "minMsi": 70,
+  "minCoveredMsi": 70,
+  "bootstrap": "tests/infection-bootstrap.php",
+  "testFramework": "phpunit",
+  "testFrameworkExtraArgs": "--testsuite=Unit -d memory_limit=1G"
+}
