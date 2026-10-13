@@ -88,7 +88,7 @@ final class PluginBootTest extends TestCase {
 	 * @return  void
 	 */
 	public function test_the_tools_are_registered_as_abilities(): void {
-		foreach ( array( 'get-instructions', 'list-pages', 'get-page', 'create-page', 'update-page', 'delete-page', 'list-media', 'upload-media' ) as $tool ) {
+		foreach ( array( 'get-instructions', 'list-pages', 'get-page', 'create-page', 'update-page', 'delete-page', 'list-media' ) as $tool ) {
 			$ability = wp_get_ability( 'a8csp-ai-canvas/' . $tool );
 
 			self::assertInstanceOf( \WP_Ability::class, $ability, "the '{$tool}' tool must be registered" );
@@ -106,7 +106,7 @@ final class PluginBootTest extends TestCase {
 	 * @return  void
 	 */
 	public function test_the_writing_tools_carry_the_approval_rule(): void {
-		foreach ( array( 'create-page', 'update-page', 'upload-media' ) as $tool ) {
+		foreach ( array( 'create-page', 'update-page' ) as $tool ) {
 			$ability = wp_get_ability( 'a8csp-ai-canvas/' . $tool );
 
 			self::assertInstanceOf( \WP_Ability::class, $ability );
@@ -115,19 +115,23 @@ final class PluginBootTest extends TestCase {
 	}
 
 	/**
-	 * The upload tool says, in its own description, where a file with no public URL goes, for the
-	 * same client that reads tool descriptions and not the server's instructions.
+	 * No tool adds a file to the site: the upload tool earlier versions had is gone, and the two
+	 * tools that write a page say where a picture the site does not have goes.
 	 *
-	 * @since   1.1.0
-	 * @version 1.1.0
+	 * @since   2.0.0
+	 * @version 2.0.0
 	 *
 	 * @return  void
 	 */
-	public function test_the_upload_tool_carries_the_rule_for_a_file_with_no_public_url(): void {
-		$ability = wp_get_ability( 'a8csp-ai-canvas/upload-media' );
+	public function test_no_tool_adds_a_file_to_the_site(): void {
+		self::assertFalse( wp_has_ability( 'a8csp-ai-canvas/upload-media' ) );
 
-		self::assertInstanceOf( \WP_Ability::class, $ability );
-		self::assertStringContainsString( Mcp\Instructions::local_files(), $ability->get_description() );
+		foreach ( array( 'create-page', 'update-page' ) as $tool ) {
+			$ability = wp_get_ability( 'a8csp-ai-canvas/' . $tool );
+
+			self::assertInstanceOf( \WP_Ability::class, $ability );
+			self::assertStringContainsString( 'These tools cannot add a picture to the site', $ability->get_description(), "the '{$tool}' tool must say where a picture goes" );
+		}
 	}
 
 	/**
@@ -136,7 +140,7 @@ final class PluginBootTest extends TestCase {
 	 * edit pages.
 	 *
 	 * @since   1.0.0
-	 * @version 1.1.0
+	 * @version 2.0.0
 	 *
 	 * @return  void
 	 */

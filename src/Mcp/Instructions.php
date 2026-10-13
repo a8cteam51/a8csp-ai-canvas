@@ -12,7 +12,7 @@ namespace A8C\SpecialProjects\AICanvas\Mcp;
  * The text addresses the connected model, not a site visitor, so it is not translatable.
  *
  * @since   1.0.0
- * @version 1.1.0
+ * @version 2.0.0
  */
 final class Instructions {
 	// region METHODS
@@ -31,37 +31,24 @@ final class Instructions {
 	}
 
 	/**
-	 * Returns the one-sentence contract appended to the write tools' descriptions, for a client
-	 * that reads tool descriptions but not server instructions.
+	 * Returns the contract appended to the write tools' descriptions, for a client that reads tool
+	 * descriptions but not server instructions: the shape of the content, and where a picture the
+	 * site does not have goes.
 	 *
 	 * @since   1.0.0
-	 * @version 1.0.0
+	 * @version 2.0.0
 	 *
 	 * @return  string
 	 */
 	public static function pointer(): string {
-		return 'The content must be exactly one WordPress Custom HTML block aligned to the full width: <!-- wp:html {"align":"full"} -->, then a <style data-wp-block-html="css"> element, a <script data-wp-block-html="js"> element, and one root element with a unique class, then <!-- /wp:html -->. Vanilla HTML, CSS and JS only. Call get-instructions once per conversation before the first write for the full rules.';
-	}
-
-	/**
-	 * Returns the rule the upload tool carries in its description: a file with no public URL does
-	 * not go through the tool, because a client can only send one as base64 by writing the whole
-	 * file out itself, and the page takes a placeholder in its place.
-	 *
-	 * @since   1.1.0
-	 * @version 1.1.0
-	 *
-	 * @return  string
-	 */
-	public static function local_files(): string {
-		return 'A file with no public URL, such as one the user attached to the conversation, does not go through this tool unless it is a few kilobytes, because as base64 you would have to write out every character of it: put the placeholder image named in get-instructions in its place on the page, and the site owner swaps it for the real picture in the WordPress editor.';
+		return 'The content must be exactly one WordPress Custom HTML block aligned to the full width: <!-- wp:html {"align":"full"} -->, then a <style data-wp-block-html="css"> element, a <script data-wp-block-html="js"> element, and one root element with a unique class, then <!-- /wp:html -->. Vanilla HTML, CSS and JS only. These tools cannot add a picture to the site: one that list-media does not find goes in as the placeholder image named in get-instructions. Call get-instructions once per conversation before the first write for the full rules.';
 	}
 
 	/**
 	 * Returns the full authoring guide as Markdown.
 	 *
 	 * @since   1.0.0
-	 * @version 1.1.0
+	 * @version 2.0.0
 	 *
 	 * @param   string $placeholder_image_url The URL of the image this plugin ships to stand in for a picture the client cannot send.
 	 *
@@ -79,7 +66,7 @@ The tool names carry an `a8csp-ai-canvas-` prefix, as in `a8csp-ai-canvas-create
 
 Do the design work where you are, in Claude Design. These tools deliver a finished design to the site. They are not where a design is drafted or revised.
 
-- **Do not write to the site until the user approves.** Call `create-page`, `update-page` and `upload-media` only after the user has seen the design, approved it, and asked for it to go to the site. A request to design, draft, explore or revise something is not that.
+- **Do not write to the site until the user approves.** Call `create-page` and `update-page` only after the user has seen the design, approved it, and asked for it to go to the site. A request to design, draft, explore or revise something is not that.
 - **Changes follow the same rule.** Revise the design in Claude Design, show the user, and call `update-page` once they approve the revision.
 - **If you are not sure the user wants it on the site yet, ask.**
 - **Reading is fine at any time**: `get-instructions`, `list-pages`, `get-page`, and `list-media` to see which images the site already has.
@@ -128,10 +115,10 @@ The `content` you send to `create-page` and `update-page` is exactly one block i
 - **Readable without JavaScript.** The WordPress editor previews the block without running its script, so anything the CSS hides until the script runs shows there as blank space. The default CSS state shows every section, and a state only the script can leave (hidden until revealed, inactive tab panels) goes under a class the script adds to the root, such as `.canvas-spring-launch.is-js`.
 - **Avoid a bare `<` in the script, the style and the text.** WordPress can take a `<` that does not start a tag for one, and then corrupts the `&` characters after it, which breaks `a && b`. The two templates here switch that off, but the site owner can move the page to another template. Flip comparisons (`10 > i` in place of `i < 10`), and write `&lt;` in text.
 - **The block spans the full width of the viewport** on both templates. Give each section its own inner wrapper with a `max-width` and side padding, and make the layout work from phone width up.
-- **Images live in the Media Library.** Call `list-media` to reuse what the site already has, and `upload-media` to add an image from a public URL. Reference the URLs those tools return, exactly as returned. Do not embed images as `data:` URIs or link to images on other sites. Inline SVG is fine for icons and simple illustrations.
-- **A file with no public URL goes in as a placeholder.** That is any file the user attached to the conversation, and any you made or edited yourself. Design with it in Claude Design as usual. In the page you send, put this site's placeholder image in its place: `{placeholder_image_url}`. The site owner swaps it for the real picture by clicking it in the WordPress editor. Do not send such a file as `base64` unless it is a few kilobytes, such as an icon, or you can pass it to the tool without writing it out: you would have to write out every character of it, and a photo runs to tens of thousands. If the file is already in the Media Library, `list-media` finds it: use that and no placeholder.
-- **Write a placeholder so a click can replace it.** Use it as the `src` of an `<img>`, or as the `url()` of a CSS `background-image`. An inline SVG or an empty box standing in for a picture cannot be swapped by clicking. Size and crop the spot in CSS as the design has it (`aspect-ratio`, `object-fit`, `object-position`), so the real picture drops into the same shape. Give the `<img>` the `width` and `height` of that shape, the `alt` text of the real picture, and no `srcset`. After you write the page, tell the user which placeholders it has and which file belongs in each.
-- **Keep images light.** Both media tools return an image's generated smaller sizes: reference the smallest one that covers the space it fills. Put that size's `width` and `height` on the `<img>`, give it `alt` text, and add `loading="lazy"` to images below the first screen.
+- **A picture is in the Media Library, or it is a placeholder.** These tools cannot add a file to the site. Call `list-media` to reuse what the Media Library already has, and reference the URLs it returns, exactly as returned. Every other picture, whether the user gave it to you, you found it on the web, or you made it, goes onto the page as this site's placeholder image: `{placeholder_image_url}`. The site owner swaps it for the real picture by clicking it in the WordPress editor. Design with the real picture in Claude Design as usual. Do not embed images as `data:` URIs or link to images on other sites. Inline SVG is fine for icons and simple illustrations.
+- **Write a placeholder so a click can replace it.** Use it as the `src` of an `<img>`, or as the `url()` of a CSS `background-image`. An inline SVG or an empty box standing in for a picture cannot be swapped by clicking. Size and crop the spot in CSS as the design has it (`aspect-ratio`, `object-fit`, `object-position`), so the real picture drops into the same shape. Give the `<img>` the `width` and `height` of that shape, the `alt` text of the real picture, and no `srcset`.
+- **Hand the pictures over with the page.** When you send a page that has placeholders, give the user one `.zip` of the pictures they stand for: the files the user gave you in the conversation, unchanged and under their own names, and any picture you made for the design. For a picture you only have a web address for, give the address. Tell the user which file belongs in which placeholder.
+- **Keep images light.** `list-media` returns an image's generated smaller sizes: reference the smallest one that covers the space it fills. Put that size's `width` and `height` on the `<img>`, give it `alt` text, and add `loading="lazy"` to images below the first screen.
 - **Accessible markup.** One `<h1>`, headings in order, real `<button>` and `<a>` elements with visible focus styles, and sufficient colour contrast.
 
 ## Templates
@@ -149,7 +136,7 @@ Neither template prints the page title, so the content needs its own `<h1>`.
 2. **Read before you change.** Call `get-page` before every `update-page`: the site owner may have edited the page since you last saw it. `update-page` replaces the whole block, so always send the complete content.
 3. **Find** the pages you can work on with `list-pages`.
 4. **Remove** a page with `delete-page`, only when the user asks. It moves to the Trash, where the site owner can restore it from wp-admin.
-5. **Sort out the images** before you write the page that uses them: reuse what `list-media` finds, add one from a public URL with `upload-media` once the design is approved, and put the placeholder where a file has no public URL. Before you publish a page that still has placeholders, tell the user which are left and ask whether to go ahead.
+5. **Sort out the images** before you write the page: reuse what `list-media` finds, and put the placeholder everywhere else. Before you publish a page that still has placeholders, tell the user which are left and ask whether to go ahead.
 
 You can only read, change or delete the pages `list-pages` returns: the ones created through these tools, and any the site owner has opened to you from the page editor. Every other page on the site is off limits, and the tools refuse it.
 

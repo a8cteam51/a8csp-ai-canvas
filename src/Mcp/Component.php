@@ -8,15 +8,15 @@ use A8C\SpecialProjects\AICanvas\Templates;
 \defined( 'ABSPATH' ) || exit;
 
 /**
- * Composes the MCP feature: registers the page and media tools as abilities and exposes them,
- * with the authoring instructions, on the plugin's own MCP server at
+ * Composes the MCP feature: registers the page tools and the media search as abilities and
+ * exposes them, with the authoring instructions, on the plugin's own MCP server at
  * `/wp-json/a8csp-ai-canvas/mcp`.
  *
  * The server needs the MCP Adapter plugin, so the feature gates on it and none of it is
  * constructed when the adapter is absent.
  *
  * @since   1.0.0
- * @version 1.1.0
+ * @version 2.0.0
  */
 final class Component implements ComponentInterface {
 	// region FIELDS AND CONSTANTS
@@ -36,7 +36,7 @@ final class Component implements ComponentInterface {
 	 * The abilities the MCP server exposes as tools.
 	 *
 	 * @since   1.0.0
-	 * @version 1.0.0
+	 * @version 2.0.0
 	 *
 	 * @var     list<string>
 	 */
@@ -48,7 +48,6 @@ final class Component implements ComponentInterface {
 		'a8csp-ai-canvas/update-page',
 		'a8csp-ai-canvas/delete-page',
 		'a8csp-ai-canvas/list-media',
-		'a8csp-ai-canvas/upload-media',
 	);
 
 	/**
@@ -121,7 +120,7 @@ final class Component implements ComponentInterface {
 	 * Registers the category the abilities belong to.
 	 *
 	 * @since   1.0.0
-	 * @version 1.0.0
+	 * @version 2.0.0
 	 *
 	 * @return  void
 	 */
@@ -130,7 +129,7 @@ final class Component implements ComponentInterface {
 			'a8csp-ai-canvas',
 			array(
 				'label'       => __( 'AI Canvas', 'a8csp-ai-canvas' ),
-				'description' => __( 'Build pages as a single Custom HTML block, and manage the media they use.', 'a8csp-ai-canvas' ),
+				'description' => __( 'Build pages as a single Custom HTML block, and reuse the media this site already has.', 'a8csp-ai-canvas' ),
 			)
 		);
 	}
@@ -140,7 +139,7 @@ final class Component implements ComponentInterface {
 	 * shown in the abilities REST API or flagged public for the adapter's default server.
 	 *
 	 * @since   1.0.0
-	 * @version 1.1.0
+	 * @version 2.0.0
 	 *
 	 * @throws  \LogicException If the abilities register before initialization.
 	 *
@@ -384,42 +383,6 @@ final class Component implements ComponentInterface {
 				'meta'                => self::meta( array( 'readonly' => true ) ),
 			)
 		);
-
-		wp_register_ability(
-			'a8csp-ai-canvas/upload-media',
-			array(
-				'label'               => __( 'Upload media', 'a8csp-ai-canvas' ),
-				'description'         => __( 'Adds a file to this site’s Media Library, from a URL or from base64 data, and returns the URL to reference from a page. Images come back with their pixel dimensions and generated smaller sizes.', 'a8csp-ai-canvas' ) . ' ' . Instructions::local_files() . ' ' . Instructions::approval(),
-				'category'            => 'a8csp-ai-canvas',
-				'input_schema'        => array(
-					'type'       => 'object',
-					'properties' => array(
-						'url'      => array(
-							'type'        => 'string',
-							'format'      => 'uri',
-							'description' => 'A public URL to fetch the file from. Pass either url, or base64 with filename.',
-						),
-						'base64'   => array(
-							'type'        => 'string',
-							'description' => 'The file’s contents, base64-encoded. Needs filename. For a file of a few kilobytes, unless you can pass it without writing the characters out yourself.',
-						),
-						'filename' => array(
-							'type'        => 'string',
-							'description' => 'The name to store the file under, with its extension. Required with base64; optional with url.',
-						),
-						'title'    => array( 'type' => 'string' ),
-						'alt'      => array(
-							'type'        => 'string',
-							'description' => 'The image’s alternative text.',
-						),
-					),
-				),
-				'output_schema'       => $media_schema,
-				'permission_callback' => $media->can_use( ... ),
-				'execute_callback'    => $media->upload( ... ),
-				'meta'                => self::meta( array( 'destructive' => false ) ),
-			)
-		);
 	}
 
 	/**
@@ -429,7 +392,7 @@ final class Component implements ComponentInterface {
 	 * sessionless discovery alike, so the authoring guide is passed as the description.
 	 *
 	 * @since   1.0.0
-	 * @version 1.1.0
+	 * @version 2.0.0
 	 *
 	 * @param   \WP\MCP\Core\McpAdapter $adapter The MCP Adapter instance.
 	 *
@@ -462,8 +425,8 @@ final class Component implements ComponentInterface {
 	 * Returns the authoring guide for this site: the one text behind the server's instructions
 	 * and the `get-instructions` tool, carrying the URL of the placeholder image this plugin ships.
 	 *
-	 * @since   1.1.0
-	 * @version 1.1.0
+	 * @since   2.0.0
+	 * @version 2.0.0
 	 *
 	 * @return  string
 	 */

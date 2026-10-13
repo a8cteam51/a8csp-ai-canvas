@@ -10,10 +10,10 @@ use PHPUnit\Framework\TestCase;
  * Pins what the authoring guide has to carry: the rule that a design reaches the site only on the
  * user's approval, what a client needs to produce content the page tools accept — the block's
  * delimiters, the attributes the editor reads the CSS and JS by, both template names, and every
- * page and media tool — and where a file with no public URL goes.
+ * page and media tool — and where a picture the site does not have goes.
  *
  * @since   1.0.0
- * @version 1.1.0
+ * @version 2.0.0
  */
 #[CoversClass( Instructions::class )]
 final class InstructionsTest extends TestCase {
@@ -23,8 +23,8 @@ final class InstructionsTest extends TestCase {
 	 * A stand-in for the URL of the plugin's placeholder image, which the component passes to the
 	 * guide.
 	 *
-	 * @since   1.1.0
-	 * @version 1.1.0
+	 * @since   2.0.0
+	 * @version 2.0.0
 	 *
 	 * @var     string
 	 */
@@ -36,10 +36,10 @@ final class InstructionsTest extends TestCase {
 
 	/**
 	 * The guide tells the client to design first and write to the site only on approval, and says
-	 * so ahead of everything about how to write: it names the three tools that write.
+	 * so ahead of everything about how to write: it names the two tools that write.
 	 *
 	 * @since   1.0.0
-	 * @version 1.1.0
+	 * @version 2.0.0
 	 *
 	 * @return  void
 	 */
@@ -52,7 +52,7 @@ final class InstructionsTest extends TestCase {
 		self::assertIsInt( $rule );
 		self::assertIsInt( $format );
 		self::assertLessThan( $format, $rule );
-		self::assertStringContainsString( 'Call `create-page`, `update-page` and `upload-media` only after the user has seen the design, approved it, and asked for it to go to the site.', $text );
+		self::assertStringContainsString( 'Call `create-page` and `update-page` only after the user has seen the design, approved it, and asked for it to go to the site.', $text );
 	}
 
 	/**
@@ -73,7 +73,7 @@ final class InstructionsTest extends TestCase {
 	 * markup, in that order.
 	 *
 	 * @since   1.0.0
-	 * @version 1.1.0
+	 * @version 2.0.0
 	 *
 	 * @return  void
 	 */
@@ -98,64 +98,64 @@ final class InstructionsTest extends TestCase {
 	 * The guide names both templates and every page and media tool.
 	 *
 	 * @since   1.0.0
-	 * @version 1.1.0
+	 * @version 2.0.0
 	 *
 	 * @return  void
 	 */
 	public function test_the_guide_names_the_templates_and_the_tools(): void {
 		$text = Instructions::text( self::PLACEHOLDER_IMAGE_URL );
 
-		foreach ( array( '`header-footer`', '`content-only`', '`create-page`', '`update-page`', '`get-page`', '`list-pages`', '`delete-page`', '`list-media`', '`upload-media`' ) as $name ) {
+		foreach ( array( '`header-footer`', '`content-only`', '`create-page`', '`update-page`', '`get-page`', '`list-pages`', '`delete-page`', '`list-media`' ) as $name ) {
 			self::assertStringContainsString( $name, $text );
 		}
 	}
 
 	/**
-	 * The guide puts a placeholder where a file has no public URL: it names this site's
-	 * placeholder image in place of its token, says base64 only suits a small file, and says how
-	 * to write the placeholder so a click in the editor can replace it.
+	 * The guide says these tools add nothing to the site, and puts a placeholder wherever a
+	 * picture is not in the Media Library: it names this site's placeholder image in place of its
+	 * token, and says how to write the placeholder so a click in the editor can replace it.
 	 *
-	 * @since   1.1.0
-	 * @version 1.1.0
+	 * @since   2.0.0
+	 * @version 2.0.0
 	 *
 	 * @return  void
 	 */
-	public function test_the_guide_puts_a_placeholder_where_a_file_has_no_public_url(): void {
+	public function test_the_guide_puts_a_placeholder_where_the_library_has_no_picture(): void {
 		$text = Instructions::text( self::PLACEHOLDER_IMAGE_URL );
 
-		self::assertStringContainsString( 'A file with no public URL goes in as a placeholder.', $text );
-		self::assertStringContainsString( "put this site's placeholder image in its place: `" . self::PLACEHOLDER_IMAGE_URL . '`.', $text );
+		self::assertStringContainsString( 'A picture is in the Media Library, or it is a placeholder.', $text );
+		self::assertStringContainsString( 'These tools cannot add a file to the site.', $text );
+		self::assertStringContainsString( "goes onto the page as this site's placeholder image: `" . self::PLACEHOLDER_IMAGE_URL . '`.', $text );
 		self::assertStringNotContainsString( '{placeholder_image_url}', $text );
-		self::assertStringContainsString( 'unless it is a few kilobytes', $text );
 		self::assertStringContainsString( 'as the `src` of an `<img>`, or as the `url()` of a CSS `background-image`', $text );
-		self::assertStringContainsString( 'tell the user which placeholders it has and which file belongs in each', $text );
 		self::assertStringContainsString( 'Before you publish a page that still has placeholders', $text );
+		self::assertStringNotContainsString( 'upload-media', $text );
+		self::assertStringNotContainsString( 'base64', $text );
 	}
 
 	/**
-	 * The sentence the upload tool carries in its description states the same rule, and sends the
-	 * client to the guide for the placeholder.
+	 * The guide has the client hand the pictures over with the page: one archive of the files the
+	 * placeholders stand for, and which file belongs in which.
 	 *
-	 * @since   1.1.0
-	 * @version 1.1.0
+	 * @since   2.0.0
+	 * @version 2.0.0
 	 *
 	 * @return  void
 	 */
-	public function test_the_local_files_sentence_states_the_rule(): void {
-		$sentence = Instructions::local_files();
+	public function test_the_guide_hands_the_pictures_over_with_the_page(): void {
+		$text = Instructions::text( self::PLACEHOLDER_IMAGE_URL );
 
-		self::assertStringContainsString( 'A file with no public URL', $sentence );
-		self::assertStringContainsString( 'a few kilobytes', $sentence );
-		self::assertStringContainsString( 'placeholder image', $sentence );
-		self::assertStringContainsString( 'get-instructions', $sentence );
+		self::assertStringContainsString( 'give the user one `.zip` of the pictures they stand for', $text );
+		self::assertStringContainsString( 'unchanged and under their own names', $text );
+		self::assertStringContainsString( 'Tell the user which file belongs in which placeholder.', $text );
 	}
 
 	/**
-	 * The pointer the write tools carry states the block's shape and sends the client to the
-	 * full guide.
+	 * The pointer the write tools carry states the block's shape, says where a picture the site
+	 * does not have goes, and sends the client to the full guide.
 	 *
 	 * @since   1.0.0
-	 * @version 1.0.0
+	 * @version 2.0.0
 	 *
 	 * @return  void
 	 */
@@ -165,7 +165,8 @@ final class InstructionsTest extends TestCase {
 		self::assertStringContainsString( '<!-- wp:html {"align":"full"} -->', $pointer );
 		self::assertStringContainsString( 'data-wp-block-html="css"', $pointer );
 		self::assertStringContainsString( 'data-wp-block-html="js"', $pointer );
-		self::assertStringContainsString( 'get-instructions', $pointer );
+		self::assertStringContainsString( 'goes in as the placeholder image named in get-instructions', $pointer );
+		self::assertStringContainsString( 'Call get-instructions', $pointer );
 	}
 
 	// endregion.

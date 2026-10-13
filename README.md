@@ -5,7 +5,7 @@ Lets Claude Design, or any MCP client, build pages on this site as a single Cust
 The plugin does six things:
 
 - registers two page templates, offered in the page editor's Template panel;
-- exposes an MCP server whose tools create a page and then read, change, or trash it, but only a page flagged as open to them, and search and add to the Media Library;
+- exposes an MCP server whose tools create a page and then read, change, or trash it, but only a page flagged as open to them, and search the Media Library;
 - gives editors and administrators a switch for that flag, on the Pages list and in the page editor; the tools set it on the pages they create;
 - hands the connected model the rules for writing a page as one Custom HTML block of plain HTML, CSS, and JavaScript;
 - adds an AI Canvas card to **Settings → Connectors** that turns an application password into the `Authorization` header an MCP client needs;
@@ -58,7 +58,6 @@ The server URL is `https://your-site.example/wp-json/a8csp-ai-canvas/mcp`.
 | `update-page` | Changes a flagged page's content, title, status, or template. WordPress keeps the previous version as a revision. |
 | `delete-page` | Moves a flagged page to the Trash. |
 | `list-media` | Searches the Media Library. Images come back with their dimensions and generated smaller sizes. |
-| `upload-media` | Adds a file to the Media Library from a URL, or from base64 data with a filename. |
 
 The tool names carry an `a8csp-ai-canvas-` prefix on the wire, as in `a8csp-ai-canvas-create-page`.
 
@@ -66,15 +65,23 @@ The flag is the `_a8csp_ai_canvas` post meta key. `get-page`, `update-page`, and
 
 Editors and administrators can switch it per page in two places: the **AI Canvas** column of the **Pages** list, and the **Let AI Canvas edit this page** switch in the page editor's settings sidebar. Switch it off to take a page back from the tools, or on to hand over a page they did not create. Either switch saves as soon as it is flipped, and changes nothing else about the page. Roles below Editor see neither switch and cannot change the flag. A page opened this way can be built from ordinary blocks, and `update-page` replaces its whole content with one Custom HTML block; the previous content stays in the page's revisions.
 
-The media tools are not limited by the flag: `list-media` searches the whole Media Library, and `upload-media` adds to it under WordPress's usual limits on file size and type. Neither changes or deletes an existing file.
+`list-media` is not limited by the flag: it searches the whole Media Library. No tool adds, changes or deletes a file.
 
-A file with no public URL, such as a photo attached to a chat, can only reach `upload-media` as base64 the model writes out itself, which works for a file of a few kilobytes and not for a photo. So the guide has the client put the plugin's placeholder image, `assets/images/placeholder.svg`, in the picture's place on the page, as an `<img>` or a CSS background, and tell the user which pictures are still to add. The site owner [swaps each one by clicking it](#editing-a-page-by-clicking) in the editor.
+Every tool needs the `edit_pages` capability, and the MCP endpoint itself refuses a user without it. On top of that, `create-page` and `update-page` need `unfiltered_html`, publishing needs `publish_pages`, each page needs the matching `edit_post` or `delete_post` capability, and `list-media` needs `upload_files`, as browsing the Media Library does in wp-admin. The tools are reachable only through this plugin's MCP server: they are not shown in the abilities REST API or on MCP Adapter's default server.
 
-Every tool needs the `edit_pages` capability, and the MCP endpoint itself refuses a user without it. On top of that, `create-page` and `update-page` need `unfiltered_html`, publishing needs `publish_pages`, each page needs the matching `edit_post` or `delete_post` capability, and the media tools need `upload_files`. The tools are reachable only through this plugin's MCP server: they are not shown in the abilities REST API or on MCP Adapter's default server.
+### Pictures
+
+A page uses a picture the Media Library already has, or a placeholder. A model can only put a file into a tool call by writing its bytes out, which does not work for a photo, so the tools do not take files at all. For a picture the site does not have, the guide has the client:
+
+- put the plugin's placeholder image, `assets/images/placeholder.svg`, in the picture's place, as an `<img>` or a CSS background, sized and cropped as the design has it;
+- give the user one `.zip` of the pictures the placeholders stand for, the user's own files unchanged, and say which belongs where;
+- ask before publishing a page that still has placeholders.
+
+The site owner then [clicks each placeholder in the editor](#editing-a-page-by-clicking) and puts the real picture in, uploading it there if the library does not have it yet.
 
 ### The authoring instructions
 
-The server sends the model a guide, as the MCP `instructions`, and again through `get-instructions`. It opens with one rule: design in Claude Design first, and write to the site only once the user has approved the design and asked for it to go there. `create-page`, `update-page` and `upload-media` repeat that rule in their own descriptions; the first two also carry a one-sentence summary of the content format, and the third the rule for a file with no public URL. The guide lives in [`src/Mcp/Instructions.php`](src/Mcp/Instructions.php). Its core is the block shape WordPress itself writes for a Custom HTML block, aligned to the full width:
+The server sends the model a guide, as the MCP `instructions`, and again through `get-instructions`. It opens with one rule: design in Claude Design first, and write to the site only once the user has approved the design and asked for it to go there. `create-page` and `update-page` repeat that rule in their own descriptions, with a short summary of the content format and of where a picture the site does not have goes. The guide lives in [`src/Mcp/Instructions.php`](src/Mcp/Instructions.php). Its core is the block shape WordPress itself writes for a Custom HTML block, aligned to the full width:
 
 ```html
 <!-- wp:html {"align":"full"} -->
@@ -117,7 +124,7 @@ A page a model built is still the site owner's to change. Open it in the WordPre
 
 - **Text.** Click a heading, a paragraph or a button and type. Select a stretch of text for a small toolbar with bold, italic and link; <kbd>Ctrl</kbd>/<kbd>⌘</kbd> + <kbd>B</kbd>, <kbd>I</kbd> and <kbd>K</kbd> do the same. <kbd>Enter</kbd> starts a new line, and in a button finishes the edit.
 - **Links and buttons.** Click one and its toolbar shows where it goes. Choose it to type a new address, or search for a page of the site by its title, and to have the link open in a new tab. A link inside a sentence can also be removed.
-- **Images.** Click one to replace it from the Media Library or to change its alternative text. The replacement keeps the size of the spot it fills. A grey box with a picture mark is a placeholder for a picture the model could not send: click it to put the real one in.
+- **Images.** Click one to replace it from the Media Library or to change its alternative text. The replacement keeps the size of the spot it fills. A grey box with a picture mark is a placeholder for a picture the site did not have when the page was made: click it to put the real one in.
 - **Background images.** Click an empty part of a section that has one, and replace it.
 
 Moving the pointer over the page outlines what a click would change, and names it. <kbd>Esc</kbd> lets go of what is selected. Everything is an ordinary edit to the page: **Save**, undo and redo work as they do for any other, and nothing reaches visitors until the page is saved.

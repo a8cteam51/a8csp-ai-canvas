@@ -1,4 +1,4 @@
 Significance: minor
 Type: added
 
-Placeholders for pictures an MCP client cannot send: a file with no public URL, such as a photo attached to the conversation, now arrives on the page as the plugin's placeholder image, which the site owner swaps for the real picture by clicking it in the WordPress editor. The authoring guide no longer tells a client it can upload any file as base64, and has it say which placeholders a page has and ask before publishing one that still has them.
+Placeholders for pictures the site does not have yet: such a picture arrives on the page as the plugin's placeholder image, which the site owner swaps for the real one by clicking it in the WordPress editor. The authoring guide has the client hand over a .zip of the pictures with the page, say which belongs in each placeholder, and ask before publishing a page that still has them.

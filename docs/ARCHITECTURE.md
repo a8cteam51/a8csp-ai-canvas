@@ -48,8 +48,9 @@ every surviving component is initialized before any hook can fire.
   `instructions`. `Pages.php` is the plain collaborator holding the page operations; every
   operation on an existing page goes through its `resolve()`, which is where the flag that
   opens a page to the tools (`PageAccess\Flag`) is enforced.
-  `Media.php` is the collaborator holding the Media Library operations. `Instructions.php` is
-  the authoring guide.
+  `Media.php` is the collaborator holding the Media Library search; no tool adds a file, and a
+  picture the library lacks goes onto the page as `assets/images/placeholder.svg`, whose URL
+  `Component.php` passes into the guide. `Instructions.php` is the authoring guide.
 - `src/PageAccess/` is an editor's control over that flag. `Flag.php` is the flag itself: the
   meta key, and the only code that reads or writes it. `Component.php` adds the AI Canvas column
   to the Pages list, enqueues the two switches (`assets/js/src/pages-list.js` for the column,
