@@ -5,14 +5,14 @@ namespace A8C\SpecialProjects\AICanvas\Tests\Integration;
 use PHPUnit\Framework\TestCase;
 
 /**
- * Verifies the media tools end to end, through the abilities the MCP server exposes: a file sent
- * as base64 lands in the Media Library and can be found again, and WordPress's own limits on size
- * and file type still apply. Each test deletes the attachments it creates, since this suite runs
- * against a persistent wp-env database with no per-test transaction rollback (see
- * tests/README.md).
+ * Verifies the media tool end to end, through the ability the MCP server exposes: a file in the
+ * Media Library is found by a word in its title and comes back with its URL, its details and its
+ * smaller sizes, and a user who cannot browse the library is turned away. Each test deletes the
+ * attachments it creates, since this suite runs against a persistent wp-env database with no
+ * per-test transaction rollback (see tests/README.md).
  *
  * @since   1.0.0
- * @version 1.0.0
+ * @version 2.0.0
  */
 final class MediaTest extends TestCase {
 	// region FIELDS AND CONSTANTS.
@@ -99,34 +99,27 @@ final class MediaTest extends TestCase {
 	// region TESTS.
 
 	/**
-	 * A file sent as base64 becomes an attachment, stored under the given name with the given
-	 * title and alternative text, and comes back with its URL and dimensions.
+	 * A file in the library comes back with its URL, type, title, alternative text and dimensions.
 	 *
-	 * @since   1.0.0
-	 * @version 1.0.0
+	 * @since   2.0.0
+	 * @version 2.0.0
 	 *
 	 * @return  void
 	 */
-	public function test_upload_adds_a_base64_file_to_the_media_library(): void {
-		$media = $this->uploaded_media(
-			array(
-				'base64'   => self::PIXEL,
-				'filename' => 'a8csp-ai-canvas-proof.png',
-				'title'    => 'AI Canvas proof pixel',
-				'alt'      => 'A single pixel',
-			)
-		);
+	public function test_list_returns_a_file_with_its_url_and_details(): void {
+		$attachment_id = $this->attachment( self::pixel(), 'a8csp-ai-canvas-proof.png', 'Canvasproofword pixel' );
+		update_post_meta( $attachment_id, '_wp_attachment_image_alt', 'A single pixel' );
 
-		self::assertSame( 'attachment', get_post_type( $media['id'] ) );
+		$media = $this->listed( $attachment_id, 'Canvasproofword' );
+
 		self::assertSame( 'image/png', $media['mime'] );
-		self::assertSame( 'AI Canvas proof pixel', $media['title'] );
+		self::assertSame( 'Canvasproofword pixel', $media['title'] );
 		self::assertSame( 'A single pixel', $media['alt'] );
 		self::assertSame( 1, $media['width'] );
 		self::assertSame( 1, $media['height'] );
 		self::assertIsString( $media['url'] );
 		self::assertStringEndsWith( '.png', $media['url'] );
-		self::assertSame( wp_get_attachment_url( $media['id'] ), $media['url'] );
-		self::assertFileExists( (string) get_attached_file( $media['id'] ) );
+		self::assertSame( wp_get_attachment_url( $attachment_id ), $media['url'] );
 	}
 
 	/**
@@ -134,11 +127,11 @@ final class MediaTest extends TestCase {
 	 * and dimensions, so a client can reference one that fits.
 	 *
 	 * @since   1.0.0
-	 * @version 1.0.0
+	 * @version 2.0.0
 	 *
 	 * @return  void
 	 */
-	public function test_an_uploaded_image_comes_back_with_its_smaller_sizes(): void {
+	public function test_a_listed_image_comes_back_with_its_smaller_sizes(): void {
 		if ( ! \function_exists( 'imagecreatetruecolor' ) ) {
 			self::markTestSkipped( 'This proof draws its image with GD, which this PHP build lacks.' );
 		}
@@ -149,13 +142,8 @@ final class MediaTest extends TestCase {
 		\imagejpeg( $image );
 		$jpeg = (string) \ob_get_clean();
 
-		$media = $this->uploaded_media(
-			array(
-				// phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_encode -- Encodes the test image the way an MCP client sends a file.
-				'base64'   => \base64_encode( $jpeg ),
-				'filename' => 'a8csp-ai-canvas-proof-large.jpg',
-			)
-		);
+		$attachment_id = $this->attachment( $jpeg, 'a8csp-ai-canvas-proof-large.jpg', 'Canvasproofword large' );
+		$media         = $this->listed( $attachment_id, 'Canvasproofword' );
 
 		self::assertSame( 1600, $media['width'] );
 		self::assertSame( 900, $media['height'] );
@@ -169,34 +157,22 @@ final class MediaTest extends TestCase {
 	}
 
 	/**
-	 * The listing finds an uploaded file by a word in its title, and honors the limit.
+	 * The listing finds files by a word in their titles, and honors the limit.
 	 *
 	 * @since   1.0.0
-	 * @version 1.0.0
+	 * @version 2.0.0
 	 *
 	 * @return  void
 	 */
-	public function test_list_finds_an_uploaded_file_by_its_title(): void {
-		$first  = $this->uploaded_media(
-			array(
-				'base64'   => self::PIXEL,
-				'filename' => 'a8csp-ai-canvas-proof-one.png',
-				'title'    => 'Canvasproofword one',
-			)
-		);
-		$second = $this->uploaded_media(
-			array(
-				'base64'   => self::PIXEL,
-				'filename' => 'a8csp-ai-canvas-proof-two.png',
-				'title'    => 'Canvasproofword two',
-			)
-		);
+	public function test_list_finds_files_by_a_word_in_the_title(): void {
+		$first  = $this->attachment( self::pixel(), 'a8csp-ai-canvas-proof-one.png', 'Canvasproofword one' );
+		$second = $this->attachment( self::pixel(), 'a8csp-ai-canvas-proof-two.png', 'Canvasproofword two' );
 
 		$found = self::run_tool( 'list-media', array( 'search' => 'Canvasproofword' ) );
 		self::assertIsArray( $found );
 		$found_ids = \array_column( $found['media'], 'id' );
-		self::assertContains( $first['id'], $found_ids );
-		self::assertContains( $second['id'], $found_ids );
+		self::assertContains( $first, $found_ids );
+		self::assertContains( $second, $found_ids );
 
 		$limited = self::run_tool(
 			'list-media',
@@ -210,91 +186,11 @@ final class MediaTest extends TestCase {
 	}
 
 	/**
-	 * Input that names no source, base64 without a filename, and base64 that does not decode are
-	 * all refused, and nothing is added to the library.
+	 * A user who cannot upload files cannot browse the library in wp-admin, and is turned away
+	 * here before the tool runs.
 	 *
 	 * @since   1.0.0
-	 * @version 1.0.0
-	 *
-	 * @return  void
-	 */
-	public function test_input_without_a_usable_source_is_refused(): void {
-		$attachments_before = self::attachment_count();
-
-		$inputs = array(
-			array( 'title' => 'No source' ),
-			array( 'base64' => self::PIXEL ),
-			array(
-				'base64'   => 'This is not base64!',
-				'filename' => 'a8csp-ai-canvas-proof.png',
-			),
-		);
-
-		foreach ( $inputs as $input ) {
-			$result = self::run_tool( 'upload-media', $input );
-
-			self::assertInstanceOf( \WP_Error::class, $result );
-			self::assertSame( 'a8csp_ai_canvas_invalid_media', $result->get_error_code() );
-		}
-
-		self::assertSame( $attachments_before, self::attachment_count() );
-	}
-
-	/**
-	 * A file over the site's upload limit is refused before it is written anywhere.
-	 *
-	 * @since   1.0.0
-	 * @version 1.0.0
-	 *
-	 * @return  void
-	 */
-	public function test_a_file_over_the_upload_limit_is_refused(): void {
-		$attachments_before = self::attachment_count();
-
-		$this->filter( 'upload_size_limit', static fn (): int => 10 );
-
-		$result = self::run_tool(
-			'upload-media',
-			array(
-				'base64'   => self::PIXEL,
-				'filename' => 'a8csp-ai-canvas-proof.png',
-			)
-		);
-
-		self::assertInstanceOf( \WP_Error::class, $result );
-		self::assertSame( 'a8csp_ai_canvas_media_too_large', $result->get_error_code() );
-		self::assertSame( $attachments_before, self::attachment_count() );
-	}
-
-	/**
-	 * WordPress's own file-type rules apply: a PHP file is refused, and nothing is added.
-	 *
-	 * @since   1.0.0
-	 * @version 1.0.0
-	 *
-	 * @return  void
-	 */
-	public function test_a_disallowed_file_type_is_refused(): void {
-		$attachments_before = self::attachment_count();
-
-		$result = self::run_tool(
-			'upload-media',
-			array(
-				// phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_encode -- Encodes the test file the way an MCP client sends a file.
-				'base64'   => \base64_encode( '<?php echo "proof";' ),
-				'filename' => 'a8csp-ai-canvas-proof.php',
-			)
-		);
-
-		self::assertInstanceOf( \WP_Error::class, $result );
-		self::assertSame( $attachments_before, self::attachment_count() );
-	}
-
-	/**
-	 * A user who cannot upload files is turned away by both tools before either runs.
-	 *
-	 * @since   1.0.0
-	 * @version 1.0.0
+	 * @version 2.0.0
 	 *
 	 * @return  void
 	 */
@@ -305,23 +201,10 @@ final class MediaTest extends TestCase {
 			2
 		);
 
-		$calls = array(
-			array( 'list-media', array() ),
-			array(
-				'upload-media',
-				array(
-					'base64'   => self::PIXEL,
-					'filename' => 'a8csp-ai-canvas-proof.png',
-				),
-			),
-		);
+		$result = self::run_tool( 'list-media', array() );
 
-		foreach ( $calls as list( $tool, $input ) ) {
-			$result = self::run_tool( $tool, $input );
-
-			self::assertInstanceOf( \WP_Error::class, $result, "the '{$tool}' tool must deny a user who cannot upload files" );
-			self::assertSame( 'ability_invalid_permissions', $result->get_error_code() );
-		}
+		self::assertInstanceOf( \WP_Error::class, $result );
+		self::assertSame( 'ability_invalid_permissions', $result->get_error_code() );
 	}
 
 	// endregion.
@@ -351,36 +234,76 @@ final class MediaTest extends TestCase {
 	}
 
 	/**
-	 * Uploads a file through the upload tool, registers the attachment for cleanup, and returns
-	 * the tool's response.
+	 * Returns the contents of the one-pixel PNG.
 	 *
-	 * @since   1.0.0
-	 * @version 1.0.0
+	 * @since   2.0.0
+	 * @version 2.0.0
 	 *
-	 * @param   array<string, mixed> $input The tool input.
-	 *
-	 * @return  array<string, mixed>
+	 * @return  string
 	 */
-	private function uploaded_media( array $input ): array {
-		$media = self::run_tool( 'upload-media', $input );
-
-		self::assertIsArray( $media );
-		self::assertIsInt( $media['id'] );
-		$this->attachment_ids[] = $media['id'];
-
-		return $media;
+	private static function pixel(): string {
+		// phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_decode -- Decodes the test image this file carries as text.
+		return (string) \base64_decode( self::PIXEL, true );
 	}
 
 	/**
-	 * Counts the attachments in the Media Library.
+	 * Adds a file to the Media Library the way WordPress itself does, since no tool does, registers
+	 * the attachment for cleanup, and returns its ID.
 	 *
-	 * @since   1.0.0
-	 * @version 1.0.0
+	 * @since   2.0.0
+	 * @version 2.0.0
+	 *
+	 * @param   string $contents The file's contents.
+	 * @param   string $filename The name to store it under.
+	 * @param   string $title    The title to give it.
 	 *
 	 * @return  int
 	 */
-	private static function attachment_count(): int {
-		return \array_sum( (array) wp_count_posts( 'attachment' ) );
+	private function attachment( string $contents, string $filename, string $title ): int {
+		require_once ABSPATH . 'wp-admin/includes/file.php';
+		require_once ABSPATH . 'wp-admin/includes/media.php';
+		require_once ABSPATH . 'wp-admin/includes/image.php';
+
+		$temporary_file = wp_tempnam( $filename );
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents -- Fills the temporary file wp_tempnam() just created, as core's own upload handling does.
+		self::assertNotFalse( \file_put_contents( $temporary_file, $contents ) );
+
+		$attachment_id = media_handle_sideload(
+			array(
+				'name'     => $filename,
+				'tmp_name' => $temporary_file,
+			),
+			0,
+			$title
+		);
+		self::assertIsInt( $attachment_id );
+		$this->attachment_ids[] = $attachment_id;
+
+		return $attachment_id;
+	}
+
+	/**
+	 * Searches the library through the tool and returns its entry for the given attachment.
+	 *
+	 * @since   2.0.0
+	 * @version 2.0.0
+	 *
+	 * @param   int    $attachment_id The attachment to find.
+	 * @param   string $search        The words to search for.
+	 *
+	 * @return  array<string, mixed>
+	 */
+	private function listed( int $attachment_id, string $search ): array {
+		$found = self::run_tool( 'list-media', array( 'search' => $search ) );
+		self::assertIsArray( $found );
+
+		foreach ( $found['media'] as $media ) {
+			if ( $attachment_id === $media['id'] ) {
+				return $media;
+			}
+		}
+
+		self::fail( "list-media must find attachment {$attachment_id} by '{$search}'" );
 	}
 
 	/**

@@ -5,7 +5,7 @@ Lets Claude Design, or any MCP client, build pages on this site as a single Cust
 The plugin does six things:
 
 - registers two page templates, offered in the page editor's Template panel;
-- exposes an MCP server whose tools create a page and then read, change, or trash it, but only a page flagged as open to them, and search and add to the Media Library;
+- exposes an MCP server whose tools create a page and then read, change, or trash it, but only a page flagged as open to them, and search the Media Library;
 - gives editors and administrators a switch for that flag, on the Pages list and in the page editor; the tools set it on the pages they create;
 - hands the connected model the rules for writing a page as one Custom HTML block of plain HTML, CSS, and JavaScript;
 - adds an AI Canvas card to **Settings → Connectors** that turns an application password into the `Authorization` header an MCP client needs;
@@ -58,7 +58,6 @@ The server URL is `https://your-site.example/wp-json/a8csp-ai-canvas/mcp`.
 | `update-page` | Changes a flagged page's content, title, status, or template. WordPress keeps the previous version as a revision. |
 | `delete-page` | Moves a flagged page to the Trash. |
 | `list-media` | Searches the Media Library. Images come back with their dimensions and generated smaller sizes. |
-| `upload-media` | Adds a file to the Media Library from a URL, or from base64 data with a filename. |
 
 The tool names carry an `a8csp-ai-canvas-` prefix on the wire, as in `a8csp-ai-canvas-create-page`.
 
@@ -66,13 +65,26 @@ The flag is the `_a8csp_ai_canvas` post meta key. `get-page`, `update-page`, and
 
 Editors and administrators can switch it per page in two places: the **AI Canvas** column of the **Pages** list, and the **Let AI Canvas edit this page** switch in the page editor's settings sidebar. Switch it off to take a page back from the tools, or on to hand over a page they did not create. Either switch saves as soon as it is flipped, and changes nothing else about the page. Roles below Editor see neither switch and cannot change the flag. A page opened this way can be built from ordinary blocks, and `update-page` replaces its whole content with one Custom HTML block; the previous content stays in the page's revisions.
 
-The media tools are not limited by the flag: `list-media` searches the whole Media Library, and `upload-media` adds to it under WordPress's usual limits on file size and type. Neither changes or deletes an existing file.
+`list-media` is not limited by the flag: it searches the whole Media Library. No tool adds, changes or deletes a file.
 
-Every tool needs the `edit_pages` capability, and the MCP endpoint itself refuses a user without it. On top of that, `create-page` and `update-page` need `unfiltered_html`, publishing needs `publish_pages`, each page needs the matching `edit_post` or `delete_post` capability, and the media tools need `upload_files`. The tools are reachable only through this plugin's MCP server: they are not shown in the abilities REST API or on MCP Adapter's default server.
+Every tool needs the `edit_pages` capability, and the MCP endpoint itself refuses a user without it. On top of that, `create-page` and `update-page` need `unfiltered_html`, publishing needs `publish_pages`, each page needs the matching `edit_post` or `delete_post` capability, and `list-media` needs `upload_files`, as browsing the Media Library does in wp-admin. The tools are reachable only through this plugin's MCP server: they are not shown in the abilities REST API or on MCP Adapter's default server.
+
+### Pictures
+
+Every picture on a page is a file in the site's Media Library. A model can only put a file into a tool call by writing its bytes out, which does not work for a photo, so the tools do not take files at all: the site owner adds pictures to the library, and the client finds them with `list-media` or is given their URLs.
+
+The guide has the client:
+
+- ask for a picture to be added to the Media Library as soon as it comes up, with the link to the site's upload screen;
+- download a copy of a library picture to design with, and put the library's URL back in the page it sends, never the address of its own copy;
+- crop in CSS, since the site has only the original;
+- leave a picture out, and say so, if the page is to be sent before the picture is in the library.
+
+Downloading a copy needs the client's workspace to be able to reach the site. In Claude, that is the network egress setting, which is off for other sites by default. Without it the design shows a stand-in; the page on the site still references the real picture.
 
 ### The authoring instructions
 
-The server sends the model a guide, as the MCP `instructions`, and again through `get-instructions`. It opens with one rule: design in Claude Design first, and write to the site only once the user has approved the design and asked for it to go there. `create-page`, `update-page` and `upload-media` repeat that rule in their own descriptions, and the first two also carry a one-sentence summary of the content format. The guide lives in [`src/Mcp/Instructions.php`](src/Mcp/Instructions.php). Its core is the block shape WordPress itself writes for a Custom HTML block, aligned to the full width:
+The server sends the model a guide, as the MCP `instructions`, and again through `get-instructions`. It opens with one rule: design in Claude Design first, and write to the site only once the user has approved the design and asked for it to go there. `create-page` and `update-page` repeat that rule in their own descriptions, with a short summary of the content format and of where its pictures come from. The guide lives in [`src/Mcp/Instructions.php`](src/Mcp/Instructions.php). Its core is the block shape WordPress itself writes for a Custom HTML block, aligned to the full width:
 
 ```html
 <!-- wp:html {"align":"full"} -->

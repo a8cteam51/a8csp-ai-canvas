@@ -12,7 +12,7 @@ namespace A8C\SpecialProjects\AICanvas\Mcp;
  * The text addresses the connected model, not a site visitor, so it is not translatable.
  *
  * @since   1.0.0
- * @version 1.0.0
+ * @version 2.0.0
  */
 final class Instructions {
 	// region METHODS
@@ -31,28 +31,31 @@ final class Instructions {
 	}
 
 	/**
-	 * Returns the one-sentence contract appended to the write tools' descriptions, for a client
-	 * that reads tool descriptions but not server instructions.
+	 * Returns the contract appended to the write tools' descriptions, for a client that reads tool
+	 * descriptions but not server instructions: the shape of the content, and where its pictures
+	 * come from.
 	 *
 	 * @since   1.0.0
-	 * @version 1.0.0
+	 * @version 2.0.0
 	 *
 	 * @return  string
 	 */
 	public static function pointer(): string {
-		return 'The content must be exactly one WordPress Custom HTML block aligned to the full width: <!-- wp:html {"align":"full"} -->, then a <style data-wp-block-html="css"> element, a <script data-wp-block-html="js"> element, and one root element with a unique class, then <!-- /wp:html -->. Vanilla HTML, CSS and JS only. Call get-instructions once per conversation before the first write for the full rules.';
+		return 'The content must be exactly one WordPress Custom HTML block aligned to the full width: <!-- wp:html {"align":"full"} -->, then a <style data-wp-block-html="css"> element, a <script data-wp-block-html="js"> element, and one root element with a unique class, then <!-- /wp:html -->. Vanilla HTML, CSS and JS only. These tools cannot add a picture to the site: every picture in the content is the URL of a file in this site\'s Media Library, as list-media returns it, never the address of a copy of your own. Call get-instructions once per conversation before the first write for the full rules.';
 	}
 
 	/**
 	 * Returns the full authoring guide as Markdown.
 	 *
 	 * @since   1.0.0
-	 * @version 1.0.0
+	 * @version 2.0.0
+	 *
+	 * @param   string $media_upload_link The URL of this site's screen for adding a file to the Media Library.
 	 *
 	 * @return  string
 	 */
-	public static function text(): string {
-		return <<<'MD'
+	public static function text( string $media_upload_link ): string {
+		$guide = <<<'MD'
 # AI Canvas: publishing pages to this WordPress site
 
 These tools publish a design to this WordPress site as a page. Each page body is one WordPress Custom HTML block holding the page's CSS, JavaScript and markup: plain HTML, CSS and JS, with no framework and no build step. WordPress stores it as an ordinary page, and the site owner can open it in the WordPress editor afterwards.
@@ -63,7 +66,7 @@ The tool names carry an `a8csp-ai-canvas-` prefix, as in `a8csp-ai-canvas-create
 
 Do the design work where you are, in Claude Design. These tools deliver a finished design to the site. They are not where a design is drafted or revised.
 
-- **Do not write to the site until the user approves.** Call `create-page`, `update-page` and `upload-media` only after the user has seen the design, approved it, and asked for it to go to the site. A request to design, draft, explore or revise something is not that.
+- **Do not write to the site until the user approves.** Call `create-page` and `update-page` only after the user has seen the design, approved it, and asked for it to go to the site. A request to design, draft, explore or revise something is not that.
 - **Changes follow the same rule.** Revise the design in Claude Design, show the user, and call `update-page` once they approve the revision.
 - **If you are not sure the user wants it on the site yet, ask.**
 - **Reading is fine at any time**: `get-instructions`, `list-pages`, `get-page`, and `list-media` to see which images the site already has.
@@ -112,8 +115,11 @@ The `content` you send to `create-page` and `update-page` is exactly one block i
 - **Readable without JavaScript.** The WordPress editor previews the block without running its script, so anything the CSS hides until the script runs shows there as blank space. The default CSS state shows every section, and a state only the script can leave (hidden until revealed, inactive tab panels) goes under a class the script adds to the root, such as `.canvas-spring-launch.is-js`.
 - **Avoid a bare `<` in the script, the style and the text.** WordPress can take a `<` that does not start a tag for one, and then corrupts the `&` characters after it, which breaks `a && b`. The two templates here switch that off, but the site owner can move the page to another template. Flip comparisons (`10 > i` in place of `i < 10`), and write `&lt;` in text.
 - **The block spans the full width of the viewport** on both templates. Give each section its own inner wrapper with a `max-width` and side padding, and make the layout work from phone width up.
-- **Images live in the Media Library.** Call `list-media` to reuse what the site already has, and `upload-media` to add a file, from a public URL or as base64 with a filename. Reference the URLs those tools return, exactly as returned. Do not embed images as `data:` URIs or link to images on other sites. Inline SVG is fine for icons and simple illustrations.
-- **Keep images light.** Both media tools return an image's generated smaller sizes: reference the smallest one that covers the space it fills. Put that size's `width` and `height` on the `<img>`, give it `alt` text, and add `loading="lazy"` to images below the first screen.
+- **Every picture on a page is a file in this site's Media Library.** These tools cannot add a file to the site. Find pictures with `list-media`, or take the URL of a Media Library file when the user gives you one, and reference those URLs in the page, exactly as returned. Do not embed images as `data:` URIs or link to images on other sites. Inline SVG is fine for icons and simple illustrations.
+- **Ask for a picture to be put in the Media Library first.** When the user gives you a picture file, or wants a picture `list-media` does not find, ask them to add it to the Media Library at `{media_upload_link}`, and then to tell you, or to paste its URL. Say so as soon as the picture comes up, while the design is still being worked on, not when the page is ready to send.
+- **Design with a copy, send the original's URL.** To show a Media Library picture in your design, download a copy from its URL and work with that. The copy is yours alone: its path or address means nothing on the site. Keep track of which Media Library file each copy came from, and in the page you send put that file's Media Library URL back in its place. Do not crop or edit the copy and expect the change on the site, which has only the original: crop in CSS (`aspect-ratio`, `object-fit`, `object-position`). If you cannot download a picture, design around a stand-in and still use its Media Library URL in the page.
+- **Never send a page that points at a file of your own.** Before you send, check the content for the address of any copy, upload or generated file from your workspace. If the user wants a page sent while one of its pictures is still not in the Media Library, leave that picture out and tell them which is missing.
+- **Keep images light.** `list-media` returns an image's generated smaller sizes: reference the smallest one that covers the space it fills. Put that size's `width` and `height` on the `<img>`, give it `alt` text, and add `loading="lazy"` to images below the first screen.
 - **Accessible markup.** One `<h1>`, headings in order, real `<button>` and `<a>` elements with visible focus styles, and sufficient colour contrast.
 
 ## Templates
@@ -131,7 +137,7 @@ Neither template prints the page title, so the content needs its own `<h1>`.
 2. **Read before you change.** Call `get-page` before every `update-page`: the site owner may have edited the page since you last saw it. `update-page` replaces the whole block, so always send the complete content.
 3. **Find** the pages you can work on with `list-pages`.
 4. **Remove** a page with `delete-page`, only when the user asks. It moves to the Trash, where the site owner can restore it from wp-admin.
-5. **Add images** with `upload-media` once the design is approved, before you write the page that uses them, so the page can reference their final URLs.
+5. **Sort out the pictures** before you write the page: each one is a Media Library URL that `list-media` returned or the user gave you, in the smallest size that covers its spot, and none is a copy of your own.
 
 You can only read, change or delete the pages `list-pages` returns: the ones created through these tools, and any the site owner has opened to you from the page editor. Every other page on the site is off limits, and the tools refuse it.
 
@@ -139,6 +145,8 @@ A page the site owner opened may be built from ordinary WordPress blocks, not on
 
 After each change, tell the user what changed and give them the page's `link` and `edit_link`. While a page is a draft, its `link` is a preview that needs a wp-admin login.
 MD;
+
+		return \strtr( $guide, array( '{media_upload_link}' => $media_upload_link ) );
 	}
 
 	// endregion

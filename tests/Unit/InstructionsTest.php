@@ -8,28 +8,42 @@ use PHPUnit\Framework\TestCase;
 
 /**
  * Pins what the authoring guide has to carry: the rule that a design reaches the site only on the
- * user's approval, and what a client needs to produce content the page tools accept — the block's
+ * user's approval, what a client needs to produce content the page tools accept — the block's
  * delimiters, the attributes the editor reads the CSS and JS by, both template names, and every
- * page and media tool.
+ * page and media tool — and where a page's pictures come from.
  *
  * @since   1.0.0
- * @version 1.0.0
+ * @version 2.0.0
  */
 #[CoversClass( Instructions::class )]
 final class InstructionsTest extends TestCase {
+	// region FIELDS AND CONSTANTS.
+
+	/**
+	 * A stand-in for the site's own upload screen, which the component passes to the guide.
+	 *
+	 * @since   2.0.0
+	 * @version 2.0.0
+	 *
+	 * @var     string
+	 */
+	private const MEDIA_UPLOAD_LINK = 'https://example.org/wp-admin/media-new.php';
+
+	// endregion.
+
 	// region TESTS.
 
 	/**
 	 * The guide tells the client to design first and write to the site only on approval, and says
-	 * so ahead of everything about how to write: it names the three tools that write.
+	 * so ahead of everything about how to write: it names the two tools that write.
 	 *
 	 * @since   1.0.0
-	 * @version 1.0.0
+	 * @version 2.0.0
 	 *
 	 * @return  void
 	 */
 	public function test_the_guide_puts_approval_ahead_of_the_format(): void {
-		$text = Instructions::text();
+		$text = Instructions::text( self::MEDIA_UPLOAD_LINK );
 
 		$rule   = \strpos( $text, 'Do not write to the site until the user approves.' );
 		$format = \strpos( $text, '## The content format' );
@@ -37,7 +51,7 @@ final class InstructionsTest extends TestCase {
 		self::assertIsInt( $rule );
 		self::assertIsInt( $format );
 		self::assertLessThan( $format, $rule );
-		self::assertStringContainsString( 'Call `create-page`, `update-page` and `upload-media` only after the user has seen the design, approved it, and asked for it to go to the site.', $text );
+		self::assertStringContainsString( 'Call `create-page` and `update-page` only after the user has seen the design, approved it, and asked for it to go to the site.', $text );
 	}
 
 	/**
@@ -58,12 +72,12 @@ final class InstructionsTest extends TestCase {
 	 * markup, in that order.
 	 *
 	 * @since   1.0.0
-	 * @version 1.0.0
+	 * @version 2.0.0
 	 *
 	 * @return  void
 	 */
 	public function test_the_guide_shows_the_block_in_serialized_order(): void {
-		$text = Instructions::text();
+		$text = Instructions::text( self::MEDIA_UPLOAD_LINK );
 
 		$open   = \strpos( $text, '<!-- wp:html {"align":"full"} -->' );
 		$style  = \strpos( $text, '<style data-wp-block-html="css">' );
@@ -83,24 +97,65 @@ final class InstructionsTest extends TestCase {
 	 * The guide names both templates and every page and media tool.
 	 *
 	 * @since   1.0.0
-	 * @version 1.0.0
+	 * @version 2.0.0
 	 *
 	 * @return  void
 	 */
 	public function test_the_guide_names_the_templates_and_the_tools(): void {
-		$text = Instructions::text();
+		$text = Instructions::text( self::MEDIA_UPLOAD_LINK );
 
-		foreach ( array( '`header-footer`', '`content-only`', '`create-page`', '`update-page`', '`get-page`', '`list-pages`', '`delete-page`', '`list-media`', '`upload-media`' ) as $name ) {
+		foreach ( array( '`header-footer`', '`content-only`', '`create-page`', '`update-page`', '`get-page`', '`list-pages`', '`delete-page`', '`list-media`' ) as $name ) {
 			self::assertStringContainsString( $name, $text );
 		}
 	}
 
 	/**
-	 * The pointer the write tools carry states the block's shape and sends the client to the
-	 * full guide.
+	 * The guide says these tools add nothing to the site and that every picture on a page is a
+	 * Media Library file, and has the client ask for a picture to be put there first, at this
+	 * site's upload screen, named in place of its token.
+	 *
+	 * @since   2.0.0
+	 * @version 2.0.0
+	 *
+	 * @return  void
+	 */
+	public function test_the_guide_takes_every_picture_from_the_media_library(): void {
+		$text = Instructions::text( self::MEDIA_UPLOAD_LINK );
+
+		self::assertStringContainsString( "Every picture on a page is a file in this site's Media Library.", $text );
+		self::assertStringContainsString( 'These tools cannot add a file to the site.', $text );
+		self::assertStringContainsString( 'ask them to add it to the Media Library at `' . self::MEDIA_UPLOAD_LINK . '`, and then to tell you, or to paste its URL', $text );
+		self::assertStringNotContainsString( '{media_upload_link}', $text );
+		self::assertStringContainsString( 'while the design is still being worked on', $text );
+		self::assertStringNotContainsString( 'upload-media', $text );
+		self::assertStringNotContainsString( 'base64', $text );
+	}
+
+	/**
+	 * The guide tells the client that a copy it downloaded to design with is not what the page
+	 * references: the page gets the Media Library URL back, and never a file of the client's own.
+	 *
+	 * @since   2.0.0
+	 * @version 2.0.0
+	 *
+	 * @return  void
+	 */
+	public function test_the_guide_sends_the_media_library_url_and_not_the_copy(): void {
+		$text = Instructions::text( self::MEDIA_UPLOAD_LINK );
+
+		self::assertStringContainsString( "Design with a copy, send the original's URL.", $text );
+		self::assertStringContainsString( "put that file's Media Library URL back in its place", $text );
+		self::assertStringContainsString( 'still use its Media Library URL in the page', $text );
+		self::assertStringContainsString( 'Never send a page that points at a file of your own.', $text );
+		self::assertStringContainsString( 'leave that picture out and tell them which is missing', $text );
+	}
+
+	/**
+	 * The pointer the write tools carry states the block's shape, says where the content's
+	 * pictures come from, and sends the client to the full guide.
 	 *
 	 * @since   1.0.0
-	 * @version 1.0.0
+	 * @version 2.0.0
 	 *
 	 * @return  void
 	 */
@@ -110,7 +165,8 @@ final class InstructionsTest extends TestCase {
 		self::assertStringContainsString( '<!-- wp:html {"align":"full"} -->', $pointer );
 		self::assertStringContainsString( 'data-wp-block-html="css"', $pointer );
 		self::assertStringContainsString( 'data-wp-block-html="js"', $pointer );
-		self::assertStringContainsString( 'get-instructions', $pointer );
+		self::assertStringContainsString( "every picture in the content is the URL of a file in this site's Media Library", $pointer );
+		self::assertStringContainsString( 'Call get-instructions', $pointer );
 	}
 
 	// endregion.
