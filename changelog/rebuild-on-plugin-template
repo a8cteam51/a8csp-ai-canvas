@@ -1,4 +1,0 @@
-Significance: major
-Type: changed
-
-Rebuilt the plugin on the A8CSP plugin template for MCP clients such as Claude Design: pages are a single Custom HTML block stored as page content, in place of the per-page file sets; the MCP tools create a page and then read, change, or trash only the pages they created; two page templates, a full-width alignment for the Custom HTML block, and an AI Canvas card on the Settings → Connectors screen, with an Authorization header generator, are added. The file-based canvases and the rollback tool are removed.
