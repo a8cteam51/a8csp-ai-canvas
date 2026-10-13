@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Placeholder image">
+	<!-- No width, height or viewBox: with no size of its own the image is drawn at the size of the box it is given, so the fill covers a box of any shape and the mark stays centred at one size. -->
+	<rect width="100%" height="100%" fill="#e6e6ea"/>
+	<svg x="50%" y="50%" overflow="visible">
+		<g fill="none" stroke="#85858f" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+			<rect x="-36" y="-28" width="72" height="56" rx="6"/>
+			<circle cx="-16" cy="-10" r="6"/>
+			<path d="M-36 16l22-20 16 14 12-10 22 18"/>
+		</g>
+	</svg>
+</svg>

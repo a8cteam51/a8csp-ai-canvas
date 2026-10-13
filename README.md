@@ -68,7 +68,7 @@ Editors and administrators can switch it per page in two places: the **AI Canvas
 
 The media tools are not limited by the flag: `list-media` searches the whole Media Library, and `upload-media` adds to it under WordPress's usual limits on file size and type. Neither changes or deletes an existing file.
 
-A file with no public URL, such as one attached to a chat, can only reach `upload-media` as base64 the model writes out itself, which works for a file of a few kilobytes and not for a photo. The guide tells the client to ask the user to add such a file to the Media Library, gives it the link to the site's upload screen to pass on, and has it find the file with `list-media`.
+A file with no public URL, such as a photo attached to a chat, can only reach `upload-media` as base64 the model writes out itself, which works for a file of a few kilobytes and not for a photo. So the guide has the client put the plugin's placeholder image, `assets/images/placeholder.svg`, in the picture's place on the page, as an `<img>` or a CSS background, and tell the user which pictures are still to add. The site owner [swaps each one by clicking it](#editing-a-page-by-clicking) in the editor.
 
 Every tool needs the `edit_pages` capability, and the MCP endpoint itself refuses a user without it. On top of that, `create-page` and `update-page` need `unfiltered_html`, publishing needs `publish_pages`, each page needs the matching `edit_post` or `delete_post` capability, and the media tools need `upload_files`. The tools are reachable only through this plugin's MCP server: they are not shown in the abilities REST API or on MCP Adapter's default server.
 
@@ -117,7 +117,7 @@ A page a model built is still the site owner's to change. Open it in the WordPre
 
 - **Text.** Click a heading, a paragraph or a button and type. Select a stretch of text for a small toolbar with bold, italic and link; <kbd>Ctrl</kbd>/<kbd>⌘</kbd> + <kbd>B</kbd>, <kbd>I</kbd> and <kbd>K</kbd> do the same. <kbd>Enter</kbd> starts a new line, and in a button finishes the edit.
 - **Links and buttons.** Click one and its toolbar shows where it goes. Choose it to type a new address, or search for a page of the site by its title, and to have the link open in a new tab. A link inside a sentence can also be removed.
-- **Images.** Click one to replace it from the Media Library or to change its alternative text. The replacement keeps the size of the spot it fills.
+- **Images.** Click one to replace it from the Media Library or to change its alternative text. The replacement keeps the size of the spot it fills. A grey box with a picture mark is a placeholder for a picture the model could not send: click it to put the real one in.
 - **Background images.** Click an empty part of a section that has one, and replace it.
 
 Moving the pointer over the page outlines what a click would change, and names it. <kbd>Esc</kbd> lets go of what is selected. Everything is an ordinary edit to the page: **Save**, undo and redo work as they do for any other, and nothing reaches visitors until the page is saved.

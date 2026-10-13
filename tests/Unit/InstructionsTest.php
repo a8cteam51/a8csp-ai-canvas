@@ -13,21 +13,22 @@ use PHPUnit\Framework\TestCase;
  * page and media tool — and where a file with no public URL goes.
  *
  * @since   1.0.0
- * @version 1.0.1
+ * @version 1.1.0
  */
 #[CoversClass( Instructions::class )]
 final class InstructionsTest extends TestCase {
 	// region FIELDS AND CONSTANTS.
 
 	/**
-	 * A stand-in for the site's own upload screen, which the component passes to the guide.
+	 * A stand-in for the URL of the plugin's placeholder image, which the component passes to the
+	 * guide.
 	 *
-	 * @since   1.0.1
-	 * @version 1.0.1
+	 * @since   1.1.0
+	 * @version 1.1.0
 	 *
 	 * @var     string
 	 */
-	private const MEDIA_UPLOAD_LINK = 'https://example.org/wp-admin/media-new.php';
+	private const PLACEHOLDER_IMAGE_URL = 'https://example.org/wp-content/plugins/a8csp-ai-canvas/assets/images/placeholder.svg';
 
 	// endregion.
 
@@ -38,12 +39,12 @@ final class InstructionsTest extends TestCase {
 	 * so ahead of everything about how to write: it names the three tools that write.
 	 *
 	 * @since   1.0.0
-	 * @version 1.0.1
+	 * @version 1.1.0
 	 *
 	 * @return  void
 	 */
 	public function test_the_guide_puts_approval_ahead_of_the_format(): void {
-		$text = Instructions::text( self::MEDIA_UPLOAD_LINK );
+		$text = Instructions::text( self::PLACEHOLDER_IMAGE_URL );
 
 		$rule   = \strpos( $text, 'Do not write to the site until the user approves.' );
 		$format = \strpos( $text, '## The content format' );
@@ -72,12 +73,12 @@ final class InstructionsTest extends TestCase {
 	 * markup, in that order.
 	 *
 	 * @since   1.0.0
-	 * @version 1.0.1
+	 * @version 1.1.0
 	 *
 	 * @return  void
 	 */
 	public function test_the_guide_shows_the_block_in_serialized_order(): void {
-		$text = Instructions::text( self::MEDIA_UPLOAD_LINK );
+		$text = Instructions::text( self::PLACEHOLDER_IMAGE_URL );
 
 		$open   = \strpos( $text, '<!-- wp:html {"align":"full"} -->' );
 		$style  = \strpos( $text, '<style data-wp-block-html="css">' );
@@ -97,12 +98,12 @@ final class InstructionsTest extends TestCase {
 	 * The guide names both templates and every page and media tool.
 	 *
 	 * @since   1.0.0
-	 * @version 1.0.1
+	 * @version 1.1.0
 	 *
 	 * @return  void
 	 */
 	public function test_the_guide_names_the_templates_and_the_tools(): void {
-		$text = Instructions::text( self::MEDIA_UPLOAD_LINK );
+		$text = Instructions::text( self::PLACEHOLDER_IMAGE_URL );
 
 		foreach ( array( '`header-footer`', '`content-only`', '`create-page`', '`update-page`', '`get-page`', '`list-pages`', '`delete-page`', '`list-media`', '`upload-media`' ) as $name ) {
 			self::assertStringContainsString( $name, $text );
@@ -110,30 +111,33 @@ final class InstructionsTest extends TestCase {
 	}
 
 	/**
-	 * The guide sends a file with no public URL to the user: it says base64 only suits a small
-	 * file, gives the link to this site's upload screen in place of its placeholder, and names the
-	 * tool that finds the file afterwards.
+	 * The guide puts a placeholder where a file has no public URL: it names this site's
+	 * placeholder image in place of its token, says base64 only suits a small file, and says how
+	 * to write the placeholder so a click in the editor can replace it.
 	 *
-	 * @since   1.0.1
-	 * @version 1.0.1
+	 * @since   1.1.0
+	 * @version 1.1.0
 	 *
 	 * @return  void
 	 */
-	public function test_the_guide_sends_a_file_with_no_public_url_to_the_user(): void {
-		$text = Instructions::text( self::MEDIA_UPLOAD_LINK );
+	public function test_the_guide_puts_a_placeholder_where_a_file_has_no_public_url(): void {
+		$text = Instructions::text( self::PLACEHOLDER_IMAGE_URL );
 
-		self::assertStringContainsString( 'A file with no public URL is the user\'s to upload.', $text );
-		self::assertStringContainsString( 'a file of a few kilobytes', $text );
-		self::assertStringContainsString( 'ask the user to add it to the Media Library at ' . self::MEDIA_UPLOAD_LINK . ', then find it with `list-media`', $text );
-		self::assertStringContainsString( 'do not promise to upload it yourself', $text );
-		self::assertStringNotContainsString( '{media_upload_link}', $text );
+		self::assertStringContainsString( 'A file with no public URL goes in as a placeholder.', $text );
+		self::assertStringContainsString( "put this site's placeholder image in its place: `" . self::PLACEHOLDER_IMAGE_URL . '`.', $text );
+		self::assertStringNotContainsString( '{placeholder_image_url}', $text );
+		self::assertStringContainsString( 'unless it is a few kilobytes', $text );
+		self::assertStringContainsString( 'as the `src` of an `<img>`, or as the `url()` of a CSS `background-image`', $text );
+		self::assertStringContainsString( 'tell the user which placeholders it has and which file belongs in each', $text );
+		self::assertStringContainsString( 'Before you publish a page that still has placeholders', $text );
 	}
 
 	/**
-	 * The sentence the upload tool carries in its description states the same rule.
+	 * The sentence the upload tool carries in its description states the same rule, and sends the
+	 * client to the guide for the placeholder.
 	 *
-	 * @since   1.0.1
-	 * @version 1.0.1
+	 * @since   1.1.0
+	 * @version 1.1.0
 	 *
 	 * @return  void
 	 */
@@ -142,8 +146,8 @@ final class InstructionsTest extends TestCase {
 
 		self::assertStringContainsString( 'A file with no public URL', $sentence );
 		self::assertStringContainsString( 'a few kilobytes', $sentence );
-		self::assertStringContainsString( 'ask the user to add it to the Media Library', $sentence );
-		self::assertStringContainsString( 'list-media', $sentence );
+		self::assertStringContainsString( 'placeholder image', $sentence );
+		self::assertStringContainsString( 'get-instructions', $sentence );
 	}
 
 	/**

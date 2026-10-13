@@ -118,8 +118,8 @@ final class PluginBootTest extends TestCase {
 	 * The upload tool says, in its own description, where a file with no public URL goes, for the
 	 * same client that reads tool descriptions and not the server's instructions.
 	 *
-	 * @since   1.0.1
-	 * @version 1.0.1
+	 * @since   1.1.0
+	 * @version 1.1.0
 	 *
 	 * @return  void
 	 */
@@ -132,10 +132,11 @@ final class PluginBootTest extends TestCase {
 
 	/**
 	 * The MCP server answers `initialize` on its own route with the authoring guide as its
-	 * instructions, carrying the link to this site's upload screen, for a user who can edit pages.
+	 * instructions, carrying the URL of the placeholder image the plugin ships, for a user who can
+	 * edit pages.
 	 *
 	 * @since   1.0.0
-	 * @version 1.0.1
+	 * @version 1.1.0
 	 *
 	 * @return  void
 	 */
@@ -168,7 +169,8 @@ final class PluginBootTest extends TestCase {
 
 		self::assertSame( 200, $response->get_status() );
 		self::assertIsArray( $data );
-		self::assertSame( Mcp\Instructions::text( admin_url( 'media-new.php' ) ), $data['result']['instructions'] ?? null );
+		self::assertSame( Mcp\Instructions::text( \constant( 'A8CSP_AI_CANVAS_DIR_URL' ) . 'assets/images/placeholder.svg' ), $data['result']['instructions'] ?? null );
+		self::assertFileExists( \constant( 'A8CSP_AI_CANVAS_DIR_PATH' ) . 'assets/images/placeholder.svg' );
 	}
 
 	/**

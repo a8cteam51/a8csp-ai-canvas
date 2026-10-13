@@ -16,7 +16,7 @@ use A8C\SpecialProjects\AICanvas\Templates;
  * constructed when the adapter is absent.
  *
  * @since   1.0.0
- * @version 1.0.1
+ * @version 1.1.0
  */
 final class Component implements ComponentInterface {
 	// region FIELDS AND CONSTANTS
@@ -140,7 +140,7 @@ final class Component implements ComponentInterface {
 	 * shown in the abilities REST API or flagged public for the adapter's default server.
 	 *
 	 * @since   1.0.0
-	 * @version 1.0.1
+	 * @version 1.1.0
 	 *
 	 * @throws  \LogicException If the abilities register before initialization.
 	 *
@@ -429,7 +429,7 @@ final class Component implements ComponentInterface {
 	 * sessionless discovery alike, so the authoring guide is passed as the description.
 	 *
 	 * @since   1.0.0
-	 * @version 1.0.1
+	 * @version 1.1.0
 	 *
 	 * @param   \WP\MCP\Core\McpAdapter $adapter The MCP Adapter instance.
 	 *
@@ -460,15 +460,15 @@ final class Component implements ComponentInterface {
 
 	/**
 	 * Returns the authoring guide for this site: the one text behind the server's instructions
-	 * and the `get-instructions` tool, carrying the link to this site's own upload screen.
+	 * and the `get-instructions` tool, carrying the URL of the placeholder image this plugin ships.
 	 *
-	 * @since   1.0.1
-	 * @version 1.0.1
+	 * @since   1.1.0
+	 * @version 1.1.0
 	 *
 	 * @return  string
 	 */
 	private static function guide(): string {
-		return Instructions::text( admin_url( 'media-new.php' ) );
+		return Instructions::text( \constant( 'A8CSP_AI_CANVAS_DIR_URL' ) . 'assets/images/placeholder.svg' );
 	}
 
 	/**

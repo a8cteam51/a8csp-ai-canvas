@@ -12,7 +12,7 @@ namespace A8C\SpecialProjects\AICanvas\Mcp;
  * The text addresses the connected model, not a site visitor, so it is not translatable.
  *
  * @since   1.0.0
- * @version 1.0.1
+ * @version 1.1.0
  */
 final class Instructions {
 	// region METHODS
@@ -44,30 +44,30 @@ final class Instructions {
 	}
 
 	/**
-	 * Returns the rule the upload tool carries in its description: a file with no public URL is
-	 * added to the Media Library by the user, because a client can only send one as base64 by
-	 * writing the whole file out itself.
+	 * Returns the rule the upload tool carries in its description: a file with no public URL does
+	 * not go through the tool, because a client can only send one as base64 by writing the whole
+	 * file out itself, and the page takes a placeholder in its place.
 	 *
-	 * @since   1.0.1
-	 * @version 1.0.1
+	 * @since   1.1.0
+	 * @version 1.1.0
 	 *
 	 * @return  string
 	 */
 	public static function local_files(): string {
-		return 'A file with no public URL, such as one the user attached to the conversation, goes in as base64 only when it is a few kilobytes, because you would have to write out every character of it: for anything larger, ask the user to add it to the Media Library in wp-admin, then find it with list-media.';
+		return 'A file with no public URL, such as one the user attached to the conversation, does not go through this tool unless it is a few kilobytes, because as base64 you would have to write out every character of it: put the placeholder image named in get-instructions in its place on the page, and the site owner swaps it for the real picture in the WordPress editor.';
 	}
 
 	/**
 	 * Returns the full authoring guide as Markdown.
 	 *
 	 * @since   1.0.0
-	 * @version 1.0.1
+	 * @version 1.1.0
 	 *
-	 * @param   string $media_upload_link The URL of this site's screen for adding a file to the Media Library.
+	 * @param   string $placeholder_image_url The URL of the image this plugin ships to stand in for a picture the client cannot send.
 	 *
 	 * @return  string
 	 */
-	public static function text( string $media_upload_link ): string {
+	public static function text( string $placeholder_image_url ): string {
 		$guide = <<<'MD'
 # AI Canvas: publishing pages to this WordPress site
 
@@ -129,7 +129,8 @@ The `content` you send to `create-page` and `update-page` is exactly one block i
 - **Avoid a bare `<` in the script, the style and the text.** WordPress can take a `<` that does not start a tag for one, and then corrupts the `&` characters after it, which breaks `a && b`. The two templates here switch that off, but the site owner can move the page to another template. Flip comparisons (`10 > i` in place of `i < 10`), and write `&lt;` in text.
 - **The block spans the full width of the viewport** on both templates. Give each section its own inner wrapper with a `max-width` and side padding, and make the layout work from phone width up.
 - **Images live in the Media Library.** Call `list-media` to reuse what the site already has, and `upload-media` to add an image from a public URL. Reference the URLs those tools return, exactly as returned. Do not embed images as `data:` URIs or link to images on other sites. Inline SVG is fine for icons and simple illustrations.
-- **A file with no public URL is the user's to upload.** That is any file the user attached to the conversation, and any you made or edited yourself. `upload-media` also takes a file as `base64`, but you would have to write out every character of it: workable for a file of a few kilobytes, such as an icon, and not for a photo, which runs to tens of thousands of characters. Unless you can pass the file to the tool without writing it out, ask the user to add it to the Media Library at {media_upload_link}, then find it with `list-media`, which lists the newest files first. Ask as soon as the user gives you the file, while the design is still being worked on, and do not promise to upload it yourself. Ask for the original, not a copy you cropped or resized: WordPress makes the smaller sizes, and the page can crop with `object-fit` and `object-position`.
+- **A file with no public URL goes in as a placeholder.** That is any file the user attached to the conversation, and any you made or edited yourself. Design with it in Claude Design as usual. In the page you send, put this site's placeholder image in its place: `{placeholder_image_url}`. The site owner swaps it for the real picture by clicking it in the WordPress editor. Do not send such a file as `base64` unless it is a few kilobytes, such as an icon, or you can pass it to the tool without writing it out: you would have to write out every character of it, and a photo runs to tens of thousands. If the file is already in the Media Library, `list-media` finds it: use that and no placeholder.
+- **Write a placeholder so a click can replace it.** Use it as the `src` of an `<img>`, or as the `url()` of a CSS `background-image`. An inline SVG or an empty box standing in for a picture cannot be swapped by clicking. Size and crop the spot in CSS as the design has it (`aspect-ratio`, `object-fit`, `object-position`), so the real picture drops into the same shape. Give the `<img>` the `width` and `height` of that shape, the `alt` text of the real picture, and no `srcset`. After you write the page, tell the user which placeholders it has and which file belongs in each.
 - **Keep images light.** Both media tools return an image's generated smaller sizes: reference the smallest one that covers the space it fills. Put that size's `width` and `height` on the `<img>`, give it `alt` text, and add `loading="lazy"` to images below the first screen.
 - **Accessible markup.** One `<h1>`, headings in order, real `<button>` and `<a>` elements with visible focus styles, and sufficient colour contrast.
 
@@ -148,7 +149,7 @@ Neither template prints the page title, so the content needs its own `<h1>`.
 2. **Read before you change.** Call `get-page` before every `update-page`: the site owner may have edited the page since you last saw it. `update-page` replaces the whole block, so always send the complete content.
 3. **Find** the pages you can work on with `list-pages`.
 4. **Remove** a page with `delete-page`, only when the user asks. It moves to the Trash, where the site owner can restore it from wp-admin.
-5. **Add images** before you write the page that uses them, so the page can reference their final URLs: from a public URL with `upload-media`, once the design is approved, or already in the Media Library because the user put them there. If an approved design uses a file that is not in the library yet, ask for it before you write the page.
+5. **Sort out the images** before you write the page that uses them: reuse what `list-media` finds, add one from a public URL with `upload-media` once the design is approved, and put the placeholder where a file has no public URL. Before you publish a page that still has placeholders, tell the user which are left and ask whether to go ahead.
 
 You can only read, change or delete the pages `list-pages` returns: the ones created through these tools, and any the site owner has opened to you from the page editor. Every other page on the site is off limits, and the tools refuse it.
 
@@ -157,7 +158,7 @@ A page the site owner opened may be built from ordinary WordPress blocks, not on
 After each change, tell the user what changed and give them the page's `link` and `edit_link`. While a page is a draft, its `link` is a preview that needs a wp-admin login.
 MD;
 
-		return \strtr( $guide, array( '{media_upload_link}' => $media_upload_link ) );
+		return \strtr( $guide, array( '{placeholder_image_url}' => $placeholder_image_url ) );
 	}
 
 	// endregion
