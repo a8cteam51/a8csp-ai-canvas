@@ -68,11 +68,13 @@ Editors and administrators can switch it per page in two places: the **AI Canvas
 
 The media tools are not limited by the flag: `list-media` searches the whole Media Library, and `upload-media` adds to it under WordPress's usual limits on file size and type. Neither changes or deletes an existing file.
 
+A file with no public URL, such as one attached to a chat, can only reach `upload-media` as base64 the model writes out itself, which works for a file of a few kilobytes and not for a photo. The guide tells the client to ask the user to add such a file to the Media Library, gives it the link to the site's upload screen to pass on, and has it find the file with `list-media`.
+
 Every tool needs the `edit_pages` capability, and the MCP endpoint itself refuses a user without it. On top of that, `create-page` and `update-page` need `unfiltered_html`, publishing needs `publish_pages`, each page needs the matching `edit_post` or `delete_post` capability, and the media tools need `upload_files`. The tools are reachable only through this plugin's MCP server: they are not shown in the abilities REST API or on MCP Adapter's default server.
 
 ### The authoring instructions
 
-The server sends the model a guide, as the MCP `instructions`, and again through `get-instructions`. It opens with one rule: design in Claude Design first, and write to the site only once the user has approved the design and asked for it to go there. `create-page`, `update-page` and `upload-media` repeat that rule in their own descriptions, and the first two also carry a one-sentence summary of the content format. The guide lives in [`src/Mcp/Instructions.php`](src/Mcp/Instructions.php). Its core is the block shape WordPress itself writes for a Custom HTML block, aligned to the full width:
+The server sends the model a guide, as the MCP `instructions`, and again through `get-instructions`. It opens with one rule: design in Claude Design first, and write to the site only once the user has approved the design and asked for it to go there. `create-page`, `update-page` and `upload-media` repeat that rule in their own descriptions; the first two also carry a one-sentence summary of the content format, and the third the rule for a file with no public URL. The guide lives in [`src/Mcp/Instructions.php`](src/Mcp/Instructions.php). Its core is the block shape WordPress itself writes for a Custom HTML block, aligned to the full width:
 
 ```html
 <!-- wp:html {"align":"full"} -->

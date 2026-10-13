@@ -16,7 +16,7 @@ use A8C\SpecialProjects\AICanvas\Templates;
  * constructed when the adapter is absent.
  *
  * @since   1.0.0
- * @version 1.0.0
+ * @version 1.0.1
  */
 final class Component implements ComponentInterface {
 	// region FIELDS AND CONSTANTS
@@ -140,7 +140,7 @@ final class Component implements ComponentInterface {
 	 * shown in the abilities REST API or flagged public for the adapter's default server.
 	 *
 	 * @since   1.0.0
-	 * @version 1.0.0
+	 * @version 1.0.1
 	 *
 	 * @throws  \LogicException If the abilities register before initialization.
 	 *
@@ -207,7 +207,7 @@ final class Component implements ComponentInterface {
 					'properties' => array( 'instructions' => array( 'type' => 'string' ) ),
 				),
 				'permission_callback' => $pages->can_use( ... ),
-				'execute_callback'    => static fn (): array => array( 'instructions' => Instructions::text() ),
+				'execute_callback'    => static fn (): array => array( 'instructions' => self::guide() ),
 				'meta'                => self::meta( array( 'readonly' => true ) ),
 			)
 		);
@@ -389,7 +389,7 @@ final class Component implements ComponentInterface {
 			'a8csp-ai-canvas/upload-media',
 			array(
 				'label'               => __( 'Upload media', 'a8csp-ai-canvas' ),
-				'description'         => __( 'Adds a file to this site’s Media Library, from a URL or from base64 data, and returns the URL to reference from a page. Images come back with their pixel dimensions and generated smaller sizes.', 'a8csp-ai-canvas' ) . ' ' . Instructions::approval(),
+				'description'         => __( 'Adds a file to this site’s Media Library, from a URL or from base64 data, and returns the URL to reference from a page. Images come back with their pixel dimensions and generated smaller sizes.', 'a8csp-ai-canvas' ) . ' ' . Instructions::local_files() . ' ' . Instructions::approval(),
 				'category'            => 'a8csp-ai-canvas',
 				'input_schema'        => array(
 					'type'       => 'object',
@@ -401,7 +401,7 @@ final class Component implements ComponentInterface {
 						),
 						'base64'   => array(
 							'type'        => 'string',
-							'description' => 'The file’s contents, base64-encoded. Needs filename.',
+							'description' => 'The file’s contents, base64-encoded. Needs filename. For a file of a few kilobytes, unless you can pass it without writing the characters out yourself.',
 						),
 						'filename' => array(
 							'type'        => 'string',
@@ -429,7 +429,7 @@ final class Component implements ComponentInterface {
 	 * sessionless discovery alike, so the authoring guide is passed as the description.
 	 *
 	 * @since   1.0.0
-	 * @version 1.0.0
+	 * @version 1.0.1
 	 *
 	 * @param   \WP\MCP\Core\McpAdapter $adapter The MCP Adapter instance.
 	 *
@@ -441,7 +441,7 @@ final class Component implements ComponentInterface {
 			self::ROUTE_NAMESPACE,
 			self::ROUTE,
 			'AI Canvas',
-			Instructions::text(),
+			self::guide(),
 			a8csp_ai_canvas_get_plugin_version(),
 			array( \WP\MCP\Transport\HttpTransport::class ),
 			null,
@@ -457,6 +457,19 @@ final class Component implements ComponentInterface {
 	// endregion
 
 	// region HELPERS
+
+	/**
+	 * Returns the authoring guide for this site: the one text behind the server's instructions
+	 * and the `get-instructions` tool, carrying the link to this site's own upload screen.
+	 *
+	 * @since   1.0.1
+	 * @version 1.0.1
+	 *
+	 * @return  string
+	 */
+	private static function guide(): string {
+		return Instructions::text( admin_url( 'media-new.php' ) );
+	}
 
 	/**
 	 * Returns the meta every ability carries: hidden from the abilities REST API, with the given

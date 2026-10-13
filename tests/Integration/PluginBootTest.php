@@ -115,11 +115,27 @@ final class PluginBootTest extends TestCase {
 	}
 
 	/**
+	 * The upload tool says, in its own description, where a file with no public URL goes, for the
+	 * same client that reads tool descriptions and not the server's instructions.
+	 *
+	 * @since   1.0.1
+	 * @version 1.0.1
+	 *
+	 * @return  void
+	 */
+	public function test_the_upload_tool_carries_the_rule_for_a_file_with_no_public_url(): void {
+		$ability = wp_get_ability( 'a8csp-ai-canvas/upload-media' );
+
+		self::assertInstanceOf( \WP_Ability::class, $ability );
+		self::assertStringContainsString( Mcp\Instructions::local_files(), $ability->get_description() );
+	}
+
+	/**
 	 * The MCP server answers `initialize` on its own route with the authoring guide as its
-	 * instructions, for a user who can edit pages.
+	 * instructions, carrying the link to this site's upload screen, for a user who can edit pages.
 	 *
 	 * @since   1.0.0
-	 * @version 1.0.0
+	 * @version 1.0.1
 	 *
 	 * @return  void
 	 */
@@ -152,7 +168,7 @@ final class PluginBootTest extends TestCase {
 
 		self::assertSame( 200, $response->get_status() );
 		self::assertIsArray( $data );
-		self::assertSame( Mcp\Instructions::text(), $data['result']['instructions'] ?? null );
+		self::assertSame( Mcp\Instructions::text( admin_url( 'media-new.php' ) ), $data['result']['instructions'] ?? null );
 	}
 
 	/**

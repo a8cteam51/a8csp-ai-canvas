@@ -12,7 +12,7 @@ namespace A8C\SpecialProjects\AICanvas\Mcp;
  * The text addresses the connected model, not a site visitor, so it is not translatable.
  *
  * @since   1.0.0
- * @version 1.0.0
+ * @version 1.0.1
  */
 final class Instructions {
 	// region METHODS
@@ -44,15 +44,31 @@ final class Instructions {
 	}
 
 	/**
-	 * Returns the full authoring guide as Markdown.
+	 * Returns the rule the upload tool carries in its description: a file with no public URL is
+	 * added to the Media Library by the user, because a client can only send one as base64 by
+	 * writing the whole file out itself.
 	 *
-	 * @since   1.0.0
-	 * @version 1.0.0
+	 * @since   1.0.1
+	 * @version 1.0.1
 	 *
 	 * @return  string
 	 */
-	public static function text(): string {
-		return <<<'MD'
+	public static function local_files(): string {
+		return 'A file with no public URL, such as one the user attached to the conversation, goes in as base64 only when it is a few kilobytes, because you would have to write out every character of it: for anything larger, ask the user to add it to the Media Library in wp-admin, then find it with list-media.';
+	}
+
+	/**
+	 * Returns the full authoring guide as Markdown.
+	 *
+	 * @since   1.0.0
+	 * @version 1.0.1
+	 *
+	 * @param   string $media_upload_link The URL of this site's screen for adding a file to the Media Library.
+	 *
+	 * @return  string
+	 */
+	public static function text( string $media_upload_link ): string {
+		$guide = <<<'MD'
 # AI Canvas: publishing pages to this WordPress site
 
 These tools publish a design to this WordPress site as a page. Each page body is one WordPress Custom HTML block holding the page's CSS, JavaScript and markup: plain HTML, CSS and JS, with no framework and no build step. WordPress stores it as an ordinary page, and the site owner can open it in the WordPress editor afterwards.
@@ -112,7 +128,8 @@ The `content` you send to `create-page` and `update-page` is exactly one block i
 - **Readable without JavaScript.** The WordPress editor previews the block without running its script, so anything the CSS hides until the script runs shows there as blank space. The default CSS state shows every section, and a state only the script can leave (hidden until revealed, inactive tab panels) goes under a class the script adds to the root, such as `.canvas-spring-launch.is-js`.
 - **Avoid a bare `<` in the script, the style and the text.** WordPress can take a `<` that does not start a tag for one, and then corrupts the `&` characters after it, which breaks `a && b`. The two templates here switch that off, but the site owner can move the page to another template. Flip comparisons (`10 > i` in place of `i < 10`), and write `&lt;` in text.
 - **The block spans the full width of the viewport** on both templates. Give each section its own inner wrapper with a `max-width` and side padding, and make the layout work from phone width up.
-- **Images live in the Media Library.** Call `list-media` to reuse what the site already has, and `upload-media` to add a file, from a public URL or as base64 with a filename. Reference the URLs those tools return, exactly as returned. Do not embed images as `data:` URIs or link to images on other sites. Inline SVG is fine for icons and simple illustrations.
+- **Images live in the Media Library.** Call `list-media` to reuse what the site already has, and `upload-media` to add an image from a public URL. Reference the URLs those tools return, exactly as returned. Do not embed images as `data:` URIs or link to images on other sites. Inline SVG is fine for icons and simple illustrations.
+- **A file with no public URL is the user's to upload.** That is any file the user attached to the conversation, and any you made or edited yourself. `upload-media` also takes a file as `base64`, but you would have to write out every character of it: workable for a file of a few kilobytes, such as an icon, and not for a photo, which runs to tens of thousands of characters. Unless you can pass the file to the tool without writing it out, ask the user to add it to the Media Library at {media_upload_link}, then find it with `list-media`, which lists the newest files first. Ask as soon as the user gives you the file, while the design is still being worked on, and do not promise to upload it yourself. Ask for the original, not a copy you cropped or resized: WordPress makes the smaller sizes, and the page can crop with `object-fit` and `object-position`.
 - **Keep images light.** Both media tools return an image's generated smaller sizes: reference the smallest one that covers the space it fills. Put that size's `width` and `height` on the `<img>`, give it `alt` text, and add `loading="lazy"` to images below the first screen.
 - **Accessible markup.** One `<h1>`, headings in order, real `<button>` and `<a>` elements with visible focus styles, and sufficient colour contrast.
 
@@ -131,7 +148,7 @@ Neither template prints the page title, so the content needs its own `<h1>`.
 2. **Read before you change.** Call `get-page` before every `update-page`: the site owner may have edited the page since you last saw it. `update-page` replaces the whole block, so always send the complete content.
 3. **Find** the pages you can work on with `list-pages`.
 4. **Remove** a page with `delete-page`, only when the user asks. It moves to the Trash, where the site owner can restore it from wp-admin.
-5. **Add images** with `upload-media` once the design is approved, before you write the page that uses them, so the page can reference their final URLs.
+5. **Add images** before you write the page that uses them, so the page can reference their final URLs: from a public URL with `upload-media`, once the design is approved, or already in the Media Library because the user put them there. If an approved design uses a file that is not in the library yet, ask for it before you write the page.
 
 You can only read, change or delete the pages `list-pages` returns: the ones created through these tools, and any the site owner has opened to you from the page editor. Every other page on the site is off limits, and the tools refuse it.
 
@@ -139,6 +156,8 @@ A page the site owner opened may be built from ordinary WordPress blocks, not on
 
 After each change, tell the user what changed and give them the page's `link` and `edit_link`. While a page is a draft, its `link` is a preview that needs a wp-admin login.
 MD;
+
+		return \strtr( $guide, array( '{media_upload_link}' => $media_upload_link ) );
 	}
 
 	// endregion
