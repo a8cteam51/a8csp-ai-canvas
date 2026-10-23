@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		 xsi:noNamespaceSchemaLocation="vendor/phpunit/phpunit/phpunit.xsd"
+		 bootstrap="tests/bootstrap.php"
+		 colors="true"
+		 cacheDirectory="tests/.cache/phpunit"
+		 executionOrder="depends,defects,random"
+
+		 beStrictAboutOutputDuringTests="true"
+		 failOnNotice="true"
+		 failOnRisky="true"
+		 failOnWarning="true"
+		 defaultTestSuite="Unit">
+	<testsuites>
+		<testsuite name="Unit">
+			<directory>tests/Unit</directory>
+		</testsuite>
+		<testsuite name="Integration">
+			<directory>tests/Integration</directory>
+		</testsuite>
+		<!-- Requirements-only subset for the below-floor WP matrix entry, where the full
+		     Integration suite would exercise components the plugin refuses to boot. -->
+		<testsuite name="Requirements">
+			<file>tests/Integration/RequirementsCheckTest.php</file>
+		</testsuite>
+		<!-- Multisite-only subset for the converted-network fixture; the same test self-skips
+		     when the Integration suite runs it against the single-site fixture. -->
+		<testsuite name="Multisite">
+			<file>tests/Integration/MultisiteUninstallTest.php</file>
+		</testsuite>
+	</testsuites>
+
+	<source>
+		<include>
+			<directory>src</directory>
+			<directory>models</directory>
+			<directory>includes</directory>
+			<file>functions-bootstrap.php</file>
+		</include>
+	</source>
+</phpunit>

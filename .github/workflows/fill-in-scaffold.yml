@@ -1,0 +1,300 @@
+name: Fill in the Scaffold Placeholders
+
+on:
+  repository_dispatch:
+    types: [ fill_scaffold ]
+  workflow_dispatch:
+    inputs:
+      strip-teaching-content:
+        description: 'Rewrite the template teaching prose into production docblocks'
+        type: boolean
+        required: false
+        default: false
+
+# One fill at a time; a duplicate dispatch then fills from the pre-fill commit, and its publish job refuses to push.
+concurrency:
+  group: fill-scaffold-${{ github.repository_id }}
+  cancel-in-progress: false
+
+# The fill-in runs dependency code (the npm re-format and build), so it holds only a read token and
+# hands its commits over as a bundle; the job that holds the write token runs no repository code.
+jobs:
+  generate:
+    name: Fill in the placeholders
+    # The template's immutable repository ID survives renames and transfers; every generated repository has its own.
+    if: github.repository_id != '1297277915'
+
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    permissions:
+      contents: read
+    outputs:
+      base: ${{ steps.base.outputs.sha }}
+
+    steps:
+      # A run queued against a non-default ref must never fill in and push scaffolding commits there.
+      - name: Require the workflow ref to be the default branch
+        env:
+          REF_NAME: ${{ github.ref_name }}
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+        run: |
+          if [ "$REF_NAME" != "$DEFAULT_BRANCH" ]; then
+            echo "::error::workflow ref '$REF_NAME' is not the repository default branch '$DEFAULT_BRANCH'; re-run this workflow from the default branch"
+            exit 1
+          fi
+
+      # Validate every input before checkout: a malformed value would push broken or injected PHP in
+      # commits that trigger no CI, and an invalid repository stays pristine.
+      - name: Validate the scaffold identity inputs
+        env:
+          REPO_JSON: ${{ toJSON( github.event.repository ) }}
+        run: |
+          read_json_value() {
+            local destination="$1"
+            local filter="$2"
+            local value
+
+            IFS= read -r -d '' value < <(
+              printf '%s' "$REPO_JSON" | jq -r "$filter"
+              printf '\0'
+            )
+            value=${value%$'\n'}
+            printf -v "$destination" '%s' "$value"
+          }
+
+          report_error() {
+            local field="$1"
+            local value="$2"
+            local requirement="$3"
+            local displayed_value
+
+            printf -v displayed_value '%q' "$value"
+            printf '::error::%s has offending value %s; %s\n' "$field" "$displayed_value" "$requirement"
+            invalid=1
+          }
+
+          read_json_value human_title '.custom_properties["human-title"] // empty'
+          read_json_value php_globals_short_prefix '.custom_properties["php-globals-short-prefix"] // empty'
+          read_json_value repository_description '.description // empty'
+          read_json_value repository_name '.name'
+
+          invalid=0
+
+          # The title lands in PHP string literals and, space-stripped, in namespace declarations
+          # and composer.json PSR-4 keys, so it must be alphanumerics and spaces.
+          title_grammar='^[A-Za-z0-9][A-Za-z0-9 ]*$'
+          if [ -z "$human_title" ]; then
+            report_error "repository custom property 'human-title'" "$human_title" 'it must be present and non-empty'
+          elif [[ ! "$human_title" =~ $title_grammar ]]; then
+            report_error "repository custom property 'human-title'" "$human_title" 'it must contain only letters, digits, and spaces (it lands in PHP string literals and a namespace segment)'
+          else
+            # The space-stripped title becomes a PHP namespace segment, so it must be a valid identifier.
+            namespace_segment=$(printf '%s' "$human_title" | sed 's/ //g; s/A8CSP//')
+            if ! printf '%s' "$namespace_segment" | grep -Eq '^[A-Za-z_][A-Za-z0-9_]*$'; then
+              report_error "repository custom property 'human-title'" "$human_title" "its space-stripped form '$namespace_segment' must be a valid PHP namespace segment (start with a letter)"
+            fi
+          fi
+
+          # The prefix replaces `a8csp_template` in every minted global identifier; degenerate
+          # values (`a`, `site_`) would ship collision-prone or double-underscore names fleet-wide.
+          # The 15-character cap keeps prefixed registry keys (post types, options) inside
+          # WordPress's length limits.
+          prefix_grammar='^[a-z][a-z0-9_]{2,13}[a-z0-9]$'
+          if [ -z "$php_globals_short_prefix" ]; then
+            report_error "repository custom property 'php-globals-short-prefix'" "$php_globals_short_prefix" 'it must be present and non-empty'
+          elif [[ ! "$php_globals_short_prefix" =~ $prefix_grammar ]] || [[ "$php_globals_short_prefix" == *__* ]]; then
+            report_error "repository custom property 'php-globals-short-prefix'" "$php_globals_short_prefix" 'it must be 4-15 characters of lowercase snake_case, starting with a letter, ending with a letter or digit, with no __ runs'
+          fi
+
+          # The description lands verbatim in the plugin header docblock: a `*/` closes the comment
+          # early (a crafted payload then reopens it and passes `php -l`), and a newline breaks the
+          # single-line header.
+          if [ -n "$repository_description" ]; then
+            if [[ "$repository_description" == *$'\n'* || "$repository_description" == *$'\r'* ]]; then
+              report_error 'repository description' "$repository_description" 'it must be a single line when set'
+            fi
+            if [[ "$repository_description" == *'*/'* ]]; then
+              report_error 'repository description' "$repository_description" "it must not contain '*/'"
+            fi
+          fi
+
+          # The repository name becomes the composer package slug, file identities, and the block
+          # namespace, which the block editor rejects unless it starts with a letter.
+          if [[ ! "$repository_name" =~ ^[a-z][a-z0-9]*(-[a-z0-9]+)*$ ]]; then
+            report_error 'repository name' "$repository_name" 'it must start with a letter and match ^[a-z][a-z0-9]*(-[a-z0-9]+)*$'
+          fi
+
+          if [ "$invalid" -ne 0 ]; then
+            exit 1
+          fi
+
+      # The checkout leaves no git credential behind: the re-format and build steps execute dependency code.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Record the commit the fill-in starts from
+        id: base
+        run: echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+      - name: Setup proper Node.js version
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: 'package.json'
+
+      - name: Set github actions[bot] as the committer
+        run: git config --local user.name 'github-actions[bot]' && git config --local user.email 'github-actions[bot]@users.noreply.github.com'
+
+      - name: Rename the readme and plugin file
+        env:
+          REPO_NAME: ${{ github.event.repository.name }}
+        run: |
+          git mv --force README.scaffold.md README.md
+          git mv a8csp-template-plugin.php "$REPO_NAME.php"
+
+      - name: Commit the changed files
+        run: git commit -am "chore -- rename files from scaffolding"
+
+      - name: Clear the changelog fragments
+        run: |
+          # The template's one fragment only keeps its own changelog:validate non-vacuous.
+          find changelog -type f ! -name '.gitkeep' -delete
+
+      - name: Commit the changed files
+        run: git commit -am "chore -- clear scaffold changelog fragments"
+
+      - name: Setup PHP for the Composer resolve and the syntax sweep
+        uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # 2.37.2
+        with:
+          php-version: '8.5'
+          coverage: none
+          tools: composer:v2
+
+      - name: Perform string replacements within the files
+        env:
+          REPO_JSON: ${{ toJSON( github.event.repository ) }}
+        run: node ./.github/workflows/fill-in-scaffold.mjs "$REPO_JSON"
+
+      # The manifest's spans are post-substitution text, so the strip runs after the substitution
+      # and before the syntax sweep.
+      - name: Strip the template's teaching content
+        env:
+          STRIP_INPUT: ${{ inputs.strip-teaching-content }}
+          STRIP_PAYLOAD: ${{ github.event.client_payload.strip-teaching-content }}
+        run: |
+          if [ "$STRIP_INPUT" = 'true' ] || [ "$STRIP_PAYLOAD" = 'true' ]; then
+            node ./.github/workflows/fill-in-scaffold-content.mjs
+          else
+            echo "::notice::the dispatch did not ask for strip-teaching-content; keeping the template teaching prose"
+          fi
+
+      # A new repository starts on current dependencies, not on the template's possibly old lock,
+      # holding npm to releases at least seven days old. --ignore-scripts skips install scripts; the
+      # re-format and build steps below still run dependency code.
+      - name: Resolve npm dependencies afresh
+        run: |
+          set -euo pipefail
+          rm -f package-lock.json
+          npm install --ignore-scripts --min-release-age=7 2>&1 | tee "$RUNNER_TEMP/npm-install.log"
+          # An npm without the option only warns and then resolves without the release-age window.
+          if grep -qF 'Unknown cli config "--min-release-age"' "$RUNNER_TEMP/npm-install.log"; then
+            echo "::error::this npm does not support --min-release-age, so the resolve ignored the release-age window"
+            exit 1
+          fi
+
+      # Substitution changes identifier lengths inside Prettier-formatted JavaScript, so lines wrap
+      # differently; re-formatting here keeps the generated repository's first lint run green.
+      - name: Re-format the substituted JavaScript
+        run: npm run lint:scripts -- --fix
+
+      # Substitution rewrote asset sources (slugs, text domains), so the committed build output is
+      # rebuilt to match what this tree itself produces — the build-integrity gate diffs exactly that.
+      - name: Rebuild the committed assets from the substituted sources
+        run: npm run build
+
+      # A new repository starts on current Composer dependencies too; the lock is resolved, not installed.
+      - name: Resolve Composer dependencies afresh
+        run: composer update --no-install --prefer-stable --ignore-platform-req=php+ --no-interaction
+
+      # This workflow's pushes trigger no CI, so the sweep covers substituted source and the rebuilt
+      # PHP assets before anything is committed.
+      - name: Syntax-check every generated PHP file
+        run: |
+          set -euo pipefail
+          find . -name '*.php' -not -path './vendor/*' -not -path './node_modules/*' -print0 \
+            | xargs -0 -n1 -P4 php -l > /dev/null
+
+      - name: Commit the changed files
+        run: git commit -am "chore -- fill in scaffolding placeholders"
+
+      - name: Remove the spent fill-in-scaffold workflow and the template guard
+        run: |
+          rm .github/workflows/fill-in-scaffold.yml .github/workflows/fill-in-scaffold.mjs .github/workflows/fill-in-scaffold-content.mjs .github/workflows/template-guard.yml
+          git add .github/workflows
+          git commit -m "chore -- remove the spent fill-in-scaffold workflow and the template guard"
+
+      - name: Bundle the fill-in commits
+        env:
+          BASE: ${{ steps.base.outputs.sha }}
+        run: |
+          set -euo pipefail
+          git bundle create "$RUNNER_TEMP/fill-in.bundle" "$BASE..HEAD"
+          git bundle verify "$RUNNER_TEMP/fill-in.bundle"
+
+      - name: Upload the fill-in bundle
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: fill-in-bundle
+          path: ${{ runner.temp }}/fill-in.bundle
+          retention-days: 1
+          if-no-files-found: error
+
+  publish:
+    name: Publish the filled-in commits
+    needs: generate
+    # The template's immutable repository ID survives renames and transfers; every generated repository has its own.
+    if: github.repository_id != '1297277915'
+
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+          persist-credentials: false
+
+      - name: Require the default branch to still be at the fill-in's starting commit
+        env:
+          BASE: ${{ needs.generate.outputs.base }}
+        run: |
+          if [ "$(git rev-parse HEAD)" != "$BASE" ]; then
+            echo "::error::the default branch moved away from $BASE during the fill-in, so nothing was pushed"
+            exit 1
+          fi
+
+      - name: Download the fill-in bundle
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: fill-in-bundle
+          path: ${{ runner.temp }}/fill-in
+
+      - name: Fetch the fill-in commits from the bundle
+        run: |
+          set -euo pipefail
+          git bundle verify "$RUNNER_TEMP/fill-in/fill-in.bundle"
+          git fetch "$RUNNER_TEMP/fill-in/fill-in.bundle" HEAD
+          if ! git merge-base --is-ancestor HEAD FETCH_HEAD; then
+            echo "::error::the fill-in bundle does not fast-forward the default branch"
+            exit 1
+          fi
+
+      # No hook may run while the token is in the environment.
+      - name: Publish all the changed commits
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          REPOSITORY: ${{ github.repository }}
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+        run: git -c core.hooksPath=/dev/null push "https://x-access-token:${GITHUB_TOKEN}@github.com/${REPOSITORY}.git" "FETCH_HEAD:refs/heads/${DEFAULT_BRANCH}"

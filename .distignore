@@ -1,0 +1,44 @@
+# wp dist-archive walks the disk, not git, so this file lists everything the release zip must not
+# carry. `/build` holds Infection's logs; blocks/build and the assets/*/build directories ship.
+
+.git*
+.idea
+.vscode
+.distignore
+node_modules
+tests
+changelog
+bin
+/build
+vendor/bin
+*.dist.xml
+.wp-env*.json
+.phpcs.xml
+.phpcs.tests.xml
+.phpstan.neon
+infection.json
+playwright.config.js
+postcss.config.js
+eslint.config.mjs
+stylelint.config.js
+.editorconfig
+.DS_Store
+package*.json
+composer.json
+composer.lock
+/docs
+AGENTS.md
+CLAUDE.md
+.agents
+
+# Secret material — never ship, even if a consumer forgets to list it.
+# .pem/.key/.sql are root-anchored (leading /) so certs and SQL files bundled under vendor/
+# (e.g. CA bundles) still ship, while a dump left at the root for a wp-env import does not.
+.env*
+/*.pem
+/*.key
+id_rsa*
+.npmrc
+auth.json
+/*.sql
+/*.sql.gz

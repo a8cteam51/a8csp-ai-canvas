@@ -1,0 +1,13 @@
+/**
+ * Admin styles for the plugin's example option on the General settings page.
+ *
+ * `Settings\Component::enqueue_admin_styles()` enqueues the compiled `settings.css` only on that
+ * screen. The physical `border-left` here is deliberate: it is what the RTL build step flips to
+ * `border-right` in the generated `settings-rtl.css`. Reach for logical properties in real styles;
+ * the physical property is the worked example that makes the RTL variant meaningfully different.
+ */
+/* stylelint-disable-next-line selector-id-pattern -- The id mirrors the WordPress option name, which uses underscores. */
+#a8csp_template_example_option {
+  border-right: 4px solid #21759b;
+  padding-right: 8px;
+}

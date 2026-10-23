@@ -1,0 +1,93 @@
+{
+  "name": "a8csp-plugin-template",
+  "version": "1.0.0",
+  "description": "A template for A8C Special Projects plugins.",
+  "author": {
+    "name": "A8C Special Projects",
+    "url": "https://specialprojects.automattic.com/"
+  },
+  "license": "GPL-2.0-or-later",
+  "keywords": [
+    "wordpress"
+  ],
+  "homepage": "https://github.com/a8cteam51/a8csp-plugin-template",
+  "repository": "https://github.com/a8cteam51/a8csp-plugin-template",
+  "bugs": "https://github.com/a8cteam51/a8csp-plugin-template/issues",
+  "engines": {
+    "node": ">=26",
+    "npm": ">=11"
+  },
+  "devDependencies": {
+    "@a8csp/configs": "github:a8cteam51/a8csp-configs#semver:^1",
+    "@playwright/test": "^1.61.1",
+    "@wordpress/block-editor": "^17.1.0",
+    "@wordpress/blocks": "^16.0.0",
+    "@wordpress/browserslist-config": "^6.55.0",
+    "@wordpress/dom-ready": "^4.55.0",
+    "@wordpress/e2e-test-utils-playwright": "^2.0.0",
+    "@wordpress/env": "^11.15.0",
+    "@wordpress/hooks": "^4.55.0",
+    "@wordpress/i18n": "^6.28.0",
+    "@wordpress/postcss-plugins-preset": "^5.55.0",
+    "@wordpress/scripts": "^35.0.0",
+    "npm-run-all": "^4.1.5",
+    "postcss-cli": "^12.0.0",
+    "rtlcss": "^4.0.0",
+    "sass": "^1.77.0"
+  },
+  "rtlcssConfig": {},
+  "browserslist": [
+    "extends @wordpress/browserslist-config"
+  ],
+  "scripts": {
+    "packages-install": "npm install",
+    "packages-update": "npm update",
+    "packages-update:wp": "wp-scripts packages-update --dist-tag=wp-7.1",
+
+    "build": "NODE_ENV=production npm-run-all --sequential build:**",
+    "build:blocks": "wp-scripts build --webpack-src-dir=blocks/src --output-path=blocks/build --blocks-manifest",
+    "build:assets:scripts": "wp-scripts build assets/js/src/*.js --output-path=assets/js/build",
+    "build:assets:styles": "sass assets/css/src:assets/css/build && postcss assets/css/build/settings.css --replace",
+    "build:assets:styles-rtl": "rtlcss assets/css/build/settings.css assets/css/build/settings-rtl.css",
+
+    "start": "npm-run-all --parallel start:**",
+    "start:blocks": "wp-scripts start --webpack-src-dir=blocks/src --output-path=blocks/build --blocks-manifest",
+    "start:assets:scripts": "wp-scripts start assets/js/src/*.js --output-path=assets/js/build",
+    "start:assets:styles": "sass --watch assets/css/src:assets/css/build",
+
+    "format": "npm-run-all --sequential format:**",
+    "format:scripts": "wp-scripts format blocks assets/js --no-error-on-unmatched-pattern",
+    "format:styles": "npm run lint:styles -- --fix",
+
+    "lint": "npm-run-all --sequential lint:**",
+    "lint:scripts": "wp-scripts lint-js blocks assets/js eslint.config.mjs postcss.config.js stylelint.config.js .github/workflows/fill-in-scaffold.mjs .github/workflows/fill-in-scaffold-content.mjs playwright.config.js tests/EndToEnd --no-error-on-unmatched-pattern",
+    "lint:styles": "wp-scripts lint-style 'blocks/**/*.{css,scss}' 'assets/css/**/*.{css,scss}' --allow-empty-input",
+    "lint:pkg-json": "wp-scripts lint-pkg-json",
+    "lint:readme-md": "wp-scripts lint-md-docs README.md",
+
+    "wp-env:start": "wp-env start",
+    "wp-env:update": "wp-env start --update",
+    "wp-env:stop": "wp-env stop",
+    "wp-env:destroy": "wp-env destroy",
+    "wp-env:tests:start": "wp-env --config .wp-env.tests.json start",
+    "wp-env:tests:stop": "wp-env --config .wp-env.tests.json stop",
+    "wp-env:tests:destroy": "wp-env --config .wp-env.tests.json destroy",
+    "wp-env:belowfloor:start": "wp-env --config .wp-env.belowfloor.json start",
+    "wp-env:belowfloor:stop": "wp-env --config .wp-env.belowfloor.json stop",
+    "wp-env:belowfloor:destroy": "wp-env --config .wp-env.belowfloor.json destroy",
+    "wp-env:multisite:start": "wp-env --config .wp-env.multisite.json start",
+    "wp-env:multisite:stop": "wp-env --config .wp-env.multisite.json stop",
+    "wp-env:multisite:destroy": "wp-env --config .wp-env.multisite.json destroy",
+
+    "audit": "composer audit --locked --abandoned=report && npm audit --audit-level=high --omit=dev",
+    "audit:fix": "npm audit fix",
+    "check:engines": "wp-scripts check-engines",
+    "check:licenses": "wp-scripts check-licenses",
+
+    "test:integration": "wp-env --config .wp-env.tests.json run cli --env-cwd=wp-content/plugins/a8csp-plugin-template vendor/bin/phpunit --testsuite=Integration",
+    "test:requirements": "wp-env --config .wp-env.belowfloor.json run cli --env-cwd=wp-content/plugins/a8csp-plugin-template vendor/bin/phpunit --testsuite=Requirements",
+    "test:multisite": "wp-env --config .wp-env.multisite.json run cli --env-cwd=wp-content/plugins/a8csp-plugin-template vendor/bin/phpunit --testsuite=Multisite",
+    "test:integration:no-wc": "wp-env --config .wp-env.tests.json run cli wp plugin deactivate woocommerce && ( wp-env --config .wp-env.tests.json run cli --env-cwd=wp-content/plugins/a8csp-plugin-template vendor/bin/phpunit --testsuite=Integration --filter=PluginBootWithoutWooCommerceTest --fail-on-skipped; A8CSP_STATUS=$?; wp-env --config .wp-env.tests.json run cli wp plugin activate woocommerce || A8CSP_STATUS=1; exit $A8CSP_STATUS )",
+    "test:e2e": "playwright test"
+  }
+}
