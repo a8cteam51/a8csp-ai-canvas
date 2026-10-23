@@ -1,4 +1,0 @@
-Significance: major
-Type: added
-
-Provides a WordPress plugin bootstrap split across an entry file and a below-floor `functions-bootstrap.php`; a `ComponentInterface` contract with `Plugin` as the editable component list and a boot loop you can read; a plugin-wide WooCommerce host gate plus worked feature examples — a Gutenberg block, a `Settings` component owning a core-options field and a WooCommerce Advanced-tab section, and gated companion integrations — with a live uninstall footprint; a four-tier PHPUnit suite plus Playwright end-to-end tests; and centralized CI and QA wired to the `a8csp/configs` shared package.
