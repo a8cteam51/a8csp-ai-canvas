@@ -2,10 +2,10 @@
   "$schema": "https://schemas.wp.org/trunk/wp-env.json",
   "core": "WordPress/WordPress#tags/7.0.4",
   "phpVersion": "8.5",
-  "port": 8891,
+  "port": 28565,
   "testsEnvironment": false,
   "mappings": {
-    "wp-content/plugins/a8csp-plugin-template": ".",
+    "wp-content/plugins/a8csp-ai-canvas-webmcp": ".",
     "wp-content/plugins/woocommerce": "./vendor/wp-plugin/woocommerce"
   },
   "config": {

@@ -1,12 +1,12 @@
 <?php declare( strict_types=1 );
 
-namespace A8C\SpecialProjects\PluginTemplate\Tests\Unit;
+namespace A8C\SpecialProjects\AICanvasWebMCP\Tests\Unit;
 
-use A8C\SpecialProjects\PluginTemplate\AbstractComponent;
-use A8C\SpecialProjects\PluginTemplate\ComponentCollection;
-use A8C\SpecialProjects\PluginTemplate\Integrations\Component;
-use A8C\SpecialProjects\PluginTemplate\Integrations\WooCommerceSubscriptions;
-use A8C\SpecialProjects\PluginTemplate\Integrations\WooPayments;
+use A8C\SpecialProjects\AICanvasWebMCP\AbstractComponent;
+use A8C\SpecialProjects\AICanvasWebMCP\ComponentCollection;
+use A8C\SpecialProjects\AICanvasWebMCP\Integrations\Component;
+use A8C\SpecialProjects\AICanvasWebMCP\Integrations\WooCommerceSubscriptions;
+use A8C\SpecialProjects\AICanvasWebMCP\Integrations\WooPayments;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\RunInSeparateProcess;
 use PHPUnit\Framework\Attributes\UsesClass;
@@ -41,7 +41,7 @@ final class IntegrationsComponentTest extends TestCase {
 	protected function setUp(): void {
 		parent::setUp();
 
-		$GLOBALS['a8csp_template_test_hooks'] = array();
+		$GLOBALS['a8csp_ai_webmcp_test_hooks'] = array();
 	}
 
 	// endregion.
@@ -65,7 +65,7 @@ final class IntegrationsComponentTest extends TestCase {
 		$component->initialize();
 		$component->register_hooks();
 
-		self::assertSame( array(), $GLOBALS['a8csp_template_test_hooks'] );
+		self::assertSame( array(), $GLOBALS['a8csp_ai_webmcp_test_hooks'] );
 	}
 
 	/**
@@ -85,11 +85,11 @@ final class IntegrationsComponentTest extends TestCase {
 		$component = new Component();
 
 		$component->initialize();
-		self::assertSame( array(), $GLOBALS['a8csp_template_test_hooks'] );
+		self::assertSame( array(), $GLOBALS['a8csp_ai_webmcp_test_hooks'] );
 
 		$component->register_hooks();
-		self::assertContains( 'woocommerce_get_settings_advanced', $GLOBALS['a8csp_template_test_hooks'] );
-		self::assertContains( 'woocommerce_subscriptions_product_price_string', $GLOBALS['a8csp_template_test_hooks'] );
+		self::assertContains( 'woocommerce_get_settings_advanced', $GLOBALS['a8csp_ai_webmcp_test_hooks'] );
+		self::assertContains( 'woocommerce_subscriptions_product_price_string', $GLOBALS['a8csp_ai_webmcp_test_hooks'] );
 	}
 
 	// endregion.

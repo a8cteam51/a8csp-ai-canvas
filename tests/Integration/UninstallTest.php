@@ -1,6 +1,6 @@
 <?php declare( strict_types=1 );
 
-namespace A8C\SpecialProjects\PluginTemplate\Tests\Integration;
+namespace A8C\SpecialProjects\AICanvasWebMCP\Tests\Integration;
 
 use PHPUnit\Framework\Attributes\RunInSeparateProcess;
 use PHPUnit\Framework\TestCase;
@@ -32,7 +32,7 @@ final class UninstallTest extends TestCase {
 	 * @return  void
 	 */
 	protected function tearDown(): void {
-		delete_option( 'a8csp_template_test_uninstall_canary' );
+		delete_option( 'a8csp_ai_webmcp_test_uninstall_canary' );
 
 		parent::tearDown();
 	}
@@ -68,10 +68,10 @@ final class UninstallTest extends TestCase {
 			update_user_meta( $user_id, $meta_key, 'sentinel' );
 		}
 
-		update_option( 'a8csp_template_test_uninstall_canary', 'sentinel' );
+		update_option( 'a8csp_ai_webmcp_test_uninstall_canary', 'sentinel' );
 
 		foreach ( array( 'stable', 'prerelease' ) as $channel ) {
-			set_transient( 'a8csp_template_github_latest_release_' . $channel, 'sentinel', HOUR_IN_SECONDS );
+			set_transient( 'a8csp_ai_webmcp_github_latest_release_' . $channel, 'sentinel', HOUR_IN_SECONDS );
 		}
 
 		require \dirname( __DIR__, 2 ) . '/uninstall.php';
@@ -81,14 +81,14 @@ final class UninstallTest extends TestCase {
 		}
 
 		foreach ( array( 'stable', 'prerelease' ) as $channel ) {
-			self::assertFalse( get_transient( 'a8csp_template_github_latest_release_' . $channel ), "uninstall.php must delete the '{$channel}' update-check transient" );
+			self::assertFalse( get_transient( 'a8csp_ai_webmcp_github_latest_release_' . $channel ), "uninstall.php must delete the '{$channel}' update-check transient" );
 		}
 
 		foreach ( $footprint['user_meta'] as $meta_key ) {
 			self::assertSame( '', get_user_meta( $user_id, $meta_key, true ), "uninstall.php must delete the '{$meta_key}' user-meta key" );
 		}
 
-		self::assertSame( 'sentinel', get_option( 'a8csp_template_test_uninstall_canary' ), 'uninstall.php must not delete keys outside its footprint' );
+		self::assertSame( 'sentinel', get_option( 'a8csp_ai_webmcp_test_uninstall_canary' ), 'uninstall.php must not delete keys outside its footprint' );
 	}
 
 	// endregion.

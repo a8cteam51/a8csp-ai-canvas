@@ -1,6 +1,6 @@
 <?php declare( strict_types=1 );
 
-namespace A8C\SpecialProjects\PluginTemplate\Tests\Integration;
+namespace A8C\SpecialProjects\AICanvasWebMCP\Tests\Integration;
 
 use PHPUnit\Framework\TestCase;
 
@@ -34,17 +34,17 @@ final class PluginBootWithoutWooCommerceTest extends TestCase {
 			self::markTestSkipped( 'This proof only runs against a WooCommerce-less runtime; WooCommerce is active in this run.' );
 		}
 
-		self::assertTrue( a8csp_template_validate_requirements() );
-		self::assertTrue( \function_exists( 'a8csp_template_plugin' ) );
+		self::assertTrue( a8csp_ai_webmcp_validate_requirements() );
+		self::assertTrue( \function_exists( 'a8csp_ai_webmcp_plugin' ) );
 
-		self::assertFalse( a8csp_template_plugin()->is_booted() );
+		self::assertFalse( a8csp_ai_webmcp_plugin()->is_booted() );
 		// The gate's notice callback is an inline closure, so the assertion can only check that
 		// something is staged on the hook, not the specific target.
 		self::assertTrue( has_action( 'all_admin_notices' ) );
 
 		$block_metadata = \json_decode(
 			// phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- Local filesystem read of a tracked build artifact, not a remote resource.
-			(string) \file_get_contents( \constant( 'A8CSP_TEMPLATE_DIR_PATH' ) . 'blocks/build/example-notice/block.json' ),
+			(string) \file_get_contents( \constant( 'A8CSP_AI_WEBMCP_DIR_PATH' ) . 'blocks/build/example-notice/block.json' ),
 			true,
 			512,
 			JSON_THROW_ON_ERROR
@@ -62,7 +62,7 @@ final class PluginBootWithoutWooCommerceTest extends TestCase {
 		remove_action( 'admin_init', '_maybe_update_plugins' );
 		remove_action( 'admin_init', '_maybe_update_themes' );
 		do_action( 'admin_init' );
-		self::assertArrayNotHasKey( 'a8csp_template_example_option', get_registered_settings() );
+		self::assertArrayNotHasKey( 'a8csp_ai_webmcp_example_option', get_registered_settings() );
 	}
 
 	// endregion.

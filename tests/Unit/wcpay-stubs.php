@@ -8,7 +8,7 @@
  *
  * @since   1.0.0
  * @version 1.0.0
- * @package A8C\SpecialProjects\PluginTemplate
+ * @package A8C\SpecialProjects\AICanvasWebMCP
  */
 
 if ( ! \defined( 'WCPAY_PLUGIN_FILE' ) ) {

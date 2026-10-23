@@ -1,9 +1,9 @@
 <?php declare( strict_types=1 );
 
-namespace A8C\SpecialProjects\PluginTemplate\Tests\Integration;
+namespace A8C\SpecialProjects\AICanvasWebMCP\Tests\Integration;
 
-use A8C\SpecialProjects\PluginTemplate\Plugin;
-use A8C\SpecialProjects\PluginTemplate\Settings;
+use A8C\SpecialProjects\AICanvasWebMCP\Plugin;
+use A8C\SpecialProjects\AICanvasWebMCP\Settings;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -28,7 +28,7 @@ final class PluginBootTest extends TestCase {
 	 * @return  void
 	 */
 	protected function tearDown(): void {
-		delete_option( 'a8csp_template_example_option' );
+		delete_option( 'a8csp_ai_webmcp_example_option' );
 
 		parent::tearDown();
 	}
@@ -50,15 +50,15 @@ final class PluginBootTest extends TestCase {
 	 * @return  void
 	 */
 	public function test_plugin_boots_on_supported_runtime(): void {
-		self::assertTrue( a8csp_template_validate_requirements() );
-		self::assertTrue( \function_exists( 'a8csp_template_plugin' ) );
-		self::assertNotFalse( has_action( 'plugins_loaded', array( a8csp_template_plugin(), 'boot' ) ) );
-		self::assertInstanceOf( Plugin::class, a8csp_template_plugin() );
-		self::assertTrue( a8csp_template_plugin()->is_booted() );
+		self::assertTrue( a8csp_ai_webmcp_validate_requirements() );
+		self::assertTrue( \function_exists( 'a8csp_ai_webmcp_plugin' ) );
+		self::assertNotFalse( has_action( 'plugins_loaded', array( a8csp_ai_webmcp_plugin(), 'boot' ) ) );
+		self::assertInstanceOf( Plugin::class, a8csp_ai_webmcp_plugin() );
+		self::assertTrue( a8csp_ai_webmcp_plugin()->is_booted() );
 
 		$block_metadata = \json_decode(
 			// phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- Local filesystem read of a tracked build artifact, not a remote resource.
-			(string) \file_get_contents( \constant( 'A8CSP_TEMPLATE_DIR_PATH' ) . 'blocks/build/example-notice/block.json' ),
+			(string) \file_get_contents( \constant( 'A8CSP_AI_WEBMCP_DIR_PATH' ) . 'blocks/build/example-notice/block.json' ),
 			true,
 			512,
 			JSON_THROW_ON_ERROR
@@ -71,13 +71,13 @@ final class PluginBootTest extends TestCase {
 		// direct because firing `admin_init` would also run WooCommerce's wp-admin-only callbacks.
 		require_once ABSPATH . 'wp-admin/includes/template.php';
 		( new Settings\Component() )->register_settings();
-		self::assertArrayHasKey( 'a8csp_template_example_option', get_registered_settings() );
+		self::assertArrayHasKey( 'a8csp_ai_webmcp_example_option', get_registered_settings() );
 
 		$sections = apply_filters( 'woocommerce_get_sections_advanced', array() );
-		self::assertArrayHasKey( 'a8csp_template', $sections );
+		self::assertArrayHasKey( 'a8csp_ai_webmcp', $sections );
 
-		$rows = apply_filters( 'woocommerce_get_settings_advanced', array(), 'a8csp_template' );
-		self::assertContains( 'a8csp_template_wc_example_option', \array_column( $rows, 'id' ) );
+		$rows = apply_filters( 'woocommerce_get_settings_advanced', array(), 'a8csp_ai_webmcp' );
+		self::assertContains( 'a8csp_ai_webmcp_wc_example_option', \array_column( $rows, 'id' ) );
 	}
 
 	/**
@@ -91,9 +91,9 @@ final class PluginBootTest extends TestCase {
 	 * @return  void
 	 */
 	public function test_example_option_round_trips_through_reader_and_field(): void {
-		update_option( 'a8csp_template_example_option', 'audit"sentinel&' );
+		update_option( 'a8csp_ai_webmcp_example_option', 'audit"sentinel&' );
 
-		self::assertSame( 'audit"sentinel&', a8csp_template_get_example_option() );
+		self::assertSame( 'audit"sentinel&', a8csp_ai_webmcp_get_example_option() );
 
 		\ob_start();
 		( new Settings\Component() )->render_field();

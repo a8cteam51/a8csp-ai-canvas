@@ -1,6 +1,6 @@
-# EXAMPLE_REPO_NAME
+# A8CSP AI Canvas WebMCP
 
-EXAMPLE_REPO_DESCRIPTION
+Lets the AI agent in your browser build a page in the page editor as a single Custom HTML block, through WebMCP.
 
 ## Requirements
 
@@ -8,8 +8,8 @@ This plugin is a WooCommerce extension. It needs the WordPress, PHP, and WooComm
 
 ## Installation
 
-1. Download `EXAMPLE_REPO_SLUG.zip` from the latest release of this repository.
-1. Upload it through **Plugins → Add New Plugin → Upload Plugin**, or unzip it into `/wp-content/plugins/`; it unpacks to an `EXAMPLE_REPO_SLUG` folder.
+1. Download `a8csp-ai-canvas-webmcp.zip` from the latest release of this repository.
+1. Upload it through **Plugins → Add New Plugin → Upload Plugin**, or unzip it into `/wp-content/plugins/`; it unpacks to an `a8csp-ai-canvas-webmcp` folder.
 1. Activate the plugin from the **Plugins** screen.
 
 With WooCommerce active at the required version, the plugin's settings appear in two places: a field on the **Settings → General** page, and a section of the **Advanced** tab on the WooCommerce **Settings** page.
@@ -60,7 +60,7 @@ Releases are cut from trunk, in four steps.
    composer changelog:write -- --use-version=1.0.0
    ```
 
-2. **Bump the other two versions to the same string.** The release refuses to run unless the plugin header's `Version:` in `EXAMPLE_REPO_SLUG.php`, `"version"` in `package.json`, and the newest `CHANGELOG.md` heading all state one version. The self-updater compares an installed copy against the header rather than against the tag, so the header bump belongs in the commit that gets tagged. Commit the three together and land them on trunk.
+2. **Bump the other two versions to the same string.** The release refuses to run unless the plugin header's `Version:` in `a8csp-ai-canvas-webmcp.php`, `"version"` in `package.json`, and the newest `CHANGELOG.md` heading all state one version. The self-updater compares an installed copy against the header rather than against the tag, so the header bump belongs in the commit that gets tagged. Commit the three together and land them on trunk.
 
 3. **Let trunk go green, then rehearse.** The release reuses the trunk-push Quality and Tests runs from the exact commit it tags, so tag only once those have finished. A later push to trunk cancels them if they are still running, and a cancelled run fails provenance as a red one does, so confirm this commit's own runs concluded successfully and re-run any that were cancelled. Those runs include legs outside the supported matrix, WordPress nightly and the next PHP, and every PHPUnit leg runs its tests in random order; a red leg that ships no defect still blocks provenance until a re-run passes. With them green, run the **Release** workflow from the Actions tab leaving **Create the GitHub release** off: that exercises the version check, the provenance check, the build and the smoke install without creating anything.
 

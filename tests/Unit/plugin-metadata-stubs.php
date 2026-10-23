@@ -7,10 +7,10 @@
  *
  * @since   1.0.0
  * @version 1.0.0
- * @package A8C\SpecialProjects\PluginTemplate
+ * @package A8C\SpecialProjects\AICanvasWebMCP
  */
 
-if ( ! \function_exists( 'a8csp_template_get_plugin_metadata' ) ) {
+if ( ! \function_exists( 'a8csp_ai_webmcp_get_plugin_metadata' ) ) {
 	/**
 	 * Returns the canned plugin metadata value for a requested property.
 	 *
@@ -21,12 +21,12 @@ if ( ! \function_exists( 'a8csp_template_get_plugin_metadata' ) ) {
 	 *
 	 * @return  string|null
 	 */
-	function a8csp_template_get_plugin_metadata( $property = null ) {
+	function a8csp_ai_webmcp_get_plugin_metadata( $property = null ) {
 		return 'WC requires at least' === $property ? '11.1' : null;
 	}
 }
 
-if ( ! \function_exists( 'a8csp_template_get_plugin_name' ) ) {
+if ( ! \function_exists( 'a8csp_ai_webmcp_get_plugin_name' ) ) {
 	/**
 	 * Returns the canned plugin name.
 	 *
@@ -35,7 +35,7 @@ if ( ! \function_exists( 'a8csp_template_get_plugin_name' ) ) {
 	 *
 	 * @return  string
 	 */
-	function a8csp_template_get_plugin_name() {
-		return 'A8CSP Template Plugin';
+	function a8csp_ai_webmcp_get_plugin_name() {
+		return 'A8CSP AI Canvas WebMCP';
 	}
 }

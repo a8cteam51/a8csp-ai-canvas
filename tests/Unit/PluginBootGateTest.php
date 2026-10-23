@@ -1,13 +1,13 @@
 <?php declare( strict_types=1 );
 
-namespace A8C\SpecialProjects\PluginTemplate\Tests\Unit;
+namespace A8C\SpecialProjects\AICanvasWebMCP\Tests\Unit;
 
-use A8C\SpecialProjects\PluginTemplate\AbstractComponent;
-use A8C\SpecialProjects\PluginTemplate\Blocks;
-use A8C\SpecialProjects\PluginTemplate\ComponentCollection;
-use A8C\SpecialProjects\PluginTemplate\Integrations;
-use A8C\SpecialProjects\PluginTemplate\Plugin;
-use A8C\SpecialProjects\PluginTemplate\Settings;
+use A8C\SpecialProjects\AICanvasWebMCP\AbstractComponent;
+use A8C\SpecialProjects\AICanvasWebMCP\Blocks;
+use A8C\SpecialProjects\AICanvasWebMCP\ComponentCollection;
+use A8C\SpecialProjects\AICanvasWebMCP\Integrations;
+use A8C\SpecialProjects\AICanvasWebMCP\Plugin;
+use A8C\SpecialProjects\AICanvasWebMCP\Settings;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\RunInSeparateProcess;
 use PHPUnit\Framework\Attributes\UsesClass;
@@ -60,9 +60,9 @@ final class PluginBootGateTest extends TestCase {
 	protected function setUp(): void {
 		parent::setUp();
 
-		$GLOBALS['a8csp_template_test_hooks']          = array();
-		$GLOBALS['a8csp_template_test_hook_callbacks'] = array();
-		$GLOBALS['a8csp_template_test_user_can']       = true;
+		$GLOBALS['a8csp_ai_webmcp_test_hooks']          = array();
+		$GLOBALS['a8csp_ai_webmcp_test_hook_callbacks'] = array();
+		$GLOBALS['a8csp_ai_webmcp_test_user_can']       = true;
 	}
 
 	// endregion.
@@ -85,17 +85,17 @@ final class PluginBootGateTest extends TestCase {
 		$plugin->boot();
 
 		self::assertFalse( $plugin->is_booted() );
-		self::assertSame( array( 'all_admin_notices' ), $GLOBALS['a8csp_template_test_hooks'] );
+		self::assertSame( array( 'all_admin_notices' ), $GLOBALS['a8csp_ai_webmcp_test_hooks'] );
 
 		$plugin->boot();
 
 		self::assertFalse( $plugin->is_booted() );
-		self::assertSame( array( 'all_admin_notices' ), $GLOBALS['a8csp_template_test_hooks'] );
+		self::assertSame( array( 'all_admin_notices' ), $GLOBALS['a8csp_ai_webmcp_test_hooks'] );
 
 		$notice = $this->staged_notice();
 		self::assertStringContainsString( 'requires WooCommerce to be installed', $this->render_notice( $notice ) );
 
-		$GLOBALS['a8csp_template_test_user_can'] = false;
+		$GLOBALS['a8csp_ai_webmcp_test_user_can'] = false;
 		self::assertSame( '', $this->render_notice( $notice ), 'the notice renders nothing for a user without the capability' );
 	}
 
@@ -118,15 +118,15 @@ final class PluginBootGateTest extends TestCase {
 		$plugin->boot();
 
 		self::assertFalse( $plugin->is_booted() );
-		self::assertSame( array( 'all_admin_notices' ), $GLOBALS['a8csp_template_test_hooks'] );
+		self::assertSame( array( 'all_admin_notices' ), $GLOBALS['a8csp_ai_webmcp_test_hooks'] );
 
 		$notice   = $this->staged_notice();
 		$rendered = $this->render_notice( $notice );
 		self::assertStringContainsString( 'or newer', $rendered );
-		self::assertStringContainsString( (string) a8csp_template_get_plugin_metadata( 'WC requires at least' ), $rendered );
+		self::assertStringContainsString( (string) a8csp_ai_webmcp_get_plugin_metadata( 'WC requires at least' ), $rendered );
 		self::assertStringContainsString( \constant( 'WC_VERSION' ), $rendered );
 
-		$GLOBALS['a8csp_template_test_user_can'] = false;
+		$GLOBALS['a8csp_ai_webmcp_test_user_can'] = false;
 		self::assertSame( '', $this->render_notice( $notice ), 'the notice renders nothing for a user without the capability' );
 	}
 
@@ -149,15 +149,15 @@ final class PluginBootGateTest extends TestCase {
 		$plugin->boot();
 		self::assertTrue( $plugin->is_booted() );
 
-		self::assertContains( 'init', $GLOBALS['a8csp_template_test_hooks'] );
-		self::assertContains( 'enqueue_block_editor_assets', $GLOBALS['a8csp_template_test_hooks'] );
-		self::assertContains( 'admin_init', $GLOBALS['a8csp_template_test_hooks'] );
-		self::assertContains( 'woocommerce_get_sections_advanced', $GLOBALS['a8csp_template_test_hooks'] );
-		self::assertContains( 'woocommerce_get_settings_advanced', $GLOBALS['a8csp_template_test_hooks'] );
+		self::assertContains( 'init', $GLOBALS['a8csp_ai_webmcp_test_hooks'] );
+		self::assertContains( 'enqueue_block_editor_assets', $GLOBALS['a8csp_ai_webmcp_test_hooks'] );
+		self::assertContains( 'admin_init', $GLOBALS['a8csp_ai_webmcp_test_hooks'] );
+		self::assertContains( 'woocommerce_get_sections_advanced', $GLOBALS['a8csp_ai_webmcp_test_hooks'] );
+		self::assertContains( 'woocommerce_get_settings_advanced', $GLOBALS['a8csp_ai_webmcp_test_hooks'] );
 
-		self::assertNotContains( 'all_admin_notices', $GLOBALS['a8csp_template_test_hooks'] );
-		self::assertNotContains( 'wcpay_metadata_from_order', $GLOBALS['a8csp_template_test_hooks'] );
-		self::assertNotContains( 'woocommerce_subscriptions_product_price_string', $GLOBALS['a8csp_template_test_hooks'] );
+		self::assertNotContains( 'all_admin_notices', $GLOBALS['a8csp_ai_webmcp_test_hooks'] );
+		self::assertNotContains( 'wcpay_metadata_from_order', $GLOBALS['a8csp_ai_webmcp_test_hooks'] );
+		self::assertNotContains( 'woocommerce_subscriptions_product_price_string', $GLOBALS['a8csp_ai_webmcp_test_hooks'] );
 	}
 
 	/**
@@ -174,11 +174,11 @@ final class PluginBootGateTest extends TestCase {
 		$plugin = new Plugin();
 		$plugin->boot();
 
-		$hook_count = \count( $GLOBALS['a8csp_template_test_hooks'] );
+		$hook_count = \count( $GLOBALS['a8csp_ai_webmcp_test_hooks'] );
 
 		$plugin->boot();
 
-		self::assertCount( $hook_count, $GLOBALS['a8csp_template_test_hooks'] );
+		self::assertCount( $hook_count, $GLOBALS['a8csp_ai_webmcp_test_hooks'] );
 	}
 
 	// endregion.
@@ -194,7 +194,7 @@ final class PluginBootGateTest extends TestCase {
 	 * @return  callable
 	 */
 	private function staged_notice(): callable {
-		$callbacks = $GLOBALS['a8csp_template_test_hook_callbacks']['all_admin_notices'] ?? array();
+		$callbacks = $GLOBALS['a8csp_ai_webmcp_test_hook_callbacks']['all_admin_notices'] ?? array();
 		self::assertCount( 1, $callbacks, 'the failed gate must stage exactly one admin notice' );
 
 		return $callbacks[0];

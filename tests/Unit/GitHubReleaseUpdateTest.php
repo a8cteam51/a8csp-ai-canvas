@@ -1,6 +1,6 @@
 <?php declare( strict_types=1 );
 
-namespace A8C\SpecialProjects\PluginTemplate\Tests\Unit;
+namespace A8C\SpecialProjects\AICanvasWebMCP\Tests\Unit;
 
 use PHPUnit\Framework\Attributes\RunInSeparateProcess;
 use PHPUnit\Framework\TestCase;
@@ -38,14 +38,14 @@ final class GitHubReleaseUpdateTest extends TestCase {
 		parent::setUp();
 
 		\defined( 'ABSPATH' ) || \define( 'ABSPATH', '/tmp/' );
-		\defined( 'A8CSP_TEMPLATE_BASENAME' ) || \define( 'A8CSP_TEMPLATE_BASENAME', 'a8csp-plugin-template/a8csp-template-plugin.php' );
+		\defined( 'A8CSP_AI_WEBMCP_BASENAME' ) || \define( 'A8CSP_AI_WEBMCP_BASENAME', 'a8csp-ai-canvas-webmcp/a8csp-ai-canvas-webmcp.php' );
 
 		require_once __DIR__ . '/wp-http-stubs.php';
 		require_once \dirname( __DIR__, 2 ) . '/functions-bootstrap.php';
 
-		$GLOBALS['a8csp_template_test_transients']     = array();
-		$GLOBALS['a8csp_template_test_transient_ttls'] = array();
-		$GLOBALS['a8csp_template_test_http_requests']  = array();
+		$GLOBALS['a8csp_ai_webmcp_test_transients']     = array();
+		$GLOBALS['a8csp_ai_webmcp_test_transient_ttls'] = array();
+		$GLOBALS['a8csp_ai_webmcp_test_http_requests']  = array();
 	}
 
 	// endregion.
@@ -63,26 +63,26 @@ final class GitHubReleaseUpdateTest extends TestCase {
 	 */
 	#[RunInSeparateProcess]
 	public function test_stable_install_follows_the_latest_release_endpoint(): void {
-		$GLOBALS['a8csp_template_test_http_response'] = self::a_release_response(
+		$GLOBALS['a8csp_ai_webmcp_test_http_response'] = self::a_release_response(
 			array(
 				'tag_name' => 'v2.0.0',
-				'html_url' => 'https://github.com/a8cteam51/a8csp-plugin-template/releases/tag/v2.0.0',
+				'html_url' => 'https://github.com/a8cteam51/a8csp-ai-canvas-webmcp/releases/tag/v2.0.0',
 				'assets'   => array(
 					array(
 						'name'                 => 'not-the-plugin.zip',
 						'browser_download_url' => 'https://example.com/wrong.zip',
 					),
 					array(
-						'name'                 => 'a8csp-plugin-template.zip',
+						'name'                 => 'a8csp-ai-canvas-webmcp.zip',
 						'browser_download_url' => 'https://example.com/right.zip',
 					),
 				),
 			)
 		);
 
-		$update = a8csp_template_check_github_release_update( false, self::plugin_data( '1.0.0' ), \constant( 'A8CSP_TEMPLATE_BASENAME' ) );
+		$update = a8csp_ai_webmcp_check_github_release_update( false, self::plugin_data( '1.0.0' ), \constant( 'A8CSP_AI_WEBMCP_BASENAME' ) );
 
-		self::assertStringEndsWith( '/releases/latest', $GLOBALS['a8csp_template_test_http_requests'][0] );
+		self::assertStringEndsWith( '/releases/latest', $GLOBALS['a8csp_ai_webmcp_test_http_requests'][0] );
 		self::assertIsArray( $update );
 		self::assertSame( '2.0.0', $update['version'] );
 		self::assertSame( 'https://example.com/right.zip', $update['package'], 'The package must be the asset matched by name, not the first asset' );
@@ -99,7 +99,7 @@ final class GitHubReleaseUpdateTest extends TestCase {
 	 */
 	#[RunInSeparateProcess]
 	public function test_prerelease_install_skips_draft_entries_on_the_release_list(): void {
-		$GLOBALS['a8csp_template_test_http_response'] = self::a_release_response(
+		$GLOBALS['a8csp_ai_webmcp_test_http_response'] = self::a_release_response(
 			array(
 				array(
 					'draft'    => true,
@@ -108,10 +108,10 @@ final class GitHubReleaseUpdateTest extends TestCase {
 				array(
 					'draft'    => false,
 					'tag_name' => 'v1.2.0-beta.1',
-					'html_url' => 'https://github.com/a8cteam51/a8csp-plugin-template/releases/tag/v1.2.0-beta.1',
+					'html_url' => 'https://github.com/a8cteam51/a8csp-ai-canvas-webmcp/releases/tag/v1.2.0-beta.1',
 					'assets'   => array(
 						array(
-							'name'                 => 'a8csp-plugin-template.zip',
+							'name'                 => 'a8csp-ai-canvas-webmcp.zip',
 							'browser_download_url' => 'https://example.com/beta.zip',
 						),
 					),
@@ -119,13 +119,13 @@ final class GitHubReleaseUpdateTest extends TestCase {
 			)
 		);
 
-		$update = a8csp_template_check_github_release_update( false, self::plugin_data( '1.1.0-beta.3' ), \constant( 'A8CSP_TEMPLATE_BASENAME' ) );
+		$update = a8csp_ai_webmcp_check_github_release_update( false, self::plugin_data( '1.1.0-beta.3' ), \constant( 'A8CSP_AI_WEBMCP_BASENAME' ) );
 
-		self::assertStringContainsString( 'releases?per_page=10', $GLOBALS['a8csp_template_test_http_requests'][0] );
+		self::assertStringContainsString( 'releases?per_page=10', $GLOBALS['a8csp_ai_webmcp_test_http_requests'][0] );
 		self::assertIsArray( $update );
 		self::assertSame( '1.2.0-beta.1', $update['version'], 'The draft entry must be skipped' );
-		self::assertArrayHasKey( 'a8csp_template_github_latest_release_prerelease', $GLOBALS['a8csp_template_test_transients'], 'The prerelease channel caches under its own key' );
-		self::assertArrayNotHasKey( 'a8csp_template_github_latest_release_stable', $GLOBALS['a8csp_template_test_transients'], 'The prerelease channel must not touch the stable cache' );
+		self::assertArrayHasKey( 'a8csp_ai_webmcp_github_latest_release_prerelease', $GLOBALS['a8csp_ai_webmcp_test_transients'], 'The prerelease channel caches under its own key' );
+		self::assertArrayNotHasKey( 'a8csp_ai_webmcp_github_latest_release_stable', $GLOBALS['a8csp_ai_webmcp_test_transients'], 'The prerelease channel must not touch the stable cache' );
 	}
 
 	/**
@@ -139,15 +139,15 @@ final class GitHubReleaseUpdateTest extends TestCase {
 	 */
 	#[RunInSeparateProcess]
 	public function test_prerelease_install_follows_the_highest_version_not_the_first_listed(): void {
-		$GLOBALS['a8csp_template_test_http_response'] = self::a_release_response(
+		$GLOBALS['a8csp_ai_webmcp_test_http_response'] = self::a_release_response(
 			array(
 				array(
 					'draft'    => false,
 					'tag_name' => 'v1.2.0-beta.1',
-					'html_url' => 'https://github.com/a8cteam51/a8csp-plugin-template/releases/tag/v1.2.0-beta.1',
+					'html_url' => 'https://github.com/a8cteam51/a8csp-ai-canvas-webmcp/releases/tag/v1.2.0-beta.1',
 					'assets'   => array(
 						array(
-							'name'                 => 'a8csp-plugin-template.zip',
+							'name'                 => 'a8csp-ai-canvas-webmcp.zip',
 							'browser_download_url' => 'https://example.com/beta1.zip',
 						),
 					),
@@ -155,10 +155,10 @@ final class GitHubReleaseUpdateTest extends TestCase {
 				array(
 					'draft'    => false,
 					'tag_name' => 'v1.2.0-beta.2',
-					'html_url' => 'https://github.com/a8cteam51/a8csp-plugin-template/releases/tag/v1.2.0-beta.2',
+					'html_url' => 'https://github.com/a8cteam51/a8csp-ai-canvas-webmcp/releases/tag/v1.2.0-beta.2',
 					'assets'   => array(
 						array(
-							'name'                 => 'a8csp-plugin-template.zip',
+							'name'                 => 'a8csp-ai-canvas-webmcp.zip',
 							'browser_download_url' => 'https://example.com/beta2.zip',
 						),
 					),
@@ -166,7 +166,7 @@ final class GitHubReleaseUpdateTest extends TestCase {
 			)
 		);
 
-		$update = a8csp_template_check_github_release_update( false, self::plugin_data( '1.2.0-beta.1' ), \constant( 'A8CSP_TEMPLATE_BASENAME' ) );
+		$update = a8csp_ai_webmcp_check_github_release_update( false, self::plugin_data( '1.2.0-beta.1' ), \constant( 'A8CSP_AI_WEBMCP_BASENAME' ) );
 
 		self::assertIsArray( $update );
 		self::assertSame( '1.2.0-beta.2', $update['version'], 'The highest-versioned prerelease is offered even when a lower version is listed first' );
@@ -184,15 +184,15 @@ final class GitHubReleaseUpdateTest extends TestCase {
 	 */
 	#[RunInSeparateProcess]
 	public function test_prerelease_install_is_offered_the_stable_successor(): void {
-		$GLOBALS['a8csp_template_test_http_response'] = self::a_release_response(
+		$GLOBALS['a8csp_ai_webmcp_test_http_response'] = self::a_release_response(
 			array(
 				array(
 					'draft'    => false,
 					'tag_name' => 'v1.2.0',
-					'html_url' => 'https://github.com/a8cteam51/a8csp-plugin-template/releases/tag/v1.2.0',
+					'html_url' => 'https://github.com/a8cteam51/a8csp-ai-canvas-webmcp/releases/tag/v1.2.0',
 					'assets'   => array(
 						array(
-							'name'                 => 'a8csp-plugin-template.zip',
+							'name'                 => 'a8csp-ai-canvas-webmcp.zip',
 							'browser_download_url' => 'https://example.com/stable.zip',
 						),
 					),
@@ -200,10 +200,10 @@ final class GitHubReleaseUpdateTest extends TestCase {
 				array(
 					'draft'    => false,
 					'tag_name' => 'v1.2.0-beta.2',
-					'html_url' => 'https://github.com/a8cteam51/a8csp-plugin-template/releases/tag/v1.2.0-beta.2',
+					'html_url' => 'https://github.com/a8cteam51/a8csp-ai-canvas-webmcp/releases/tag/v1.2.0-beta.2',
 					'assets'   => array(
 						array(
-							'name'                 => 'a8csp-plugin-template.zip',
+							'name'                 => 'a8csp-ai-canvas-webmcp.zip',
 							'browser_download_url' => 'https://example.com/beta2.zip',
 						),
 					),
@@ -211,7 +211,7 @@ final class GitHubReleaseUpdateTest extends TestCase {
 			)
 		);
 
-		$update = a8csp_template_check_github_release_update( false, self::plugin_data( '1.2.0-beta.2' ), \constant( 'A8CSP_TEMPLATE_BASENAME' ) );
+		$update = a8csp_ai_webmcp_check_github_release_update( false, self::plugin_data( '1.2.0-beta.2' ), \constant( 'A8CSP_AI_WEBMCP_BASENAME' ) );
 
 		self::assertIsArray( $update );
 		self::assertSame( '1.2.0', $update['version'], 'The stable successor outranks the installed prerelease' );
@@ -231,24 +231,24 @@ final class GitHubReleaseUpdateTest extends TestCase {
 	 */
 	#[RunInSeparateProcess]
 	public function test_up_to_date_install_gets_the_release_for_the_no_update_list(): void {
-		$GLOBALS['a8csp_template_test_http_response'] = self::a_release_response(
+		$GLOBALS['a8csp_ai_webmcp_test_http_response'] = self::a_release_response(
 			array(
 				'tag_name' => 'v2.0.0',
-				'html_url' => 'https://github.com/a8cteam51/a8csp-plugin-template/releases/tag/v2.0.0',
+				'html_url' => 'https://github.com/a8cteam51/a8csp-ai-canvas-webmcp/releases/tag/v2.0.0',
 				'assets'   => array(
 					array(
-						'name'                 => 'a8csp-plugin-template.zip',
+						'name'                 => 'a8csp-ai-canvas-webmcp.zip',
 						'browser_download_url' => 'https://example.com/right.zip',
 					),
 				),
 			)
 		);
 
-		$update = a8csp_template_check_github_release_update( false, self::plugin_data( '2.0.0' ), \constant( 'A8CSP_TEMPLATE_BASENAME' ) );
+		$update = a8csp_ai_webmcp_check_github_release_update( false, self::plugin_data( '2.0.0' ), \constant( 'A8CSP_AI_WEBMCP_BASENAME' ) );
 
 		self::assertIsArray( $update );
 		self::assertSame( '2.0.0', $update['version'] );
-		self::assertSame( \constant( 'HOUR_IN_SECONDS' ), $GLOBALS['a8csp_template_test_transient_ttls']['a8csp_template_github_latest_release_stable'], 'A usable release caches for the full hour even when no update is offered' );
+		self::assertSame( \constant( 'HOUR_IN_SECONDS' ), $GLOBALS['a8csp_ai_webmcp_test_transient_ttls']['a8csp_ai_webmcp_github_latest_release_stable'], 'A usable release caches for the full hour even when no update is offered' );
 	}
 
 	/**
@@ -262,16 +262,16 @@ final class GitHubReleaseUpdateTest extends TestCase {
 	 */
 	#[RunInSeparateProcess]
 	public function test_failed_fetch_negative_caches_for_five_minutes(): void {
-		$GLOBALS['a8csp_template_test_http_response'] = array(
+		$GLOBALS['a8csp_ai_webmcp_test_http_response'] = array(
 			'response' => array( 'code' => 500 ),
 			'body'     => '',
 		);
 
-		$update = a8csp_template_check_github_release_update( false, self::plugin_data( '1.0.0' ), \constant( 'A8CSP_TEMPLATE_BASENAME' ) );
+		$update = a8csp_ai_webmcp_check_github_release_update( false, self::plugin_data( '1.0.0' ), \constant( 'A8CSP_AI_WEBMCP_BASENAME' ) );
 
 		self::assertFalse( $update );
-		self::assertSame( array(), $GLOBALS['a8csp_template_test_transients']['a8csp_template_github_latest_release_stable'] );
-		self::assertSame( 5 * \constant( 'MINUTE_IN_SECONDS' ), $GLOBALS['a8csp_template_test_transient_ttls']['a8csp_template_github_latest_release_stable'] );
+		self::assertSame( array(), $GLOBALS['a8csp_ai_webmcp_test_transients']['a8csp_ai_webmcp_github_latest_release_stable'] );
+		self::assertSame( 5 * \constant( 'MINUTE_IN_SECONDS' ), $GLOBALS['a8csp_ai_webmcp_test_transient_ttls']['a8csp_ai_webmcp_github_latest_release_stable'] );
 	}
 
 	/**
@@ -285,19 +285,19 @@ final class GitHubReleaseUpdateTest extends TestCase {
 	 */
 	#[RunInSeparateProcess]
 	public function test_release_without_assets_offers_nothing_and_negative_caches(): void {
-		$GLOBALS['a8csp_template_test_http_response'] = self::a_release_response(
+		$GLOBALS['a8csp_ai_webmcp_test_http_response'] = self::a_release_response(
 			array(
 				'tag_name' => 'v2.0.0',
-				'html_url' => 'https://github.com/a8cteam51/a8csp-plugin-template/releases/tag/v2.0.0',
+				'html_url' => 'https://github.com/a8cteam51/a8csp-ai-canvas-webmcp/releases/tag/v2.0.0',
 				'assets'   => array(),
 			)
 		);
 
-		$update = a8csp_template_check_github_release_update( false, self::plugin_data( '1.0.0' ), \constant( 'A8CSP_TEMPLATE_BASENAME' ) );
+		$update = a8csp_ai_webmcp_check_github_release_update( false, self::plugin_data( '1.0.0' ), \constant( 'A8CSP_AI_WEBMCP_BASENAME' ) );
 
 		self::assertFalse( $update );
-		self::assertSame( array(), $GLOBALS['a8csp_template_test_transients']['a8csp_template_github_latest_release_stable'] );
-		self::assertSame( 5 * \constant( 'MINUTE_IN_SECONDS' ), $GLOBALS['a8csp_template_test_transient_ttls']['a8csp_template_github_latest_release_stable'] );
+		self::assertSame( array(), $GLOBALS['a8csp_ai_webmcp_test_transients']['a8csp_ai_webmcp_github_latest_release_stable'] );
+		self::assertSame( 5 * \constant( 'MINUTE_IN_SECONDS' ), $GLOBALS['a8csp_ai_webmcp_test_transient_ttls']['a8csp_ai_webmcp_github_latest_release_stable'] );
 	}
 
 	/**
@@ -311,10 +311,10 @@ final class GitHubReleaseUpdateTest extends TestCase {
 	 */
 	#[RunInSeparateProcess]
 	public function test_release_without_the_plugin_zip_offers_nothing_and_negative_caches(): void {
-		$GLOBALS['a8csp_template_test_http_response'] = self::a_release_response(
+		$GLOBALS['a8csp_ai_webmcp_test_http_response'] = self::a_release_response(
 			array(
 				'tag_name' => 'v2.0.0',
-				'html_url' => 'https://github.com/a8cteam51/a8csp-plugin-template/releases/tag/v2.0.0',
+				'html_url' => 'https://github.com/a8cteam51/a8csp-ai-canvas-webmcp/releases/tag/v2.0.0',
 				'assets'   => array(
 					array(
 						'name'                 => 'checksums.txt',
@@ -324,11 +324,11 @@ final class GitHubReleaseUpdateTest extends TestCase {
 			)
 		);
 
-		$update = a8csp_template_check_github_release_update( false, self::plugin_data( '1.0.0' ), \constant( 'A8CSP_TEMPLATE_BASENAME' ) );
+		$update = a8csp_ai_webmcp_check_github_release_update( false, self::plugin_data( '1.0.0' ), \constant( 'A8CSP_AI_WEBMCP_BASENAME' ) );
 
 		self::assertFalse( $update );
-		self::assertSame( array(), $GLOBALS['a8csp_template_test_transients']['a8csp_template_github_latest_release_stable'] );
-		self::assertSame( 5 * \constant( 'MINUTE_IN_SECONDS' ), $GLOBALS['a8csp_template_test_transient_ttls']['a8csp_template_github_latest_release_stable'] );
+		self::assertSame( array(), $GLOBALS['a8csp_ai_webmcp_test_transients']['a8csp_ai_webmcp_github_latest_release_stable'] );
+		self::assertSame( 5 * \constant( 'MINUTE_IN_SECONDS' ), $GLOBALS['a8csp_ai_webmcp_test_transient_ttls']['a8csp_ai_webmcp_github_latest_release_stable'] );
 	}
 
 	/**
@@ -342,13 +342,13 @@ final class GitHubReleaseUpdateTest extends TestCase {
 	 */
 	#[RunInSeparateProcess]
 	public function test_foreign_checks_and_settled_updates_pass_through(): void {
-		$foreign = a8csp_template_check_github_release_update( false, self::plugin_data( '1.0.0' ), 'some-other-plugin/some-other-plugin.php' );
+		$foreign = a8csp_ai_webmcp_check_github_release_update( false, self::plugin_data( '1.0.0' ), 'some-other-plugin/some-other-plugin.php' );
 		self::assertFalse( $foreign );
 
-		$settled = a8csp_template_check_github_release_update( array( 'version' => '9.9.9' ), self::plugin_data( '1.0.0' ), \constant( 'A8CSP_TEMPLATE_BASENAME' ) );
+		$settled = a8csp_ai_webmcp_check_github_release_update( array( 'version' => '9.9.9' ), self::plugin_data( '1.0.0' ), \constant( 'A8CSP_AI_WEBMCP_BASENAME' ) );
 		self::assertSame( array( 'version' => '9.9.9' ), $settled );
 
-		self::assertSame( array(), $GLOBALS['a8csp_template_test_http_requests'], 'Pass-through paths must not touch the network' );
+		self::assertSame( array(), $GLOBALS['a8csp_ai_webmcp_test_http_requests'], 'Pass-through paths must not touch the network' );
 	}
 
 	/**
@@ -364,41 +364,41 @@ final class GitHubReleaseUpdateTest extends TestCase {
 	 */
 	#[RunInSeparateProcess]
 	public function test_channels_cache_separately_so_a_switch_never_serves_the_other_channel(): void {
-		$GLOBALS['a8csp_template_test_http_response'] = self::a_release_response(
+		$GLOBALS['a8csp_ai_webmcp_test_http_response'] = self::a_release_response(
 			array(
 				array(
 					'draft'    => false,
 					'tag_name' => 'v3.0.0-beta.1',
-					'html_url' => 'https://github.com/a8cteam51/a8csp-plugin-template/releases/tag/v3.0.0-beta.1',
+					'html_url' => 'https://github.com/a8cteam51/a8csp-ai-canvas-webmcp/releases/tag/v3.0.0-beta.1',
 					'assets'   => array(
 						array(
-							'name'                 => 'a8csp-plugin-template.zip',
+							'name'                 => 'a8csp-ai-canvas-webmcp.zip',
 							'browser_download_url' => 'https://example.com/beta.zip',
 						),
 					),
 				),
 			)
 		);
-		a8csp_template_check_github_release_update( false, self::plugin_data( '2.0.0-beta.1' ), \constant( 'A8CSP_TEMPLATE_BASENAME' ) );
+		a8csp_ai_webmcp_check_github_release_update( false, self::plugin_data( '2.0.0-beta.1' ), \constant( 'A8CSP_AI_WEBMCP_BASENAME' ) );
 
 		// The machine is switched to a stable build; the network now answers with the stable latest.
-		$GLOBALS['a8csp_template_test_http_response'] = self::a_release_response(
+		$GLOBALS['a8csp_ai_webmcp_test_http_response'] = self::a_release_response(
 			array(
 				'tag_name' => 'v2.0.0',
-				'html_url' => 'https://github.com/a8cteam51/a8csp-plugin-template/releases/tag/v2.0.0',
+				'html_url' => 'https://github.com/a8cteam51/a8csp-ai-canvas-webmcp/releases/tag/v2.0.0',
 				'assets'   => array(
 					array(
-						'name'                 => 'a8csp-plugin-template.zip',
+						'name'                 => 'a8csp-ai-canvas-webmcp.zip',
 						'browser_download_url' => 'https://example.com/stable.zip',
 					),
 				),
 			)
 		);
 
-		$update = a8csp_template_check_github_release_update( false, self::plugin_data( '1.0.0' ), \constant( 'A8CSP_TEMPLATE_BASENAME' ) );
+		$update = a8csp_ai_webmcp_check_github_release_update( false, self::plugin_data( '1.0.0' ), \constant( 'A8CSP_AI_WEBMCP_BASENAME' ) );
 
-		self::assertCount( 2, $GLOBALS['a8csp_template_test_http_requests'], 'The stable check must fetch fresh rather than reuse the prerelease cache' );
-		self::assertStringEndsWith( '/releases/latest', $GLOBALS['a8csp_template_test_http_requests'][1] );
+		self::assertCount( 2, $GLOBALS['a8csp_ai_webmcp_test_http_requests'], 'The stable check must fetch fresh rather than reuse the prerelease cache' );
+		self::assertStringEndsWith( '/releases/latest', $GLOBALS['a8csp_ai_webmcp_test_http_requests'][1] );
 		self::assertIsArray( $update );
 		self::assertSame( '2.0.0', $update['version'], 'The stable install follows the stable release, never the cached prerelease' );
 		self::assertSame( 'https://example.com/stable.zip', $update['package'] );
@@ -417,30 +417,30 @@ final class GitHubReleaseUpdateTest extends TestCase {
 	 */
 	#[RunInSeparateProcess]
 	public function test_channels_cache_separately_stable_then_prerelease(): void {
-		$GLOBALS['a8csp_template_test_http_response'] = self::a_release_response(
+		$GLOBALS['a8csp_ai_webmcp_test_http_response'] = self::a_release_response(
 			array(
 				'tag_name' => 'v2.0.0',
-				'html_url' => 'https://github.com/a8cteam51/a8csp-plugin-template/releases/tag/v2.0.0',
+				'html_url' => 'https://github.com/a8cteam51/a8csp-ai-canvas-webmcp/releases/tag/v2.0.0',
 				'assets'   => array(
 					array(
-						'name'                 => 'a8csp-plugin-template.zip',
+						'name'                 => 'a8csp-ai-canvas-webmcp.zip',
 						'browser_download_url' => 'https://example.com/stable.zip',
 					),
 				),
 			)
 		);
-		a8csp_template_check_github_release_update( false, self::plugin_data( '1.0.0' ), \constant( 'A8CSP_TEMPLATE_BASENAME' ) );
+		a8csp_ai_webmcp_check_github_release_update( false, self::plugin_data( '1.0.0' ), \constant( 'A8CSP_AI_WEBMCP_BASENAME' ) );
 
 		// The machine is switched to a prerelease build; the network now answers with the release list.
-		$GLOBALS['a8csp_template_test_http_response'] = self::a_release_response(
+		$GLOBALS['a8csp_ai_webmcp_test_http_response'] = self::a_release_response(
 			array(
 				array(
 					'draft'    => false,
 					'tag_name' => 'v3.0.0-beta.1',
-					'html_url' => 'https://github.com/a8cteam51/a8csp-plugin-template/releases/tag/v3.0.0-beta.1',
+					'html_url' => 'https://github.com/a8cteam51/a8csp-ai-canvas-webmcp/releases/tag/v3.0.0-beta.1',
 					'assets'   => array(
 						array(
-							'name'                 => 'a8csp-plugin-template.zip',
+							'name'                 => 'a8csp-ai-canvas-webmcp.zip',
 							'browser_download_url' => 'https://example.com/beta.zip',
 						),
 					),
@@ -448,10 +448,10 @@ final class GitHubReleaseUpdateTest extends TestCase {
 			)
 		);
 
-		$update = a8csp_template_check_github_release_update( false, self::plugin_data( '2.0.0-beta.1' ), \constant( 'A8CSP_TEMPLATE_BASENAME' ) );
+		$update = a8csp_ai_webmcp_check_github_release_update( false, self::plugin_data( '2.0.0-beta.1' ), \constant( 'A8CSP_AI_WEBMCP_BASENAME' ) );
 
-		self::assertCount( 2, $GLOBALS['a8csp_template_test_http_requests'], 'The prerelease check must fetch fresh rather than reuse the stable cache' );
-		self::assertStringEndsWith( 'releases?per_page=10', $GLOBALS['a8csp_template_test_http_requests'][1] );
+		self::assertCount( 2, $GLOBALS['a8csp_ai_webmcp_test_http_requests'], 'The prerelease check must fetch fresh rather than reuse the stable cache' );
+		self::assertStringEndsWith( 'releases?per_page=10', $GLOBALS['a8csp_ai_webmcp_test_http_requests'][1] );
 		self::assertIsArray( $update );
 		self::assertSame( '3.0.0-beta.1', $update['version'], 'The prerelease install follows the prerelease, never the cached stable release' );
 		self::assertSame( 'https://example.com/beta.zip', $update['package'] );
@@ -470,31 +470,31 @@ final class GitHubReleaseUpdateTest extends TestCase {
 	#[RunInSeparateProcess]
 	public function test_plugin_information_for_the_own_slug_shows_the_cached_release(): void {
 		self::stage_plugin_metadata( '1.0.0' );
-		$GLOBALS['a8csp_template_test_http_response'] = self::a_release_response(
+		$GLOBALS['a8csp_ai_webmcp_test_http_response'] = self::a_release_response(
 			array(
 				'tag_name' => 'v2.0.0',
-				'html_url' => 'https://github.com/a8cteam51/a8csp-plugin-template/releases/tag/v2.0.0',
+				'html_url' => 'https://github.com/a8cteam51/a8csp-ai-canvas-webmcp/releases/tag/v2.0.0',
 				'body'     => "Fixes the widget.\nAdds a setting.",
 				'assets'   => array(
 					array(
-						'name'                 => 'a8csp-plugin-template.zip',
+						'name'                 => 'a8csp-ai-canvas-webmcp.zip',
 						'browser_download_url' => 'https://example.com/right.zip',
 					),
 				),
 			)
 		);
 
-		a8csp_template_check_github_release_update( false, self::plugin_data( '1.0.0' ), \constant( 'A8CSP_TEMPLATE_BASENAME' ) );
-		$information = a8csp_template_get_github_release_information( false, 'plugin_information', (object) array( 'slug' => 'a8csp-plugin-template' ) );
+		a8csp_ai_webmcp_check_github_release_update( false, self::plugin_data( '1.0.0' ), \constant( 'A8CSP_AI_WEBMCP_BASENAME' ) );
+		$information = a8csp_ai_webmcp_get_github_release_information( false, 'plugin_information', (object) array( 'slug' => 'a8csp-ai-canvas-webmcp' ) );
 
 		self::assertInstanceOf( \stdClass::class, $information );
-		self::assertSame( 'A8CSP Template Plugin', $information->name );
-		self::assertSame( 'a8csp-plugin-template', $information->slug );
+		self::assertSame( 'A8CSP AI Canvas WebMCP', $information->name );
+		self::assertSame( 'a8csp-ai-canvas-webmcp', $information->slug );
 		self::assertSame( '2.0.0', $information->version );
 		self::assertSame( 'https://example.com/right.zip', $information->download_link );
 		self::assertStringContainsString( 'Fixes the widget.', $information->sections['changelog'] );
 		self::assertStringContainsString( 'Adds a setting.', $information->sections['changelog'] );
-		self::assertCount( 1, $GLOBALS['a8csp_template_test_http_requests'], 'The details request reuses the release the update check cached' );
+		self::assertCount( 1, $GLOBALS['a8csp_ai_webmcp_test_http_requests'], 'The details request reuses the release the update check cached' );
 	}
 
 	/**
@@ -509,16 +509,16 @@ final class GitHubReleaseUpdateTest extends TestCase {
 	#[RunInSeparateProcess]
 	public function test_plugin_information_for_the_own_slug_stays_local_without_a_release(): void {
 		self::stage_plugin_metadata( '1.0.0' );
-		$GLOBALS['a8csp_template_test_http_response'] = array(
+		$GLOBALS['a8csp_ai_webmcp_test_http_response'] = array(
 			'response' => array( 'code' => 500 ),
 			'body'     => '',
 		);
 
-		$information = a8csp_template_get_github_release_information( false, 'plugin_information', (object) array( 'slug' => 'a8csp-plugin-template' ) );
+		$information = a8csp_ai_webmcp_get_github_release_information( false, 'plugin_information', (object) array( 'slug' => 'a8csp-ai-canvas-webmcp' ) );
 
 		self::assertInstanceOf( \stdClass::class, $information );
-		self::assertSame( 'A8CSP Template Plugin', $information->name );
-		self::assertSame( 'a8csp-plugin-template', $information->slug );
+		self::assertSame( 'A8CSP AI Canvas WebMCP', $information->name );
+		self::assertSame( 'a8csp-ai-canvas-webmcp', $information->slug );
 		self::assertSame( '1.0.0', $information->version );
 		self::assertTrue( $information->external );
 		self::assertObjectNotHasProperty( 'download_link', $information );
@@ -538,16 +538,16 @@ final class GitHubReleaseUpdateTest extends TestCase {
 	public function test_plugin_information_passes_other_requests_through(): void {
 		self::stage_plugin_metadata( '1.0.0' );
 
-		$other_slug = a8csp_template_get_github_release_information( false, 'plugin_information', (object) array( 'slug' => 'woocommerce' ) );
+		$other_slug = a8csp_ai_webmcp_get_github_release_information( false, 'plugin_information', (object) array( 'slug' => 'woocommerce' ) );
 		self::assertFalse( $other_slug );
 
-		$other_action = a8csp_template_get_github_release_information( false, 'query_plugins', (object) array( 'slug' => 'a8csp-plugin-template' ) );
+		$other_action = a8csp_ai_webmcp_get_github_release_information( false, 'query_plugins', (object) array( 'slug' => 'a8csp-ai-canvas-webmcp' ) );
 		self::assertFalse( $other_action );
 
 		$answered = (object) array( 'name' => 'Answered elsewhere' );
-		self::assertSame( $answered, a8csp_template_get_github_release_information( $answered, 'plugin_information', (object) array( 'slug' => 'a8csp-plugin-template' ) ) );
+		self::assertSame( $answered, a8csp_ai_webmcp_get_github_release_information( $answered, 'plugin_information', (object) array( 'slug' => 'a8csp-ai-canvas-webmcp' ) ) );
 
-		self::assertSame( array(), $GLOBALS['a8csp_template_test_http_requests'], 'Pass-through paths must not touch the network' );
+		self::assertSame( array(), $GLOBALS['a8csp_ai_webmcp_test_http_requests'], 'Pass-through paths must not touch the network' );
 	}
 
 	// endregion.
@@ -585,7 +585,7 @@ final class GitHubReleaseUpdateTest extends TestCase {
 	private static function plugin_data( string $version ): array {
 		return array(
 			'Version'    => $version,
-			'TextDomain' => 'a8csp-plugin-template',
+			'TextDomain' => 'a8csp-ai-canvas-webmcp',
 		);
 	}
 
@@ -601,12 +601,12 @@ final class GitHubReleaseUpdateTest extends TestCase {
 	 * @return  void
 	 */
 	private static function stage_plugin_metadata( string $version ): void {
-		\defined( 'A8CSP_TEMPLATE_FILE' ) || \define( 'A8CSP_TEMPLATE_FILE', '/tmp/plugins/a8csp-plugin-template/a8csp-template-plugin.php' );
+		\defined( 'A8CSP_AI_WEBMCP_FILE' ) || \define( 'A8CSP_AI_WEBMCP_FILE', '/tmp/plugins/a8csp-ai-canvas-webmcp/a8csp-ai-canvas-webmcp.php' );
 
 		require_once __DIR__ . '/wp-bootstrap-stubs.php';
 		require_once __DIR__ . '/wp-notice-stubs.php';
 
-		$GLOBALS['a8csp_template_test_plugin_data'] = self::plugin_data( $version ) + array( 'Name' => 'A8CSP Template Plugin' );
+		$GLOBALS['a8csp_ai_webmcp_test_plugin_data'] = self::plugin_data( $version ) + array( 'Name' => 'A8CSP AI Canvas WebMCP' );
 	}
 
 	// endregion.

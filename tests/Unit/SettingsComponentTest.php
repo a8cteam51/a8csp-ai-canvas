@@ -1,9 +1,9 @@
 <?php declare( strict_types=1 );
 
-namespace A8C\SpecialProjects\PluginTemplate\Tests\Unit;
+namespace A8C\SpecialProjects\AICanvasWebMCP\Tests\Unit;
 
-use A8C\SpecialProjects\PluginTemplate\AbstractComponent;
-use A8C\SpecialProjects\PluginTemplate\Settings;
+use A8C\SpecialProjects\AICanvasWebMCP\AbstractComponent;
+use A8C\SpecialProjects\AICanvasWebMCP\Settings;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\TestCase;
@@ -32,7 +32,7 @@ final class SettingsComponentTest extends TestCase {
 	protected function setUp(): void {
 		parent::setUp();
 
-		$GLOBALS['a8csp_template_test_hooks'] = array();
+		$GLOBALS['a8csp_ai_webmcp_test_hooks'] = array();
 	}
 
 	// endregion.
@@ -66,9 +66,9 @@ final class SettingsComponentTest extends TestCase {
 		$component->initialize();
 		$component->register_hooks();
 
-		self::assertContains( 'admin_init', $GLOBALS['a8csp_template_test_hooks'] );
-		self::assertContains( 'woocommerce_get_sections_advanced', $GLOBALS['a8csp_template_test_hooks'] );
-		self::assertContains( 'woocommerce_get_settings_advanced', $GLOBALS['a8csp_template_test_hooks'] );
+		self::assertContains( 'admin_init', $GLOBALS['a8csp_ai_webmcp_test_hooks'] );
+		self::assertContains( 'woocommerce_get_sections_advanced', $GLOBALS['a8csp_ai_webmcp_test_hooks'] );
+		self::assertContains( 'woocommerce_get_settings_advanced', $GLOBALS['a8csp_ai_webmcp_test_hooks'] );
 	}
 
 	// endregion.

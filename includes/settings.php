@@ -3,16 +3,13 @@
 \defined( 'ABSPATH' ) || exit;
 
 /**
- * Returns the example option's value. Each typed option reader names its option, applies its
- * default, and casts the return so callers never touch raw `get_option()` mixed values. The write
- * side — registration, sanitization, and rendering — lives in the Settings feature's component
- * in `src/Settings/Component.php`.
+ * Returns the example option's value.
  *
  * @since   1.0.0
  * @version 1.0.0
  *
  * @return  string
  */
-function a8csp_template_get_example_option(): string {
-	return (string) get_option( 'a8csp_template_example_option', '' );
+function a8csp_ai_webmcp_get_example_option(): string {
+	return (string) get_option( 'a8csp_ai_webmcp_example_option', '' );
 }

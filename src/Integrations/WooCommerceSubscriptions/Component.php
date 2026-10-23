@@ -1,20 +1,14 @@
 <?php declare( strict_types=1 );
 
-namespace A8C\SpecialProjects\PluginTemplate\Integrations\WooCommerceSubscriptions;
+namespace A8C\SpecialProjects\AICanvasWebMCP\Integrations\WooCommerceSubscriptions;
 
-use A8C\SpecialProjects\PluginTemplate\ComponentInterface;
+use A8C\SpecialProjects\AICanvasWebMCP\ComponentInterface;
 
 \defined( 'ABSPATH' ) || exit;
 
 /**
- * Composes the WooCommerce Subscriptions integration: it extends what the plugin already does
- * instead of smuggling in a feature of its own, and it gates on its companion so none of it is
- * constructed when Subscriptions is absent.
- *
- * This is what a leaf integration becomes the day it needs a second class: a folder owning a
- * `Component` plus plain collaborators. The collaborators are plain final classes, not
- * `ComponentInterface` implementers, so the forwarding depth is still one — contrast with a
- * Component whose children are Components, which is the dependency-injection-container signal.
+ * Composes the WooCommerce Subscriptions integration, gated on the Subscriptions plugin being
+ * active.
  *
  * @since   1.0.0
  * @version 1.0.0
@@ -39,8 +33,7 @@ final class Component implements ComponentInterface {
 	// region METHODS
 
 	/**
-	 * Returns true when WooCommerce Subscriptions is active. The companion gate is the whole point
-	 * of an integration component: everything below may assume Subscriptions exists.
+	 * Whether WooCommerce Subscriptions is active; once constructed, the integration may assume it is.
 	 *
 	 * @since   1.0.0
 	 * @version 1.0.0
@@ -98,15 +91,15 @@ final class Component implements ComponentInterface {
 	 * @return  array<int, array<string, mixed>>
 	 */
 	public function add_settings( array $settings, string $current_section ): array {
-		if ( 'a8csp_template' !== $current_section ) {
+		if ( 'a8csp_ai_webmcp' !== $current_section ) {
 			return $settings;
 		}
 
 		$subscriptions_row = array(
-			'title' => __( 'Subscriptions example option', 'a8csp-plugin-template' ),
-			'desc'  => __( 'A persisted example setting owned by the WooCommerce Subscriptions integration.', 'a8csp-plugin-template' ),
+			'title' => __( 'Subscriptions example option', 'a8csp-ai-canvas-webmcp' ),
+			'desc'  => __( 'A persisted example setting owned by the WooCommerce Subscriptions integration.', 'a8csp-ai-canvas-webmcp' ),
 			// Listed in the `footprint.php` manifest; the line there goes with this component when it is deleted.
-			'id'    => 'a8csp_template_wcs_example_option',
+			'id'    => 'a8csp_ai_webmcp_wcs_example_option',
 			'type'  => 'text',
 		);
 		\array_splice( $settings, -1, 0, array( $subscriptions_row ) );

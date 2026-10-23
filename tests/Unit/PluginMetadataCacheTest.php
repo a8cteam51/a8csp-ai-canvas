@@ -1,6 +1,6 @@
 <?php declare( strict_types=1 );
 
-namespace A8C\SpecialProjects\PluginTemplate\Tests\Unit;
+namespace A8C\SpecialProjects\AICanvasWebMCP\Tests\Unit;
 
 use PHPUnit\Framework\Attributes\RunInSeparateProcess;
 use PHPUnit\Framework\TestCase;
@@ -33,7 +33,7 @@ final class PluginMetadataCacheTest extends TestCase {
 		parent::setUp();
 
 		\defined( 'ABSPATH' ) || \define( 'ABSPATH', '/tmp/' );
-		\defined( 'A8CSP_TEMPLATE_FILE' ) || \define( 'A8CSP_TEMPLATE_FILE', '/tmp/plugins/a8csp-template-plugin/a8csp-template-plugin.php' );
+		\defined( 'A8CSP_AI_WEBMCP_FILE' ) || \define( 'A8CSP_AI_WEBMCP_FILE', '/tmp/plugins/a8csp-ai-canvas-webmcp/a8csp-ai-canvas-webmcp.php' );
 
 		require_once __DIR__ . '/wp-bootstrap-stubs.php';
 		require_once \dirname( __DIR__, 2 ) . '/functions-bootstrap.php';
@@ -55,19 +55,19 @@ final class PluginMetadataCacheTest extends TestCase {
 	 */
 	#[RunInSeparateProcess]
 	public function test_the_host_gate_read_sees_headers_registered_after_include_time(): void {
-		$GLOBALS['a8csp_template_test_actions']     = array();
-		$GLOBALS['a8csp_template_test_plugin_data'] = array( 'Name' => 'A8CSP Template Plugin' );
-		self::assertNull( a8csp_template_get_plugin_metadata( 'WC requires at least' ), 'The include-time read runs before WooCommerce loads, so the extra header is absent' );
+		$GLOBALS['a8csp_ai_webmcp_test_actions']     = array();
+		$GLOBALS['a8csp_ai_webmcp_test_plugin_data'] = array( 'Name' => 'A8CSP AI Canvas WebMCP' );
+		self::assertNull( a8csp_ai_webmcp_get_plugin_metadata( 'WC requires at least' ), 'The include-time read runs before WooCommerce loads, so the extra header is absent' );
 
-		$GLOBALS['a8csp_template_test_actions']     = array( 'plugins_loaded' => 1 );
-		$GLOBALS['a8csp_template_test_plugin_data'] = array(
-			'Name'                 => 'A8CSP Template Plugin',
+		$GLOBALS['a8csp_ai_webmcp_test_actions']     = array( 'plugins_loaded' => 1 );
+		$GLOBALS['a8csp_ai_webmcp_test_plugin_data'] = array(
+			'Name'                 => 'A8CSP AI Canvas WebMCP',
 			'WC requires at least' => '11.1',
 		);
-		self::assertSame( '11.1', a8csp_template_get_plugin_metadata( 'WC requires at least' ), 'The host gate read at plugins_loaded must see the header WooCommerce registered after this plugin was included' );
+		self::assertSame( '11.1', a8csp_ai_webmcp_get_plugin_metadata( 'WC requires at least' ), 'The host gate read at plugins_loaded must see the header WooCommerce registered after this plugin was included' );
 
-		$GLOBALS['a8csp_template_test_plugin_data'] = array( 'Name' => 'mutated' );
-		self::assertSame( '11.1', a8csp_template_get_plugin_metadata( 'WC requires at least' ), 'A read taken once every plugin has loaded is stable and memoized for the request' );
+		$GLOBALS['a8csp_ai_webmcp_test_plugin_data'] = array( 'Name' => 'mutated' );
+		self::assertSame( '11.1', a8csp_ai_webmcp_get_plugin_metadata( 'WC requires at least' ), 'A read taken once every plugin has loaded is stable and memoized for the request' );
 	}
 
 	// endregion.

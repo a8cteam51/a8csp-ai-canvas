@@ -1,16 +1,14 @@
 <?php declare( strict_types=1 );
 
-namespace A8C\SpecialProjects\PluginTemplate\Integrations;
+namespace A8C\SpecialProjects\AICanvasWebMCP\Integrations;
 
-use A8C\SpecialProjects\PluginTemplate\AbstractComponent;
+use A8C\SpecialProjects\AICanvasWebMCP\AbstractComponent;
 
 \defined( 'ABSPATH' ) || exit;
 
 /**
- * Provides the WooPayments integration — the worked example of the simple leaf shape: one
- * descriptively-named class, one companion gate, one honest filter. A leaf is promoted to a
- * folder owning its own `Component` the day it needs a second class; the WooCommerce
- * Subscriptions sibling shows that grown shape.
+ * The WooPayments integration: adds example metadata to the payment data WooPayments builds
+ * from an order, when the WooPayments plugin is active.
  *
  * @since   1.0.0
  * @version 1.0.0
@@ -19,8 +17,7 @@ final class WooPayments extends AbstractComponent {
 	// region METHODS
 
 	/**
-	 * Returns true when WooPayments is active. The companion gate is the whole point of an
-	 * integration component: everything below may assume WooPayments exists.
+	 * Whether WooPayments is active; once constructed, the integration may assume it is.
 	 *
 	 * @since   1.0.0
 	 * @version 1.0.0
@@ -50,8 +47,7 @@ final class WooPayments extends AbstractComponent {
 	// region HOOKS
 
 	/**
-	 * Adds the template's demonstration entry to the payment metadata WooPayments generates from
-	 * an order; replace this with the integration's real behavior.
+	 * Adds a demonstration entry to the payment metadata WooPayments generates from an order.
 	 *
 	 * @since   1.0.0
 	 * @version 1.0.0
@@ -61,7 +57,7 @@ final class WooPayments extends AbstractComponent {
 	 * @return  array<string, mixed>
 	 */
 	public function add_order_metadata( array $metadata ): array {
-		$metadata['a8csp_template_example'] = 'demonstration-value';
+		$metadata['a8csp_ai_webmcp_example'] = 'demonstration-value';
 
 		return $metadata;
 	}

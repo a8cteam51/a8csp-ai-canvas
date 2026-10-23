@@ -12,7 +12,7 @@ every surviving component is initialized before any hook can fire.
 
 ## The map
 
-- `a8csp-template-plugin.php` defines the plugin header and constants, requires
+- `a8csp-ai-canvas-webmcp.php` defines the plugin header and constants, requires
   `functions-bootstrap.php`, and wires the self-updater, the requirements gate, and the plugin
   boot.
 - `functions-bootstrap.php` provides the GitHub release updater, plugin metadata,
@@ -31,8 +31,8 @@ every surviving component is initialized before any hook can fire.
   plugin is a WooCommerce extension, so `boot()` opens with the plugin-wide host gate: without
   WooCommerce at the header-declared floor it stages an explanatory notice and stays un-booted.
 - `src/Settings/` is the settings example feature and owns both settings surfaces: it persists
-  `a8csp_template_example_option` through the Settings API on the General options page, registers
-  a section in WooCommerce → Settings → Advanced persisting `a8csp_template_wc_example_option` —
+  `a8csp_ai_webmcp_example_option` through the Settings API on the General options page, registers
+  a section in WooCommerce → Settings → Advanced persisting `a8csp_ai_webmcp_wc_example_option` —
   the host gate guarantees WooCommerce, so neither surface carries a gate — and demonstrates the
   uninstall footprint plus the compiled admin stylesheet (`assets/css/`).
 - `src/Integrations/` groups the optional integrations behind one nested example:
@@ -106,7 +106,7 @@ WooCommerce tier:
 3. Delete the `src/Integrations/` and `templates/myaccount/` directories — both example children
    extend the WooCommerce ecosystem — and remove `Integrations\Component::class` from the
    `COMPONENTS` list in `src/Plugin.php`.
-4. Remove the `a8csp_template_wc_example_option` and `a8csp_template_wcs_example_option` option
+4. Remove the `a8csp_ai_webmcp_wc_example_option` and `a8csp_ai_webmcp_wcs_example_option` option
    lines from the `footprint.php` manifest.
 5. Remove the WooCommerce development dependency: `composer remove --dev wp-plugin/woocommerce`.
 6. Remove the `wp-content/plugins/woocommerce` mapping from all four `.wp-env*.json` files, drop

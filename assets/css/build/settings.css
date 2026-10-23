@@ -7,7 +7,7 @@
  * the physical property is the worked example that makes the RTL variant meaningfully different.
  */
 /* stylelint-disable-next-line selector-id-pattern -- The id mirrors the WordPress option name, which uses underscores. */
-#a8csp_template_example_option {
+#a8csp_ai_webmcp_example_option {
   border-left: 4px solid #21759b;
   padding-left: 8px;
 }

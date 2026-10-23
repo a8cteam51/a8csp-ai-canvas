@@ -1,29 +1,16 @@
 <?php declare( strict_types=1 );
 
-namespace A8C\SpecialProjects\PluginTemplate\Integrations;
+namespace A8C\SpecialProjects\AICanvasWebMCP\Integrations;
 
-use A8C\SpecialProjects\PluginTemplate\AbstractComponent;
-use A8C\SpecialProjects\PluginTemplate\ComponentInterface;
-use A8C\SpecialProjects\PluginTemplate\ComponentCollection;
+use A8C\SpecialProjects\AICanvasWebMCP\AbstractComponent;
+use A8C\SpecialProjects\AICanvasWebMCP\ComponentInterface;
+use A8C\SpecialProjects\AICanvasWebMCP\ComponentCollection;
 
 \defined( 'ABSPATH' ) || exit;
 
 /**
  * The Integrations group root: one component that composes the plugin's optional integrations —
  * peers that extend the plugin when a companion plugin happens to be active.
- *
- * The children are full Components, and this parent forwards the pipeline's phases to them
- * faithfully through the shared `ComponentCollection`: construction and readiness inside
- * `initialize()`, hooks inside `register_hooks()`. Children come in two shapes — a single-class
- * leaf with a descriptive name, and a grown sub-feature folder owning its own `Component`; a leaf
- * is promoted to the folder shape the day it needs a second class. This template nests exactly
- * one level; a plugin that finds itself wanting more is being told it has outgrown manual
- * composition — the authors' cue to consider a dependency injection container behind the
- * composition root, a judgment call that is theirs to make.
- *
- * The group's own gate stays at the base's always-open default because the children gate
- * individually; a gate every child shares — one companion they all require — would override
- * `should_load()` here instead, sparing each child the repetition.
  *
  * @since   1.0.0
  * @version 1.0.0
@@ -59,8 +46,7 @@ final class Component extends AbstractComponent {
 	// region METHODS
 
 	/**
-	 * Assembles and initializes the children — the same order the composition root uses, one
-	 * level down.
+	 * Assembles and initializes the group's child components.
 	 *
 	 * The survivors are constructed and initialized here, never lazily in `register_hooks()` —
 	 * deferring construction to the hook phase would hand peers a half-built component, the exact

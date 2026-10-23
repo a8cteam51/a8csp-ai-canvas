@@ -1,14 +1,12 @@
 <?php declare( strict_types=1 );
 
-namespace A8C\SpecialProjects\PluginTemplate;
+namespace A8C\SpecialProjects\AICanvasWebMCP;
 
 \defined( 'ABSPATH' ) || exit;
 
 /**
- * A gated collection of components: the component-loop machinery, owned once. The composition
- * root and any group root delegate their gate-construct and phase loops here instead of
- * hand-rolling them — has-a, not is-a: the collection runs components, so it does not implement
- * `ComponentInterface` itself.
+ * A collection of components that gates its members on construction and runs their lifecycle
+ * phases. Owns the component-loop machinery once for the composition root and every group root.
  *
  * @internal
  *

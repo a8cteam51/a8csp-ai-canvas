@@ -1,9 +1,9 @@
 <?php declare( strict_types=1 );
 
-namespace A8C\SpecialProjects\PluginTemplate\Tests\Unit;
+namespace A8C\SpecialProjects\AICanvasWebMCP\Tests\Unit;
 
-use A8C\SpecialProjects\PluginTemplate\AbstractComponent;
-use A8C\SpecialProjects\PluginTemplate\Integrations\WooPayments;
+use A8C\SpecialProjects\AICanvasWebMCP\AbstractComponent;
+use A8C\SpecialProjects\AICanvasWebMCP\Integrations\WooPayments;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\RunInSeparateProcess;
 use PHPUnit\Framework\Attributes\UsesClass;
@@ -34,7 +34,7 @@ final class WooPaymentsTest extends TestCase {
 	protected function setUp(): void {
 		parent::setUp();
 
-		$GLOBALS['a8csp_template_test_hooks'] = array();
+		$GLOBALS['a8csp_ai_webmcp_test_hooks'] = array();
 	}
 
 	// endregion.
@@ -72,10 +72,10 @@ final class WooPaymentsTest extends TestCase {
 		$component = new WooPayments();
 
 		$component->initialize();
-		self::assertSame( array(), $GLOBALS['a8csp_template_test_hooks'] );
+		self::assertSame( array(), $GLOBALS['a8csp_ai_webmcp_test_hooks'] );
 
 		$component->register_hooks();
-		self::assertSame( array( 'wcpay_metadata_from_order' ), $GLOBALS['a8csp_template_test_hooks'] );
+		self::assertSame( array( 'wcpay_metadata_from_order' ), $GLOBALS['a8csp_ai_webmcp_test_hooks'] );
 	}
 
 	/**
@@ -90,7 +90,7 @@ final class WooPaymentsTest extends TestCase {
 		$metadata = ( new WooPayments() )->add_order_metadata( array( 'existing' => 'entry' ) );
 
 		self::assertSame( 'entry', $metadata['existing'] );
-		self::assertSame( 'demonstration-value', $metadata['a8csp_template_example'] );
+		self::assertSame( 'demonstration-value', $metadata['a8csp_ai_webmcp_example'] );
 	}
 
 	// endregion.

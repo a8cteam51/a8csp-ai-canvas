@@ -3,11 +3,8 @@
 \defined( 'ABSPATH' ) || exit;
 
 /**
- * Returns an array with meta information for a given asset path. It starts from a fallback of the
- * file's last-modified time as the version with no dependencies, overlays the version and
- * dependencies from an `.asset.php` file beside the asset when one exists, and appends any extra
- * dependencies passed in. A malformed generated payload is ignored entry by entry, so a stale or
- * hand-edited `.asset.php` degrades to the fallback rather than enqueuing a broken handle.
+ * Returns the version and dependencies for a given asset path, or null when the asset does not
+ * exist.
  *
  * @since   1.0.0
  * @version 1.0.0
@@ -17,8 +14,8 @@
  *
  * @return  array{ version: string, dependencies: array<non-empty-string> }|null
  */
-function a8csp_template_get_asset_meta( string $asset_path, ?array $extra_dependencies = null ): ?array {
-	$asset_path = \str_starts_with( $asset_path, \constant( 'A8CSP_TEMPLATE_DIR_PATH' ) ) ? $asset_path : \constant( 'A8CSP_TEMPLATE_DIR_PATH' ) . $asset_path;
+function a8csp_ai_webmcp_get_asset_meta( string $asset_path, ?array $extra_dependencies = null ): ?array {
+	$asset_path = \str_starts_with( $asset_path, \constant( 'A8CSP_AI_WEBMCP_DIR_PATH' ) ) ? $asset_path : \constant( 'A8CSP_AI_WEBMCP_DIR_PATH' ) . $asset_path;
 	if ( ! \file_exists( $asset_path ) ) {
 		return null;
 	}
@@ -28,7 +25,7 @@ function a8csp_template_get_asset_meta( string $asset_path, ?array $extra_depend
 		'version'      => (string) \filemtime( $asset_path ),
 	);
 	if ( '' === $asset_meta['version'] ) {
-		$asset_meta['version'] = a8csp_template_get_plugin_version();
+		$asset_meta['version'] = a8csp_ai_webmcp_get_plugin_version();
 	}
 
 	$asset_pathinfo              = \pathinfo( $asset_path );

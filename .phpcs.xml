@@ -7,7 +7,7 @@
 	<rule ref="WordPress.WP.I18n">
 		<properties>
 			<property name="text_domain" type="array">
-				<element value="a8csp-plugin-template"/>
+				<element value="a8csp-ai-canvas-webmcp"/>
 			</property>
 		</properties>
 	</rule>
@@ -16,8 +16,8 @@
 	<rule ref="WordPress.NamingConventions.PrefixAllGlobals">
 		<properties>
 			<property name="prefixes" type="array">
-				<element value="a8csp_template_"/>
-				<element value="A8C\SpecialProjects\PluginTemplate"/>
+				<element value="a8csp_ai_webmcp_"/>
+				<element value="A8C\SpecialProjects\AICanvasWebMCP"/>
 			</property>
 		</properties>
 	</rule>

@@ -1,6 +1,6 @@
 <?php declare( strict_types=1 );
 
-namespace A8C\SpecialProjects\PluginTemplate;
+namespace A8C\SpecialProjects\AICanvasWebMCP;
 
 \defined( 'ABSPATH' ) || exit;
 
@@ -11,12 +11,6 @@ namespace A8C\SpecialProjects\PluginTemplate;
  * time any hook can fire, every surviving component is fully initialized. A component may
  * therefore rely on its peers' readiness inside `register_hooks()` and hook callbacks, but never
  * inside `initialize()`.
- *
- * Each feature lives in its own folder under `src/` and exposes exactly one implementation of
- * this contract — its `Component` — as the feature's composition point; descriptive leaf classes
- * inside a feature keep their own names. The `Interface` suffix follows the PSR interface
- * convention (`ContainerInterface`, `LoggerInterface`) and frees the `Component` name for the
- * implementations that folder convention creates.
  *
  * @internal
  *
@@ -37,11 +31,6 @@ interface ComponentInterface {
 	 * WP_CLI, is_admin(), wp_installing()). Request-type surfaces such as REST are NOT gates — they
 	 * stage onto their own hooks in `register_hooks()`. Capability checks run inside the hook
 	 * callbacks, after the current user exists.
-	 *
-	 * The gate recurs at four rungs of one ladder: the whole plugin (the host gate in
-	 * `Plugin::boot()`), a feature subtree (a parent component whose closed gate leaves everything
-	 * its `initialize()` would have constructed unbuilt), a leaf component's own gate, and finally
-	 * those capability checks inside hook callbacks.
 	 *
 	 * @since   1.0.0
 	 * @version 1.0.0

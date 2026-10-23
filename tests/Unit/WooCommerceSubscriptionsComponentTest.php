@@ -1,9 +1,9 @@
 <?php declare( strict_types=1 );
 
-namespace A8C\SpecialProjects\PluginTemplate\Tests\Unit;
+namespace A8C\SpecialProjects\AICanvasWebMCP\Tests\Unit;
 
-use A8C\SpecialProjects\PluginTemplate\Integrations\WooCommerceSubscriptions\Component;
-use A8C\SpecialProjects\PluginTemplate\Integrations\WooCommerceSubscriptions\PriceNote;
+use A8C\SpecialProjects\AICanvasWebMCP\Integrations\WooCommerceSubscriptions\Component;
+use A8C\SpecialProjects\AICanvasWebMCP\Integrations\WooCommerceSubscriptions\PriceNote;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\RunInSeparateProcess;
 use PHPUnit\Framework\Attributes\UsesClass;
@@ -48,7 +48,7 @@ final class WooCommerceSubscriptionsComponentTest extends TestCase {
 	protected function setUp(): void {
 		parent::setUp();
 
-		$GLOBALS['a8csp_template_test_hooks'] = array();
+		$GLOBALS['a8csp_ai_webmcp_test_hooks'] = array();
 	}
 
 	// endregion.
@@ -86,11 +86,11 @@ final class WooCommerceSubscriptionsComponentTest extends TestCase {
 		$component = new Component();
 
 		$component->initialize();
-		self::assertSame( array(), $GLOBALS['a8csp_template_test_hooks'] );
+		self::assertSame( array(), $GLOBALS['a8csp_ai_webmcp_test_hooks'] );
 
 		$component->register_hooks();
-		self::assertContains( 'woocommerce_get_settings_advanced', $GLOBALS['a8csp_template_test_hooks'] );
-		self::assertContains( 'woocommerce_subscriptions_product_price_string', $GLOBALS['a8csp_template_test_hooks'] );
+		self::assertContains( 'woocommerce_get_settings_advanced', $GLOBALS['a8csp_ai_webmcp_test_hooks'] );
+		self::assertContains( 'woocommerce_subscriptions_product_price_string', $GLOBALS['a8csp_ai_webmcp_test_hooks'] );
 	}
 
 	/**
@@ -136,19 +136,19 @@ final class WooCommerceSubscriptionsComponentTest extends TestCase {
 	public function test_add_settings_inserts_the_example_row_before_the_section_end(): void {
 		$section_end = array(
 			'type' => 'sectionend',
-			'id'   => 'a8csp_template_wc_example_section',
+			'id'   => 'a8csp_ai_webmcp_wc_example_section',
 		);
 		$rows        = array(
 			array(
-				'id'   => 'a8csp_template_wc_example_option',
+				'id'   => 'a8csp_ai_webmcp_wc_example_option',
 				'type' => 'text',
 			),
 			$section_end,
 		);
 
-		$result = ( new Component() )->add_settings( $rows, 'a8csp_template' );
+		$result = ( new Component() )->add_settings( $rows, 'a8csp_ai_webmcp' );
 
-		self::assertContains( 'a8csp_template_wcs_example_option', \array_column( $result, 'id' ) );
+		self::assertContains( 'a8csp_ai_webmcp_wcs_example_option', \array_column( $result, 'id' ) );
 		self::assertSame( $section_end, \end( $result ), 'the section-end row must stay last so WooCommerce closes the section' );
 	}
 

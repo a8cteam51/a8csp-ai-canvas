@@ -9,15 +9,15 @@
  *
  * @since   1.0.0
  * @version 1.0.0
- * @package A8C\SpecialProjects\PluginTemplate
+ * @package A8C\SpecialProjects\AICanvasWebMCP
  */
 
 require_once __DIR__ . '/../vendor/autoload.php';
 
-$a8csp_template_wp_load = '/var/www/html/wp-load.php';
-if ( \file_exists( $a8csp_template_wp_load ) ) {
-	require_once $a8csp_template_wp_load;
-	require_once __DIR__ . '/../a8csp-template-plugin.php';
+$a8csp_ai_webmcp_wp_load = '/var/www/html/wp-load.php';
+if ( \file_exists( $a8csp_ai_webmcp_wp_load ) ) {
+	require_once $a8csp_ai_webmcp_wp_load;
+	require_once __DIR__ . '/../a8csp-ai-canvas-webmcp.php';
 } elseif ( ! \defined( 'ABSPATH' ) ) {
 	\define( 'ABSPATH', '/tmp/' );
 	require_once __DIR__ . '/Unit/wp-hook-stubs.php';

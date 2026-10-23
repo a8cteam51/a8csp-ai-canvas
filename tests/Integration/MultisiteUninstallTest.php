@@ -1,6 +1,6 @@
 <?php declare( strict_types=1 );
 
-namespace A8C\SpecialProjects\PluginTemplate\Tests\Integration;
+namespace A8C\SpecialProjects\AICanvasWebMCP\Tests\Integration;
 
 use PHPUnit\Framework\Attributes\RunInSeparateProcess;
 use PHPUnit\Framework\TestCase;
@@ -58,7 +58,7 @@ final class MultisiteUninstallTest extends TestCase {
 	 * @return  void
 	 */
 	protected function tearDown(): void {
-		delete_option( 'a8csp_template_test_uninstall_canary' );
+		delete_option( 'a8csp_ai_webmcp_test_uninstall_canary' );
 
 		if ( null !== $this->proof_site_id ) {
 			wp_delete_site( $this->proof_site_id );
@@ -98,10 +98,10 @@ final class MultisiteUninstallTest extends TestCase {
 			foreach ( $footprint['options'] as $option ) {
 				update_option( $option, 'sentinel' );
 			}
-			update_option( 'a8csp_template_test_uninstall_canary', 'sentinel' );
+			update_option( 'a8csp_ai_webmcp_test_uninstall_canary', 'sentinel' );
 
 			foreach ( array( 'stable', 'prerelease' ) as $channel ) {
-				set_transient( 'a8csp_template_github_latest_release_' . $channel, 'sentinel', HOUR_IN_SECONDS );
+				set_transient( 'a8csp_ai_webmcp_github_latest_release_' . $channel, 'sentinel', HOUR_IN_SECONDS );
 			}
 
 			restore_current_blog();
@@ -116,9 +116,9 @@ final class MultisiteUninstallTest extends TestCase {
 				self::assertFalse( get_option( $option ), "uninstall.php must delete the '{$option}' option on site {$site_id}" );
 			}
 			foreach ( array( 'stable', 'prerelease' ) as $channel ) {
-				self::assertFalse( get_transient( 'a8csp_template_github_latest_release_' . $channel ), "uninstall.php must delete the '{$channel}' update-check transient on site {$site_id}" );
+				self::assertFalse( get_transient( 'a8csp_ai_webmcp_github_latest_release_' . $channel ), "uninstall.php must delete the '{$channel}' update-check transient on site {$site_id}" );
 			}
-			self::assertSame( 'sentinel', get_option( 'a8csp_template_test_uninstall_canary' ), "uninstall.php must not delete keys outside its footprint on site {$site_id}" );
+			self::assertSame( 'sentinel', get_option( 'a8csp_ai_webmcp_test_uninstall_canary' ), "uninstall.php must not delete keys outside its footprint on site {$site_id}" );
 
 			restore_current_blog();
 		}

@@ -1,6 +1,6 @@
 <?php declare( strict_types=1 );
 
-namespace A8C\SpecialProjects\PluginTemplate\Tests\Integration;
+namespace A8C\SpecialProjects\AICanvasWebMCP\Tests\Integration;
 
 use PHPUnit\Framework\TestCase;
 
@@ -26,10 +26,10 @@ final class RequirementsCheckTest extends TestCase {
 	 */
 	public function test_requirements_gate_matches_runtime(): void {
 		if ( \version_compare( $GLOBALS['wp_version'], '7.1', '<' ) ) {
-			self::assertInstanceOf( \WP_Error::class, a8csp_template_validate_requirements() );
-			self::assertFalse( \function_exists( 'a8csp_template_plugin' ) );
+			self::assertInstanceOf( \WP_Error::class, a8csp_ai_webmcp_validate_requirements() );
+			self::assertFalse( \function_exists( 'a8csp_ai_webmcp_plugin' ) );
 		} else {
-			self::assertTrue( a8csp_template_validate_requirements() );
+			self::assertTrue( a8csp_ai_webmcp_validate_requirements() );
 		}
 	}
 

@@ -3,14 +3,14 @@
 /**
  * Notice-rendering WordPress stand-ins for Unit tests that invoke a staged admin-notice callback
  * and assert what it renders. Each stub is the minimal honest stand-in for its WordPress original:
- * `current_user_can()` answers from `$GLOBALS['a8csp_template_test_user_can']` so a test can drive
+ * `current_user_can()` answers from `$GLOBALS['a8csp_ai_webmcp_test_user_can']` so a test can drive
  * the capability guard, the i18n and escaping stubs pass their text through unchanged, and
  * `wp_admin_notice()` echoes the message so the test can capture it with output buffering. The
  * `function_exists()` guards keep this file inert wherever WordPress is loaded.
  *
  * @since   1.0.0
  * @version 1.0.0
- * @package A8C\SpecialProjects\PluginTemplate
+ * @package A8C\SpecialProjects\AICanvasWebMCP
  */
 
 if ( ! \function_exists( 'current_user_can' ) ) {
@@ -25,7 +25,7 @@ if ( ! \function_exists( 'current_user_can' ) ) {
 	 * @return  bool
 	 */
 	function current_user_can( $capability ) {
-		return $GLOBALS['a8csp_template_test_user_can'] ?? true;
+		return $GLOBALS['a8csp_ai_webmcp_test_user_can'] ?? true;
 	}
 }
 

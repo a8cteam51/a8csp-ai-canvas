@@ -3,16 +3,16 @@
 /**
  * HTTP and transient stubs for Unit tests that exercise the GitHub release updater outside
  * WordPress. `wp_remote_get()` records each requested URL in
- * `$GLOBALS['a8csp_template_test_http_requests']` and returns
- * `$GLOBALS['a8csp_template_test_http_response']`; the transient stubs read and write
- * `$GLOBALS['a8csp_template_test_transients']`, recording each TTL in
- * `$GLOBALS['a8csp_template_test_transient_ttls']` — so a test can stage the cache and the
+ * `$GLOBALS['a8csp_ai_webmcp_test_http_requests']` and returns
+ * `$GLOBALS['a8csp_ai_webmcp_test_http_response']`; the transient stubs read and write
+ * `$GLOBALS['a8csp_ai_webmcp_test_transients']`, recording each TTL in
+ * `$GLOBALS['a8csp_ai_webmcp_test_transient_ttls']` — so a test can stage the cache and the
  * network and observe every side effect. The `function_exists()` guards keep this file inert
  * wherever WordPress is loaded.
  *
  * @since   1.0.0
  * @version 1.0.0
- * @package A8C\SpecialProjects\PluginTemplate
+ * @package A8C\SpecialProjects\AICanvasWebMCP
  */
 
 \defined( 'HOUR_IN_SECONDS' ) || \define( 'HOUR_IN_SECONDS', 3600 );
@@ -30,7 +30,7 @@ if ( ! \function_exists( 'get_transient' ) ) {
 	 * @return  mixed
 	 */
 	function get_transient( $transient ) {
-		return $GLOBALS['a8csp_template_test_transients'][ $transient ] ?? false;
+		return $GLOBALS['a8csp_ai_webmcp_test_transients'][ $transient ] ?? false;
 	}
 }
 
@@ -48,8 +48,8 @@ if ( ! \function_exists( 'set_transient' ) ) {
 	 * @return  true
 	 */
 	function set_transient( $transient, $value, $expiration = 0 ) {
-		$GLOBALS['a8csp_template_test_transients'][ $transient ]     = $value;
-		$GLOBALS['a8csp_template_test_transient_ttls'][ $transient ] = $expiration;
+		$GLOBALS['a8csp_ai_webmcp_test_transients'][ $transient ]     = $value;
+		$GLOBALS['a8csp_ai_webmcp_test_transient_ttls'][ $transient ] = $expiration;
 		return true;
 	}
 }
@@ -66,8 +66,8 @@ if ( ! \function_exists( 'wp_remote_get' ) ) {
 	 * @return  array<string, mixed>
 	 */
 	function wp_remote_get( $url ) {
-		$GLOBALS['a8csp_template_test_http_requests'][] = $url;
-		return $GLOBALS['a8csp_template_test_http_response'];
+		$GLOBALS['a8csp_ai_webmcp_test_http_requests'][] = $url;
+		return $GLOBALS['a8csp_ai_webmcp_test_http_response'];
 	}
 }
 

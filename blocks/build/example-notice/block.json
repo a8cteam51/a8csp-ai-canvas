@@ -1,7 +1,7 @@
 {
   "$schema": "https://schemas.wp.org/trunk/block.json",
   "apiVersion": 3,
-  "name": "a8csp-plugin-template/example-notice",
+  "name": "a8csp-ai-canvas-webmcp/example-notice",
   "version": "1.0.0",
   "title": "Example Notice",
   "category": "widgets",
@@ -11,7 +11,7 @@
   "supports": {
     "html": false
   },
-  "textdomain": "a8csp-plugin-template",
+  "textdomain": "a8csp-ai-canvas-webmcp",
   "editorScript": "file:./index.js",
   "editorStyle": "file:./index.css",
   "style": "file:./style-index.css"

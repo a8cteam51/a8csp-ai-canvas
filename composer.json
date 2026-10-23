@@ -1,9 +1,9 @@
 {
-  "name": "a8csp/plugin-template",
+  "name": "a8csp/a8csp-ai-canvas-webmcp",
   "type": "wordpress-plugin",
 
-  "description": "A template for A8C Special Projects plugins.",
-  "homepage": "https://github.com/a8cteam51/a8csp-plugin-template",
+  "description": "Lets the AI agent in your browser build a page in the page editor as a single Custom HTML block, through WebMCP.",
+  "homepage": "https://github.com/a8cteam51/a8csp-ai-canvas-webmcp",
   "license": "GPL-2.0-or-later",
   "authors": [
     {
@@ -12,7 +12,7 @@
     },
     {
       "name": "Contributors",
-      "homepage": "https://github.com/a8cteam51/a8csp-plugin-template/graphs/contributors"
+      "homepage": "https://github.com/a8cteam51/a8csp-ai-canvas-webmcp/graphs/contributors"
     }
   ],
 
@@ -48,7 +48,7 @@
 
   "autoload": {
     "psr-4": {
-      "A8C\\SpecialProjects\\PluginTemplate\\": "src/"
+      "A8C\\SpecialProjects\\AICanvasWebMCP\\": "src/"
     },
     "classmap": [
       "models/"
@@ -56,7 +56,7 @@
   },
   "autoload-dev": {
     "psr-4": {
-      "A8C\\SpecialProjects\\PluginTemplate\\Tests\\": "tests/"
+      "A8C\\SpecialProjects\\AICanvasWebMCP\\Tests\\": "tests/"
     }
   },
 
@@ -85,8 +85,8 @@
       "@i18n:makejson",
       "@i18n:makephp"
     ],
-    "i18n:makepot": "wp i18n make-pot ./ --slug=a8csp-plugin-template",
-    "i18n:updatepo": "wp i18n update-po ./languages/a8csp-plugin-template.pot",
+    "i18n:makepot": "wp i18n make-pot ./ --slug=a8csp-ai-canvas-webmcp",
+    "i18n:updatepo": "wp i18n update-po ./languages/a8csp-ai-canvas-webmcp.pot",
     "i18n:makemo": "wp i18n make-mo ./languages/",
     "i18n:makejson": "wp i18n make-json ./languages/",
     "i18n:makephp": "wp i18n make-php ./languages/",

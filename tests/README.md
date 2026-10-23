@@ -44,7 +44,7 @@ skipping. Its three steps are:
 
 ```sh
 wp-env --config .wp-env.tests.json run cli wp plugin deactivate woocommerce
-wp-env --config .wp-env.tests.json run cli --env-cwd=wp-content/plugins/a8csp-plugin-template vendor/bin/phpunit --testsuite=Integration --filter=PluginBootWithoutWooCommerceTest --fail-on-skipped
+wp-env --config .wp-env.tests.json run cli --env-cwd=wp-content/plugins/a8csp-ai-canvas-webmcp vendor/bin/phpunit --testsuite=Integration --filter=PluginBootWithoutWooCommerceTest --fail-on-skipped
 wp-env --config .wp-env.tests.json run cli wp plugin activate woocommerce
 ```
 
@@ -93,10 +93,10 @@ npm run test:e2e
 
 | Environment | Config                    | Port |
 | ----------- | ------------------------- | ---- |
-| Dev / E2E   | `.wp-env.json`            | 8893 |
-| Tests       | `.wp-env.tests.json`      | 8890 |
-| Below-floor | `.wp-env.belowfloor.json` | 8891 |
-| Multisite   | `.wp-env.multisite.json`  | 8892 |
+| Dev / E2E   | `.wp-env.json`            | 28567 |
+| Tests       | `.wp-env.tests.json`      | 28564 |
+| Below-floor | `.wp-env.belowfloor.json` | 28565 |
+| Multisite   | `.wp-env.multisite.json`  | 28566 |
 
 If another local environment already uses these ports, wp-env's untracked override files take
 local precedence (`.wp-env.override.json`; custom configs pair with e.g.
