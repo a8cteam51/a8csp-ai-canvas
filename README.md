@@ -2,9 +2,23 @@
 
 Lets the AI agent in your browser build a page in the page editor as a single Custom HTML block, through WebMCP.
 
+The plugin does three things:
+
+- registers two page templates, offered in the page editor's Template panel;
+- in the editor of a page, registers four [WebMCP](https://github.com/webmachinelearning/webmcp) tools, which let an agent in the browser read the page, write it as one full-width Custom HTML block of plain HTML, CSS, and JavaScript, choose its template, and find images in the Media Library;
+- lets the user refine the page in the editor by clicking on it: change text, bold, italic, links, images and background images, without opening the code.
+
+## Read this first
+
+**WebMCP is experimental.** It is a W3C Community Group draft, Chrome and Edge offer it behind a flag or in an origin trial, and its API is still changing. In a browser without it, the templates and the editing by clicking still work, and the tools are not there.
+
+**The agent writes as the signed-in user.** The page content is HTML, CSS, and JavaScript, stored unsanitized and served to visitors from the site's own origin, so the script can do anything a script on the site can do. The tools refuse to write for a user without the `unfiltered_html` capability, which is the capability WordPress reserves for exactly this. Nothing reaches visitors until the user publishes the page, so read what the agent wrote before publishing it.
+
 ## Requirements
 
-This plugin is a WooCommerce extension. It needs the WordPress, PHP, and WooCommerce versions its plugin header declares (`Requires at least`, `Requires PHP`, `WC requires at least`); below the WooCommerce floor it stays off and shows an admin notice naming the version it needs.
+- The WordPress and PHP versions the plugin header declares (`Requires at least`, `Requires PHP`).
+- A block theme, with `header` and `footer` template parts for the template that includes them. Classic themes are not supported: the two page templates are block templates, and WordPress does not render those under a classic theme.
+- For the tools, a browser with WebMCP and an agent that calls WebMCP tools. For local development in Chrome, turn on `chrome://flags/#enable-webmcp-testing` and relaunch.
 
 ## Installation
 
@@ -12,7 +26,47 @@ This plugin is a WooCommerce extension. It needs the WordPress, PHP, and WooComm
 1. Upload it through **Plugins → Add New Plugin → Upload Plugin**, or unzip it into `/wp-content/plugins/`; it unpacks to an `a8csp-ai-canvas-webmcp` folder.
 1. Activate the plugin from the **Plugins** screen.
 
-With WooCommerce active at the required version, the plugin's settings appear in two places: a field on the **Settings → General** page, and a section of the **Advanced** tab on the WooCommerce **Settings** page.
+## Building a page with an agent
+
+1. Add a new page.
+1. Ask the agent in your browser to build it. The agent reads the page, which hands it the rules for the content, then writes the page and chooses its template.
+1. Each change appears in the editor at once, and undo takes it back. The editor does not run the page's script: check its behaviour in **Preview**.
+1. Publish the page when it is ready. The agent cannot.
+
+The tools write only to a page that is empty or is already one Custom HTML block, so they never overwrite a page built from other blocks. When the user changes the page between the agent reading it and writing it, the write is refused and the agent reads the page again, so the user's change is not lost.
+
+## WebMCP tools
+
+| Tool | Does |
+| --- | --- |
+| `ai-canvas-get-page` | Returns the page's title, template, CSS, JavaScript and markup, a `revision` for the next write, whether the agent can write to it, and the authoring rules. |
+| `ai-canvas-set-page-content` | Replaces the page's content with one full-width Custom HTML block built from the CSS, JavaScript and markup the agent sends, and can set the title. Refuses a stale `revision`. |
+| `ai-canvas-set-template` | Chooses `header-footer` or `content-only`. |
+| `ai-canvas-list-media` | Searches the Media Library for images, returned with their dimensions and generated smaller sizes. |
+
+WebMCP has no instructions that apply to all of a page's tools, so `ai-canvas-get-page` returns the authoring rules with every read; the agent has to read the page before it can write to it. The rules live in `assets/js/src/webmcp/instructions.js`.
+
+## Page templates
+
+- **AI Canvas: Header, Content, Footer** renders the site's own header and footer around the content.
+- **AI Canvas: Content Only** renders the content alone, for a standalone landing page.
+
+Neither prints the page title, and both give the content the full width of the viewport.
+
+## Editing a page by clicking
+
+A page an agent built is still the site owner's to change. Open it in the WordPress editor and click what you want to change:
+
+- **Text.** Click a heading, a paragraph or a button and type. Select a stretch of text for a small toolbar with bold, italic and link; **Ctrl**/**⌘** + **B**, **I** and **K** do the same. **Enter** starts a new line, and in a button finishes the edit.
+- **Links and buttons.** Click one and its toolbar shows where it goes. Choose it to type a new address, or search for a page of the site by its title, and to have the link open in a new tab. A link inside a sentence can also be removed.
+- **Images.** Click one to replace it from the Media Library or to change its alternative text. The replacement keeps the size of the spot it fills.
+- **Background images.** Click an empty part of a section that has one, and replace it.
+
+Moving the pointer over the page outlines what a click would change, and names it. **Esc** lets go of what is selected. Everything is an ordinary edit to the page: **Save**, undo and redo work as they do for any other, and nothing reaches visitors until the page is saved.
+
+This works on every Custom HTML block, not only on the pages an agent made, and the block's **Edit code** is still there for anything a click cannot reach. Each change is written into the block's HTML where the change is, and the rest of the code is left exactly as it was, so an agent that reads the page back finds what it wrote.
+
+Some things it does not do. It changes what is on the page; it does not add, remove or move sections. The page's script does not run in the editor, as in core's own preview, so anything only the script reveals is edited from the code. A block whose markup a browser has to repair, such as mismatched tags, cannot be edited by clicking, and says so on the first click. And for a user without the `unfiltered_html` capability it is off on blocks that hold CSS or JavaScript, because that user's save would strip them.
 
 ## Updates
 
@@ -38,8 +92,6 @@ workflow lives in [`tests/README.md`](tests/README.md).
 `composer packages-update` and `npm run packages-update` update every dependency within the range its manifest declares. `npm run packages-update:wp` moves the `@wordpress/*` packages, across major versions, to the npm dist-tag named in the script; keep that tag at the plugin's WordPress floor.
 
 ### Releasing
-
-Remove the examples this plugin does not need before its first release. They ship until removed, and the integrations in `src/Integrations/` change a live store: on a site running WooCommerce Subscriptions or WooPayments, they append an example note to every subscription price and add an example key to the metadata WooPayments sends with each payment. [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) maps each example.
 
 Every pull request that changes behavior carries a changelog fragment:
 

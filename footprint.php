@@ -18,12 +18,6 @@
 \defined( 'WP_UNINSTALL_PLUGIN' ) || exit;
 
 return array(
-	'options'   => array(
-		// Settings owns:
-		'a8csp_ai_webmcp_example_option',
-		'a8csp_ai_webmcp_wc_example_option',
-		// Integrations\WooCommerceSubscriptions\Component owns:
-		'a8csp_ai_webmcp_wcs_example_option',
-	),
+	'options'   => array(),
 	'user_meta' => array(),
 );

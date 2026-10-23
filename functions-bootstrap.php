@@ -46,10 +46,10 @@ function a8csp_ai_webmcp_get_plugin_metadata( $property = null ) {
 		$plugin_file = \constant( 'A8CSP_AI_WEBMCP_FILE' );
 		$metadata    = get_plugin_data( $plugin_file, false, $can_translate );
 
-		// Extra plugin headers — WooCommerce's `WC requires at least` — exist only once the
-		// plugin registering them has loaded, and this plugin can load first. A read is
+		// Extra plugin headers, such as WooCommerce's `WC requires at least`, exist only once
+		// the plugin registering them has loaded, and this plugin can load first. A read is
 		// therefore cached only from `plugins_loaded` onward, so the include-time requirements
-		// read cannot poison the host gate that runs on that hook.
+		// read cannot poison a read taken once every plugin has loaded.
 		if ( 0 < did_action( 'plugins_loaded' ) ) {
 			$plugin_data[ $cache_key ] = $metadata;
 		}

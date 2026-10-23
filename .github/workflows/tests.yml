@@ -44,15 +44,6 @@ jobs:
       wp-env-config-file: '.wp-env.tests.json'
       composer-script: 'test:integration'
 
-  # The proof self-skips while WooCommerce is active, so it needs a run of its own with WooCommerce
-  # deactivated; the script fails on a skip, so a deactivation that did not take cannot pass.
-  integration-no-wc:
-    name: Integration (WooCommerce inactive)
-    uses: a8cteam51/a8csp-configs/.github/workflows/reusable-phpunit.yml@295fdb54961eb5a95ec9ed52f183cb44a16e004b # v1.1.0
-    with:
-      wp-env-config-file: '.wp-env.tests.json'
-      composer-script: 'test:integration:no-wc'
-
   requirements:
     name: Requirements (below-floor WP)
     uses: a8cteam51/a8csp-configs/.github/workflows/reusable-phpunit.yml@295fdb54961eb5a95ec9ed52f183cb44a16e004b # v1.1.0

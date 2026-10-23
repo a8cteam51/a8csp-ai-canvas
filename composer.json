@@ -41,8 +41,6 @@
     "infection/infection": "^0.35",
     "phpunit/phpunit": "^13",
     "wp-cli/i18n-command": "^2",
-
-    "wp-plugin/woocommerce": "11.1.*",
     "roave/security-advisories": "dev-latest"
   },
 
@@ -97,10 +95,6 @@
     "test:integration": [
       "./node_modules/.bin/wp-env --config .wp-env.tests.json start",
       "npm --prefix=. run test:integration"
-    ],
-    "test:integration:no-wc": [
-      "./node_modules/.bin/wp-env --config .wp-env.tests.json start",
-      "npm --prefix=. run test:integration:no-wc"
     ],
     "test:requirements": [
       "./node_modules/.bin/wp-env --config .wp-env.belowfloor.json start",

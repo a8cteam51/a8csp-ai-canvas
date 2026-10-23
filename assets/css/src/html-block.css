@@ -1,0 +1,174 @@
+/**
+ * The visual editor of the Custom HTML block.
+ *
+ * One file, loaded twice: in the editor's canvas, where it styles the block's content while it is
+ * edited and the boxes drawn over it, and in the editor around the canvas, where it styles the
+ * toolbar and its panels.
+ */
+
+/* The canvas: the block's content. */
+
+.a8csp-ve-surface {
+	display: contents;
+}
+
+.a8csp-ve-surface[data-cursor="text"],
+.a8csp-ve-surface[data-cursor="text"] * {
+	cursor: text !important;
+}
+
+.a8csp-ve-surface[data-cursor="pointer"],
+.a8csp-ve-surface[data-cursor="pointer"] * {
+	cursor: pointer !important;
+}
+
+/*
+ * The block editor takes every image in a block out of the pointer's way. Here an image is
+ * something to click on, unless the block's own styles took it out of the way.
+ */
+.a8csp-ve-surface img:not([data-a8csp-ve-inert]) {
+	pointer-events: auto !important;
+}
+
+/* The text being edited. The block around it cannot be selected, so the text says that it can. */
+[data-a8csp-ve-host],
+[data-a8csp-ve-host] * {
+	cursor: text !important;
+	-webkit-user-select: text !important;
+	user-select: text !important;
+}
+
+[data-a8csp-ve-host] {
+	outline: none !important;
+}
+
+/* An element whose text was deleted keeps something to click on. */
+[data-a8csp-ve-empty]::before {
+	content: attr(data-a8csp-ve-empty) !important;
+	opacity: 0.5;
+}
+
+/* The canvas: the boxes around what is hovered and what is selected. */
+
+.a8csp-ve-layer {
+	position: absolute;
+	z-index: 100000;
+	top: 0;
+	left: 0;
+	width: 0;
+	height: 0;
+	pointer-events: none;
+}
+
+.a8csp-ve-box {
+	position: absolute;
+	top: 0;
+	left: 0;
+	box-sizing: border-box;
+	border-radius: 2px;
+	pointer-events: none;
+}
+
+.a8csp-ve-box[hidden] {
+	display: none;
+}
+
+/* The white ring keeps the box visible on a section of the box's own colour. */
+.a8csp-ve-box.is-hover {
+	outline: 1px solid var(--wp-admin-theme-color, #3858e9);
+	box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.6);
+}
+
+.a8csp-ve-box.is-selected {
+	outline: 2px solid var(--wp-admin-theme-color, #3858e9);
+	box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.8);
+}
+
+.a8csp-ve-box__label {
+	position: absolute;
+	bottom: 100%;
+	left: -2px;
+	margin: 0 0 4px;
+	padding: 4px 6px;
+	border-radius: 2px;
+	background: var(--wp-admin-theme-color, #3858e9);
+	box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.8);
+	color: #fff;
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+	font-size: 11px;
+	font-style: normal;
+	font-weight: 500;
+	line-height: 1;
+	letter-spacing: normal;
+	text-transform: none;
+	white-space: nowrap;
+}
+
+.a8csp-ve-box__label[hidden] {
+	display: none;
+}
+
+.a8csp-ve-box.is-hover .a8csp-ve-box__label {
+	left: -1px;
+	margin-bottom: 3px;
+}
+
+/* With no room above the box, the label goes inside it. */
+.a8csp-ve-box.has-label-inside .a8csp-ve-box__label {
+	top: 4px;
+	bottom: auto;
+	left: 4px;
+	margin: 0;
+}
+
+/* The editor: the toolbar for what is selected, and its panels. */
+
+/* Under the editor's own panels and modals, as the block toolbar is. */
+.components-popover.a8csp-ve-toolbar {
+	z-index: 31;
+}
+
+/* The popover is as wide as its narrowest content unless told otherwise. */
+.a8csp-ve-toolbar__frame {
+	width: max-content;
+}
+
+.a8csp-ve-toolbar__bar.components-accessible-toolbar {
+	background: #fff;
+	box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+
+.a8csp-ve-toolbar__label {
+	display: flex;
+	align-items: center;
+	padding: 0 12px;
+	border-right: 1px solid #1e1e1e;
+	color: #1e1e1e;
+	font-size: 13px;
+	font-weight: 500;
+	white-space: nowrap;
+}
+
+.a8csp-ve-toolbar__url {
+	overflow: hidden;
+	max-width: 16em;
+	font-weight: 400;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.a8csp-ve-panel__form {
+	display: grid;
+	gap: 16px;
+	width: 300px;
+	padding: 16px;
+}
+
+.a8csp-ve-panel__done {
+	justify-self: end;
+}
+
+/* One toolbar at a time: the block's own waits while something inside the block is selected. */
+.a8csp-ve-has-selection .block-editor-block-contextual-toolbar:not(.is-fixed) {
+	display: none;
+}

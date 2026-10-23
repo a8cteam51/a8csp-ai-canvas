@@ -31,6 +31,4 @@ jobs:
       plugin-slug: ${{ github.event.repository.name }}
       # Matches the plugin header's Requires PHP; below it WordPress refuses to activate the artifact.
       php-version: '8.5'
-      # The WooCommerce host: without it the plugin activates gated-off, which would pass trivially; with it the boot pipeline actually runs during the smoke request.
-      extra-plugins: '["https://downloads.wordpress.org/plugin/woocommerce.zip"]'
       publish: ${{ github.event_name == 'push' || inputs.publish }}

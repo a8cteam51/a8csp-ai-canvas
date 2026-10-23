@@ -1,0 +1,4 @@
+Significance: minor
+Type: added
+
+WebMCP tools in the page editor that let the agent in the browser build the page as one full-width Custom HTML block, with two page templates and editing by clicking.

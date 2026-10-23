@@ -2,8 +2,6 @@ includes:
     - vendor/a8csp/configs/php/quality-assurance/phpstan.dist.neon
 
 parameters:
-    scanDirectories:
-        - vendor/wp-plugin/woocommerce
     # The entry file's name is per-repository, footprint.php is a root data manifest, and tests/
     # is outside the shared config's conventional directories, so all three are listed here.
     paths:

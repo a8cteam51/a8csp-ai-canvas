@@ -3,11 +3,10 @@
 namespace A8C\SpecialProjects\AICanvasWebMCP\Tests\Unit;
 
 use A8C\SpecialProjects\AICanvasWebMCP\AbstractComponent;
-use A8C\SpecialProjects\AICanvasWebMCP\Blocks;
 use A8C\SpecialProjects\AICanvasWebMCP\ComponentCollection;
 use A8C\SpecialProjects\AICanvasWebMCP\ComponentInterface;
-use A8C\SpecialProjects\AICanvasWebMCP\Integrations\WooCommerceSubscriptions;
-use A8C\SpecialProjects\AICanvasWebMCP\Settings;
+use A8C\SpecialProjects\AICanvasWebMCP\HtmlBlock;
+use A8C\SpecialProjects\AICanvasWebMCP\Templates;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\TestCase;
@@ -23,9 +22,8 @@ use PHPUnit\Framework\TestCase;
  */
 #[CoversClass( ComponentCollection::class )]
 #[UsesClass( AbstractComponent::class )]
-#[UsesClass( Blocks\Component::class )]
-#[UsesClass( Settings\Component::class )]
-#[UsesClass( WooCommerceSubscriptions\Component::class )]
+#[UsesClass( HtmlBlock\Component::class )]
+#[UsesClass( Templates\Component::class )]
 final class ComponentCollectionTest extends TestCase {
 	// region LIFECYCLE.
 
@@ -59,10 +57,10 @@ final class ComponentCollectionTest extends TestCase {
 	 * @return  void
 	 */
 	public function test_assemble_gates_before_construction(): void {
-		$components = ComponentCollection::assemble( array( Settings\Component::class, WooCommerceSubscriptions\Component::class, ClosedGateRecordingComponent::class ) );
+		$components = ComponentCollection::assemble( array( Templates\Component::class, ClosedGateRecordingComponent::class ) );
 
-		self::assertTrue( $components->has( Settings\Component::class ) );
-		self::assertFalse( $components->has( WooCommerceSubscriptions\Component::class ) );
+		self::assertTrue( $components->has( Templates\Component::class ) );
+		self::assertFalse( $components->has( ClosedGateRecordingComponent::class ) );
 		self::assertSame( array(), $GLOBALS['a8csp_ai_webmcp_test_phase_events'] );
 		self::assertSame( array(), $GLOBALS['a8csp_ai_webmcp_test_hooks'] );
 	}
@@ -77,18 +75,16 @@ final class ComponentCollectionTest extends TestCase {
 	 * @return  void
 	 */
 	public function test_hook_phase_registers_every_survivors_hooks(): void {
-		$components = ComponentCollection::assemble( array( Blocks\Component::class, Settings\Component::class ) );
+		$components = ComponentCollection::assemble( array( Templates\Component::class, HtmlBlock\Component::class ) );
 
 		$components->initialize();
 		self::assertSame( array(), $GLOBALS['a8csp_ai_webmcp_test_hooks'] );
 
 		$components->register_hooks();
 		self::assertContains( 'init', $GLOBALS['a8csp_ai_webmcp_test_hooks'] );
+		self::assertContains( 'run_wptexturize', $GLOBALS['a8csp_ai_webmcp_test_hooks'] );
+		self::assertContains( 'register_block_type_args', $GLOBALS['a8csp_ai_webmcp_test_hooks'] );
 		self::assertContains( 'enqueue_block_editor_assets', $GLOBALS['a8csp_ai_webmcp_test_hooks'] );
-		self::assertContains( 'admin_init', $GLOBALS['a8csp_ai_webmcp_test_hooks'] );
-		self::assertContains( 'admin_enqueue_scripts', $GLOBALS['a8csp_ai_webmcp_test_hooks'] );
-		self::assertContains( 'woocommerce_get_sections_advanced', $GLOBALS['a8csp_ai_webmcp_test_hooks'] );
-		self::assertContains( 'woocommerce_get_settings_advanced', $GLOBALS['a8csp_ai_webmcp_test_hooks'] );
 	}
 
 	/**

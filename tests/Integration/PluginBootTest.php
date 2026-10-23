@@ -3,46 +3,23 @@
 namespace A8C\SpecialProjects\AICanvasWebMCP\Tests\Integration;
 
 use A8C\SpecialProjects\AICanvasWebMCP\Plugin;
-use A8C\SpecialProjects\AICanvasWebMCP\Settings;
+use A8C\SpecialProjects\AICanvasWebMCP\Templates;
 use PHPUnit\Framework\TestCase;
 
 /**
- * Verifies the plugin boots on a supported runtime inside wp-env: the requirements gate
- * passes, the component registry runs, and the demo components wire and register their
- * WordPress and WooCommerce functionality. The cached accessor is idempotent.
+ * Verifies the plugin boots on a supported runtime inside wp-env: the requirements gate passes,
+ * the component registry runs, and the components register the page templates.
  *
  * @since   1.0.0
  * @version 1.0.0
  */
 final class PluginBootTest extends TestCase {
-	// region LIFECYCLE.
-
-	/**
-	 * Removes the example option the persistence round-trip seeds, regardless of how the test
-	 * finished, since this suite runs against a persistent wp-env database with no per-test
-	 * transaction rollback (see tests/README.md).
-	 *
-	 * @since   1.0.0
-	 * @version 1.0.0
-	 *
-	 * @return  void
-	 */
-	protected function tearDown(): void {
-		delete_option( 'a8csp_ai_webmcp_example_option' );
-
-		parent::tearDown();
-	}
-
-	// endregion.
-
 	// region TESTS.
 
 	/**
 	 * On an at-floor runtime the requirements gate passes, `plugins_loaded` is wired to the
 	 * memoized root's `boot()` (the accessor constructs eagerly at include time, so the wiring
-	 * check below resolves against the same instance), and by request time the pipeline has run
-	 * the demo components far enough to register the block and expose the WooCommerce section and
-	 * its persisted field. The base setting's callback registers it when called directly.
+	 * check below resolves against the same instance), and the pipeline has run.
 	 *
 	 * @since   1.0.0
 	 * @version 1.0.0
@@ -55,52 +32,29 @@ final class PluginBootTest extends TestCase {
 		self::assertNotFalse( has_action( 'plugins_loaded', array( a8csp_ai_webmcp_plugin(), 'boot' ) ) );
 		self::assertInstanceOf( Plugin::class, a8csp_ai_webmcp_plugin() );
 		self::assertTrue( a8csp_ai_webmcp_plugin()->is_booted() );
-
-		$block_metadata = \json_decode(
-			// phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- Local filesystem read of a tracked build artifact, not a remote resource.
-			(string) \file_get_contents( \constant( 'A8CSP_AI_WEBMCP_DIR_PATH' ) . 'blocks/build/example-notice/block.json' ),
-			true,
-			512,
-			JSON_THROW_ON_ERROR
-		);
-
-		self::assertTrue( \WP_Block_Type_Registry::get_instance()->is_registered( $block_metadata['name'] ) );
-
-		// register_settings() runs on `admin_init`, where WordPress has loaded the wp-admin includes;
-		// the settings template functions are loaded here to stand in for that context. The call is
-		// direct because firing `admin_init` would also run WooCommerce's wp-admin-only callbacks.
-		require_once ABSPATH . 'wp-admin/includes/template.php';
-		( new Settings\Component() )->register_settings();
-		self::assertArrayHasKey( 'a8csp_ai_webmcp_example_option', get_registered_settings() );
-
-		$sections = apply_filters( 'woocommerce_get_sections_advanced', array() );
-		self::assertArrayHasKey( 'a8csp_ai_webmcp', $sections );
-
-		$rows = apply_filters( 'woocommerce_get_settings_advanced', array(), 'a8csp_ai_webmcp' );
-		self::assertContains( 'a8csp_ai_webmcp_wc_example_option', \array_column( $rows, 'id' ) );
 	}
 
 	/**
-	 * The example option round-trips: a persisted value comes back through the typed reader, and
-	 * the settings field renders it escaped into its `value` attribute. The sentinel's quote and
-	 * ampersand survive `sanitize_text_field` but not escaping, so the raw form must not appear.
+	 * Both templates are registered for pages, so the page editor offers them. A query for one of
+	 * them comes back as a list: core's editor reads index zero of that result, and warns when a
+	 * plugin-registered template is left keyed by its name.
 	 *
 	 * @since   1.0.0
 	 * @version 1.0.0
 	 *
 	 * @return  void
 	 */
-	public function test_example_option_round_trips_through_reader_and_field(): void {
-		update_option( 'a8csp_ai_webmcp_example_option', 'audit"sentinel&' );
+	public function test_both_templates_are_offered_for_pages(): void {
+		$page_templates = wp_get_theme()->get_page_templates( null, 'page' );
 
-		self::assertSame( 'audit"sentinel&', a8csp_ai_webmcp_get_example_option() );
+		foreach ( Templates\Component::SLUGS as $slug ) {
+			self::assertArrayHasKey( $slug, $page_templates );
 
-		\ob_start();
-		( new Settings\Component() )->render_field();
-		$field = (string) \ob_get_clean();
-
-		self::assertStringContainsString( 'value="audit&quot;sentinel&amp;"', $field );
-		self::assertStringNotContainsString( 'audit"sentinel', $field );
+			$templates = get_block_templates( array( 'slug__in' => array( $slug ) ) );
+			self::assertArrayHasKey( 0, $templates );
+			self::assertSame( $slug, $templates[0]->slug );
+			self::assertStringContainsString( '<!-- wp:post-content', $templates[0]->content );
+		}
 	}
 
 	// endregion.

@@ -29,8 +29,6 @@
  * License URI:             https://www.gnu.org/licenses/gpl-2.0.html
  * Text Domain:             a8csp-ai-canvas-webmcp
  * Domain Path:             /languages
- * WC requires at least:    11.1
- * WC tested up to:         11.1
  */
 
 \defined( 'ABSPATH' ) || exit;
@@ -42,8 +40,8 @@
 \define( 'A8CSP_AI_WEBMCP_DIR_URL', plugin_dir_url( __FILE__ ) );
 
 // The bootstrap's helper functions live in functions-bootstrap.php, which shares this file's
-// below-floor parse constraint; they must exist before the updater registration, the
-// compatibility hook, and the requirements gate below can reference them.
+// below-floor parse constraint; they must exist before the updater registration and the
+// requirements gate below can reference them.
 require_once A8CSP_AI_WEBMCP_DIR_PATH . 'functions-bootstrap.php';
 
 // The self-updater registers before the requirements gates below: an incompatible install is
@@ -56,16 +54,6 @@ add_filter( 'plugins_api', 'a8csp_ai_webmcp_get_github_release_information', 10,
 // loop), so network-activated copies lose their bundled translations without this line.
 // Gettext calls still wait for `init` (JIT).
 load_plugin_textdomain( 'a8csp-ai-canvas-webmcp', false, dirname( A8CSP_AI_WEBMCP_BASENAME ) . '/languages' );
-
-// Declare compatibility with WC features.
-add_action(
-	'before_woocommerce_init',
-	static function () {
-		if ( \class_exists( \Automattic\WooCommerce\Utilities\FeaturesUtil::class ) ) {
-			\Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility( 'custom_order_tables', __FILE__, true );
-		}
-	}
-);
 
 // Load the autoloader.
 if ( ! \is_file( A8CSP_AI_WEBMCP_DIR_PATH . 'vendor/autoload.php' ) ) {

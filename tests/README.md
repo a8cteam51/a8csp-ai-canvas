@@ -1,7 +1,8 @@
 # Tests
 
-The test rig has four PHPUnit suites plus a Playwright end-to-end suite, run against wp-env
-fixtures at three WordPress-version tiers.
+The test rig has four PHPUnit suites, a Jest suite for the JavaScript, and a Playwright end-to-end
+suite. The PHPUnit and end-to-end suites run against wp-env fixtures at three WordPress-version
+tiers.
 
 ## Suites
 
@@ -10,7 +11,9 @@ fixtures at three WordPress-version tiers.
   or Brain Monkey, so the real `Plugin::boot()` loop is exercised outside WordPress.
   Fast, and part of `composer quality-check`.
 - **Integration** (`tests/Integration/`) — boots inside wp-env against a supported WordPress
-  version and exercises the plugin's real boot path. `UninstallTest` runs the real
+  version and exercises the plugin's real boot path. `HtmlBlockTest` covers the Custom HTML block's
+  full-width alignment and editor assets, and `WebMcpTest` that the tools script loads in the page
+  editor only. `UninstallTest` runs the real
   `uninstall.php` end-to-end (seeds sentinels, defines `WP_UNINSTALL_PLUGIN`, asserts its
   footprint is gone and a canary key survives) inside `#[RunInSeparateProcess]`, since that
   constant must not leak into the rest of the suite.
@@ -22,36 +25,21 @@ fixtures at three WordPress-version tiers.
   sweep cleans every site of the network, not just the site the uninstall runs on. The fixture is
   dedicated because `wp core multisite-convert` is one-way; the test self-skips when the
   Integration suite runs it against the single-site fixture.
+- **JavaScript** (`tests/JavaScript/`) — Jest, with no WordPress and no wp-env. It covers how the
+  tools join, split and check a page's content, and the parts of the visual editor that decide what
+  gets saved: the tokenizer, the rewriting of the block's source, the pairing of the source with the
+  parsed elements, the formatting of text, and what a click selects. Jest's DOM parses HTML to the
+  standard, but it lays nothing out and has no caret: what depends on those is in the end-to-end
+  suite.
 - **End-to-End** (`tests/EndToEnd/`) — Playwright, driving a real browser against the dev wp-env
-  instance.
-
-## WooCommerce-less boot proof
-
-`PluginBootWithoutWooCommerceTest` verifies the plugin-wide host gate: with WooCommerce inactive
-the plugin stays un-booted and stages the "requires WooCommerce" notice instead of registering
-anything. It self-skips whenever WooCommerce is active, so the proof needs WooCommerce deactivated
-just for its run. One command does the whole dance, starting the tests wp-env instance first:
-
-```sh
-composer test:integration:no-wc
-```
-
-CI runs it as its own Tests job. `test:integration:no-wc` deactivates WooCommerce in the tests
-wp-env instance, runs that one test directly with `--fail-on-skipped`, then reactivates
-WooCommerce — failing when either the test or the reactivation fails — so the instance is left
-ready for the Integration suite, and a run in which WooCommerce stayed active fails instead of
-skipping. Its three steps are:
-
-```sh
-wp-env --config .wp-env.tests.json run cli wp plugin deactivate woocommerce
-wp-env --config .wp-env.tests.json run cli --env-cwd=wp-content/plugins/a8csp-ai-canvas-webmcp vendor/bin/phpunit --testsuite=Integration --filter=PluginBootWithoutWooCommerceTest --fail-on-skipped
-wp-env --config .wp-env.tests.json run cli wp plugin activate woocommerce
-```
+  instance. `visual-editor.spec.js` deletes only the page it creates, so it can be pointed at a
+  site that has content of its own (`WP_BASE_URL`, `WP_USERNAME`, `WP_PASSWORD`); the other specs
+  clear what they touch wholesale, and are for the wp-env instance only.
 
 ## Running the suites
 
-Each of the wp-env-backed verbs — `test:integration`, `test:integration:no-wc`, `test:requirements`
-and `test:multisite` — starts its own environment first: a container already running serves the
+Each of the wp-env-backed verbs — `test:integration`, `test:requirements` and `test:multisite` —
+starts its own environment first: a container already running serves the
 mount set it was created with, and `start` is what replaces it when the resolved config moved.
 `test:unit` needs no container and starts none.
 
@@ -59,6 +47,12 @@ Unit (no wp-env required):
 
 ```sh
 composer test:unit
+```
+
+JavaScript (no wp-env required):
+
+```sh
+npm run test:unit
 ```
 
 Integration:
