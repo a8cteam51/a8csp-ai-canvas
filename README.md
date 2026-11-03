@@ -5,7 +5,7 @@ Lets the AI agent in your browser build a page in the page editor as a single Cu
 The plugin does three things:
 
 - registers two page templates, offered in the page editor's Template panel;
-- in the editor of a page, registers four [WebMCP](https://github.com/webmachinelearning/webmcp) tools, which let an agent in the browser read the page, write it as one full-width Custom HTML block of plain HTML, CSS, and JavaScript, choose its template, and find images in the Media Library;
+- in the editor of a page, registers five [WebMCP](https://github.com/webmachinelearning/webmcp) tools, which let an agent in the browser read the authoring rules and the page, write it as one full-width Custom HTML block of plain HTML, CSS, and JavaScript, choose its template, and find images in the Media Library;
 - lets the user refine the page in the editor by clicking on it: change text, bold, italic, links, images and background images, without opening the code.
 
 ## Read this first
@@ -29,7 +29,7 @@ The plugin does three things:
 ## Building a page with an agent
 
 1. Add a new page.
-1. Ask the agent in your browser to build it. The agent reads the page, which hands it the rules for the content, then writes the page and chooses its template.
+1. Ask the agent in your browser to build it. The agent reads the rules for the content and the page, then writes the page and chooses its template.
 1. Each change appears in the editor at once, and undo takes it back. The editor does not run the page's script: check its behaviour in **Preview**.
 1. Publish the page when it is ready. The agent cannot.
 
@@ -39,12 +39,35 @@ The tools write only to a page that is empty or is already one Custom HTML block
 
 | Tool | Does |
 | --- | --- |
-| `ai-canvas-get-page` | Returns the page's title, template, CSS, JavaScript and markup, a `revision` for the next write, whether the agent can write to it, and the authoring rules. |
-| `ai-canvas-set-page-content` | Replaces the page's content with one full-width Custom HTML block built from the CSS, JavaScript and markup the agent sends, and can set the title. Refuses a stale `revision`. |
+| `ai-canvas-get-instructions` | Returns the authoring rules: the content format, the templates, and how to work with the user. |
+| `ai-canvas-get-page` | Returns the page's title, template, CSS, JavaScript and markup, a `revision` for the next write, and whether the agent can write to it. Marked as returning untrusted content. |
+| `ai-canvas-set-page-content` | Replaces the page's content with one full-width Custom HTML block built from the CSS, JavaScript and markup the agent sends, and can set the title. Refuses a stale `revision`, and refuses to write until the agent has read the authoring rules. |
 | `ai-canvas-set-template` | Chooses `header-footer` or `content-only`. |
 | `ai-canvas-list-media` | Searches the Media Library for images, returned with their dimensions and generated smaller sizes. |
 
-WebMCP has no instructions that apply to all of a page's tools, so `ai-canvas-get-page` returns the authoring rules with every read; the agent has to read the page before it can write to it. The rules live in `assets/js/src/webmcp/instructions.js`.
+WebMCP has no instructions that apply to all of a page's tools, so `ai-canvas-set-page-content` refuses to write until the agent has called `ai-canvas-get-instructions` in the tab. The rules have a tool of their own because the page's title and content are written by the site's users, so `ai-canvas-get-page` is marked as returning untrusted content, and the rules are not. They live in `assets/js/src/webmcp/instructions.js`.
+
+The tools are registered as one set: if any of them fails to register, the rest are unregistered, so an agent never finds a tool that sends it to one that is missing. In a browser without WebMCP, the editor notes in the console that the tools are not registered.
+
+### With Claude in Chrome
+
+As of November 2026, the Claude in Chrome extension does not list a page's WebMCP tools as tools of its own, but it can call them through JavaScript in the page. Turn on the WebMCP flag, open the page in the editor, and start the session with:
+
+```text
+Edit this page only through its WebMCP tools, using JavaScript in the page:
+  const tools = await document.modelContext.getTools();
+  const call = async (name, input = {}) =>
+    JSON.parse(await document.modelContext.executeTool(tools.find(t => t.name === name), input));
+Call ai-canvas-get-instructions first and read all of it, in 1,500-character slices.
+Call ai-canvas-get-page before every change. Don't change the editor's data any other way.
+```
+
+This route has limits an agent that lists WebMCP tools itself does not:
+
+- Long results can come back cut short, which is why the prompt has the agent read the rules in slices.
+- The extension can withhold a result it takes for cookie or query-string data, so `ai-canvas-get-page` may come back blocked when the page links to a URL with a query string.
+- The agent does not see the tools' annotations, so the page's content reaches it without the untrusted-content marking.
+- The tools' checks hold only while the agent goes through the tools. The same JavaScript can change the editor's data directly, skipping the `revision` check and the rules, so read what the agent wrote before publishing, as with any agent.
 
 ## Page templates
 

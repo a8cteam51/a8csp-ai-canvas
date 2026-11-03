@@ -1,0 +1,4 @@
+Significance: patch
+Type: fixed
+
+The WebMCP tools register all or none, a failed Media Library search tells the agent why, a write reports a missing part or revision before a stale one, and the editor notes in the console when the browser has no WebMCP.

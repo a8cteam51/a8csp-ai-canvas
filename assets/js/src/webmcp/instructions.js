@@ -1,7 +1,9 @@
 /**
- * The authoring guide an agent needs to write an AI Canvas page. `ai-canvas-get-page` returns it
- * with every read, since WebMCP has no channel for instructions that apply to all of a page's
- * tools, and the agent has to read the page before it can change it.
+ * The authoring guide an agent needs to write an AI Canvas page, returned by
+ * `ai-canvas-get-instructions`. WebMCP has no channel for instructions that apply to all of a
+ * page's tools, so `ai-canvas-set-page-content` refuses to write until the agent has read the
+ * guide. It has a tool of its own, not a place in `ai-canvas-get-page`, because that tool returns
+ * content the site's users wrote and is marked untrusted, and the guide is not.
  *
  * The text addresses the agent, not the user, so it is not translatable.
  */
@@ -13,6 +15,7 @@ Your changes go into the editor. Nothing reaches the site's visitors until the u
 
 ## Tools
 
+- \`ai-canvas-get-instructions\` returns these rules. \`ai-canvas-set-page-content\` writes only after it has been called in this tab.
 - \`ai-canvas-get-page\` reads the page: its title, template, CSS, JavaScript and markup, and the \`revision\` that \`ai-canvas-set-page-content\` needs. Call it before every change: the user may have edited the page since you last read it.
 - \`ai-canvas-set-page-content\` replaces the page's CSS, JavaScript and markup, and can set its title. Always send the complete page: what you leave out is removed.
 - \`ai-canvas-set-template\` chooses the template the page renders on.

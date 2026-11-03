@@ -43,8 +43,8 @@ every surviving component is initialized before any hook can fire.
 - `src/WebMcp/` enqueues the tools script (`assets/js/src/webmcp.js`) in the block editor of a
   page, and nowhere else, handing it `Templates\Component::SLUGS`. The script registers the tools
   with the browser's WebMCP API, on `document.modelContext` or, in earlier Chrome builds,
-  `navigator.modelContext`, and does nothing in a browser without it. The tools are described
-  below.
+  `navigator.modelContext`, and in a browser without it registers nothing and notes so in the
+  console. The tools are described below.
 - `includes/` contains automatically loaded procedural helpers, including the asset-meta reader;
   PHP files dropped there load automatically inside WordPress, while underscore-prefixed files
   are skipped.
@@ -71,7 +71,11 @@ else, as the signed-in user, through the editor's own data stores: a change is a
 which undo takes back and which reaches visitors only when the user publishes the page. There is
 no save or publish tool.
 
-`tools.js` defines the four tools. They read and write the editor's copy of the page
+`register.js` registers the tools as one set. Every registration takes the same abort signal, and
+when any of them fails, aborting it unregisters the rest, so an agent never sees a tool without
+the tools it sends the agent to.
+
+`tools.js` defines the five tools. They read and write the editor's copy of the page
 (`getEditorBlocks()`, `resetEditorBlocks()`), not the blocks on screen, which also include the
 template when the editor shows it. A page is `empty` when it holds nothing but the editor's
 unchanged starting paragraph, `canvas` when it is one Custom HTML block, and `other` otherwise;
@@ -84,13 +88,20 @@ markup that is not one root element with a class. It also computes the `revision
 block's HTML: `ai-canvas-get-page` returns it and `ai-canvas-set-page-content` must send it back,
 so a write that would overwrite an edit the user made in between is refused.
 
-`instructions.js` is the authoring guide. WebMCP has no instructions that apply to all of a
-page's tools, so `ai-canvas-get-page` returns the guide with every read, and the `revision` makes
-reading the page the one way to a write.
+`instructions.js` is the authoring guide, which `ai-canvas-get-instructions` returns. WebMCP has
+no instructions that apply to all of a page's tools, so `ai-canvas-set-page-content` refuses to
+write until the agent has called it in the tab, and the `revision` makes reading the page the one
+way to a write. The guide is not part of `ai-canvas-get-page` because that tool returns the page's
+title and content, which the site's users write, and carries `untrustedContentHint`; the guide is
+the plugin's own and should not be read as untrusted.
 
-The tools answer a refusal with an `error` result rather than by throwing, because WebMCP may hand
-an agent nothing of a thrown error but the fact that the tool failed. Chrome passes the input as a
-JSON string up to version 154, so each tool accepts either form. Everything the tools say is
+The tools answer a refusal with an `error` result rather than by throwing, because WebMCP hands an
+agent nothing of a thrown error but the fact that the tool failed; Chrome answers the caller with
+a generic `UnknownError`. That includes a failed Media Library request. Chrome does not hold a call
+to its input schema's `required` list, so each tool checks its input itself, and a write checks
+what the agent sent before the revision, so a call missing a part is told so rather than that the
+page changed. Chrome passes the input as a JSON string up to version 154, so each tool accepts
+either form. Everything the tools say is
 addressed to the agent, so none of it is translated.
 
 ## The visual editor
