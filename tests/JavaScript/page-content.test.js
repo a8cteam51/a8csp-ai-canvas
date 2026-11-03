@@ -113,6 +113,14 @@ describe( 'revisionOf', () => {
 		const html = joinContent( page );
 
 		expect( revisionOf( html ) ).toBe( revisionOf( `${ html }` ) );
-		expect( revisionOf( html ) ).not.toBe( revisionOf( `${ html } ` ) );
+		expect( revisionOf( html ) ).not.toBe(
+			revisionOf( html.replace( 'Proof', 'Proofs' ) )
+		);
+	} );
+
+	it( 'is the same with or without the line breaks the database keeps around the HTML', () => {
+		const html = joinContent( page );
+
+		expect( revisionOf( `\n${ html }\n` ) ).toBe( revisionOf( html ) );
 	} );
 } );

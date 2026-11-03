@@ -1,0 +1,4 @@
+Significance: patch
+Type: fixed
+
+The page's revision no longer changes with the line breaks WordPress keeps around the Custom HTML block, so a write is not refused as stale when the page has not changed.

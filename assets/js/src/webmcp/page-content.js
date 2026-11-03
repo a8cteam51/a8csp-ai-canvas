@@ -144,18 +144,21 @@ export function checkContent( { css, js, markup } ) {
 /**
  * Returns a short fingerprint of a block's HTML, so a write can tell whether the page changed
  * since the agent last read it. It only has to tell versions of one page apart, not resist
- * tampering, so a fast hash does: FNV-1a over the UTF-16 code units.
+ * tampering, so a fast hash does: FNV-1a over the UTF-16 code units. Whitespace around the HTML
+ * is left out: a block loaded from the database keeps the line breaks around its HTML and a block
+ * just written has none, and the page is the same either way.
  *
  * @param {string} html The block's HTML.
  *
  * @return {string} Eight hexadecimal digits.
  */
 export function revisionOf( html ) {
+	const text = html.trim();
 	let hash = 0x811c9dc5;
 
 	/* eslint-disable no-bitwise -- FNV-1a is defined in 32-bit unsigned arithmetic. */
-	for ( let index = 0; index < html.length; index++ ) {
-		hash ^= html.charCodeAt( index );
+	for ( let index = 0; index < text.length; index++ ) {
+		hash ^= text.charCodeAt( index );
 		hash = Math.imul( hash, 0x01000193 ) >>> 0;
 	}
 	/* eslint-enable no-bitwise */
