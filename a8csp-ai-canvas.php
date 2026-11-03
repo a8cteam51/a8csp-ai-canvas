@@ -22,7 +22,7 @@
  * Version:                 1.0.0
  * Requires at least:       7.1
  * Tested up to:            7.1
- * Requires PHP:            8.5
+ * Requires PHP:            8.4
  * Author:                  A8C Special Projects
  * Author URI:              https://specialprojects.automattic.com
  * License:                 GPL v2 or later

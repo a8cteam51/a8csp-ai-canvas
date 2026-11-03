@@ -101,7 +101,7 @@ Version 3 is the same plugin, rebuilt for WebMCP, and a site running 2.x is offe
 
 - **The MCP tools are gone.** An MCP client such as Claude Design can no longer create or change pages through the site, and the AI Canvas card on **Settings → Connectors** goes with them. Pages are now built by an agent in the browser, in the page editor; see [WebMCP tools](#webmcp-tools).
 - **The MCP Adapter plugin is no longer needed.** It can be deactivated if nothing else uses it.
-- **PHP 8.5 is required**, where 2.x needed 8.3. On an older PHP the update still installs, then shows a notice saying what is missing and does nothing else until PHP is upgraded.
+- **PHP 8.4 is required**, where 2.x needed 8.3. On an older PHP the update still installs, then shows a notice saying what is missing and does nothing else until PHP is upgraded.
 - **Pages built with 2.x keep working.** They are already one Custom HTML block on one of the same two templates, so they open in the page editor, can be edited by clicking, and can be rebuilt through the WebMCP tools. The mark 2.x put on the pages its tools created is no longer read, and uninstalling the plugin deletes it.
 
 ## Development
