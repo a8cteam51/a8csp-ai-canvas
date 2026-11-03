@@ -38,7 +38,7 @@ test.describe( 'Visual editor of the Custom HTML block', () => {
 	let pageId;
 
 	test.beforeAll( async ( { requestUtils } ) => {
-		await requestUtils.activatePlugin( 'a8csp-ai-canvas-webmcp' );
+		await requestUtils.activatePlugin( 'a8csp-ai-canvas' );
 	} );
 
 	test.beforeEach( async ( { requestUtils, admin } ) => {

@@ -14,8 +14,8 @@
  *
  * @return  array{ version: string, dependencies: array<non-empty-string> }|null
  */
-function a8csp_ai_webmcp_get_asset_meta( string $asset_path, ?array $extra_dependencies = null ): ?array {
-	$asset_path = \str_starts_with( $asset_path, \constant( 'A8CSP_AI_WEBMCP_DIR_PATH' ) ) ? $asset_path : \constant( 'A8CSP_AI_WEBMCP_DIR_PATH' ) . $asset_path;
+function a8csp_ai_canvas_get_asset_meta( string $asset_path, ?array $extra_dependencies = null ): ?array {
+	$asset_path = \str_starts_with( $asset_path, \constant( 'A8CSP_AI_CANVAS_DIR_PATH' ) ) ? $asset_path : \constant( 'A8CSP_AI_CANVAS_DIR_PATH' ) . $asset_path;
 	if ( ! \file_exists( $asset_path ) ) {
 		return null;
 	}
@@ -25,7 +25,7 @@ function a8csp_ai_webmcp_get_asset_meta( string $asset_path, ?array $extra_depen
 		'version'      => (string) \filemtime( $asset_path ),
 	);
 	if ( '' === $asset_meta['version'] ) {
-		$asset_meta['version'] = a8csp_ai_webmcp_get_plugin_version();
+		$asset_meta['version'] = a8csp_ai_canvas_get_plugin_version();
 	}
 
 	$asset_pathinfo              = \pathinfo( $asset_path );

@@ -1,8 +1,8 @@
 <?php declare( strict_types=1 );
 
-namespace A8C\SpecialProjects\AICanvasWebMCP\HtmlBlock;
+namespace A8C\SpecialProjects\AICanvas\HtmlBlock;
 
-use A8C\SpecialProjects\AICanvasWebMCP\AbstractComponent;
+use A8C\SpecialProjects\AICanvas\AbstractComponent;
 
 \defined( 'ABSPATH' ) || exit;
 
@@ -77,15 +77,15 @@ final class Component extends AbstractComponent {
 	 * @return  void
 	 */
 	public function enqueue_editor_script(): void {
-		$asset_meta = a8csp_ai_webmcp_get_asset_meta( 'assets/js/build/html-block.js' );
+		$asset_meta = a8csp_ai_canvas_get_asset_meta( 'assets/js/build/html-block.js' );
 		if ( \is_null( $asset_meta ) ) {
 			return;
 		}
 
-		$handle = a8csp_ai_webmcp_get_plugin_slug() . '-html-block';
+		$handle = a8csp_ai_canvas_get_plugin_slug() . '-html-block';
 
-		wp_enqueue_script( $handle, \constant( 'A8CSP_AI_WEBMCP_DIR_URL' ) . 'assets/js/build/html-block.js', $asset_meta['dependencies'], $asset_meta['version'], true );
-		wp_set_script_translations( $handle, 'a8csp-ai-canvas-webmcp' );
+		wp_enqueue_script( $handle, \constant( 'A8CSP_AI_CANVAS_DIR_URL' ) . 'assets/js/build/html-block.js', $asset_meta['dependencies'], $asset_meta['version'], true );
+		wp_set_script_translations( $handle, 'a8csp-ai-canvas' );
 	}
 
 	/**
@@ -106,14 +106,14 @@ final class Component extends AbstractComponent {
 			return;
 		}
 
-		$asset_meta = a8csp_ai_webmcp_get_asset_meta( 'assets/js/build/html-block.css' );
+		$asset_meta = a8csp_ai_canvas_get_asset_meta( 'assets/js/build/html-block.css' );
 		if ( \is_null( $asset_meta ) ) {
 			return;
 		}
 
-		$handle = a8csp_ai_webmcp_get_plugin_slug() . '-html-block';
+		$handle = a8csp_ai_canvas_get_plugin_slug() . '-html-block';
 
-		wp_enqueue_style( $handle, \constant( 'A8CSP_AI_WEBMCP_DIR_URL' ) . 'assets/js/build/html-block.css', array(), $asset_meta['version'] );
+		wp_enqueue_style( $handle, \constant( 'A8CSP_AI_CANVAS_DIR_URL' ) . 'assets/js/build/html-block.css', array(), $asset_meta['version'] );
 		wp_style_add_data( $handle, 'rtl', 'replace' );
 	}
 

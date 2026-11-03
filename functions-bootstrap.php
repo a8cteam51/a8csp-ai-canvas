@@ -11,7 +11,7 @@
  *
  * @since       1.0.0
  * @version     1.0.0
- * @package     A8C\SpecialProjects\AICanvasWebMCP
+ * @package     A8C\SpecialProjects\AICanvas
  * @author      A8C Special Projects
  * @license     GPL-2.0-or-later
  */
@@ -30,7 +30,7 @@
  *
  * @return  ($property is null ? PluginMetaData : ($property is PluginMetaKey ? PluginMetaData[PluginMetaKey] : null))
  */
-function a8csp_ai_webmcp_get_plugin_metadata( $property = null ) {
+function a8csp_ai_canvas_get_plugin_metadata( $property = null ) {
 	static $plugin_data = array();
 
 	$can_translate = 0 < did_action( 'init' );
@@ -43,7 +43,7 @@ function a8csp_ai_webmcp_get_plugin_metadata( $property = null ) {
 			require_once ABSPATH . 'wp-admin/includes/plugin.php';
 		}
 
-		$plugin_file = \constant( 'A8CSP_AI_WEBMCP_FILE' );
+		$plugin_file = \constant( 'A8CSP_AI_CANVAS_FILE' );
 		$metadata    = get_plugin_data( $plugin_file, false, $can_translate );
 
 		// Extra plugin headers, such as WooCommerce's `WC requires at least`, exist only once
@@ -76,8 +76,8 @@ function a8csp_ai_webmcp_get_plugin_metadata( $property = null ) {
  *
  * @return  string
  */
-function a8csp_ai_webmcp_get_plugin_slug() {
-	$text_domain = a8csp_ai_webmcp_get_plugin_metadata( 'TextDomain' );
+function a8csp_ai_canvas_get_plugin_slug() {
+	$text_domain = a8csp_ai_canvas_get_plugin_metadata( 'TextDomain' );
 	return sanitize_key( $text_domain );
 }
 
@@ -91,8 +91,8 @@ function a8csp_ai_webmcp_get_plugin_slug() {
  *
  * @return  string
  */
-function a8csp_ai_webmcp_get_plugin_name() {
-	return a8csp_ai_webmcp_get_plugin_metadata( 'Name' );
+function a8csp_ai_canvas_get_plugin_name() {
+	return a8csp_ai_canvas_get_plugin_metadata( 'Name' );
 }
 
 /**
@@ -105,8 +105,8 @@ function a8csp_ai_webmcp_get_plugin_name() {
  *
  * @return  string
  */
-function a8csp_ai_webmcp_get_plugin_version() {
-	return a8csp_ai_webmcp_get_plugin_metadata( 'Version' );
+function a8csp_ai_canvas_get_plugin_version() {
+	return a8csp_ai_canvas_get_plugin_metadata( 'Version' );
 }
 
 /**
@@ -124,9 +124,9 @@ function a8csp_ai_webmcp_get_plugin_version() {
  *
  * @return  array{version: string, url: string, package: string, body: string}|null
  */
-function a8csp_ai_webmcp_get_github_release( $installed_version ) {
+function a8csp_ai_canvas_get_github_release( $installed_version ) {
 	$prerelease_channel = \str_contains( $installed_version, '-' );
-	$transient_key      = 'a8csp_ai_webmcp_github_latest_release_' . ( $prerelease_channel ? 'prerelease' : 'stable' );
+	$transient_key      = 'a8csp_ai_canvas_github_latest_release_' . ( $prerelease_channel ? 'prerelease' : 'stable' );
 
 	$latest_release_info = get_transient( $transient_key );
 	if ( false === $latest_release_info ) {
@@ -174,7 +174,7 @@ function a8csp_ai_webmcp_get_github_release( $installed_version ) {
 		}
 
 		$asset_name = $asset['name'] ?? null;
-		if ( 'a8csp-ai-canvas-webmcp.zip' !== $asset_name ) {
+		if ( 'a8csp-ai-canvas.zip' !== $asset_name ) {
 			continue;
 		}
 
@@ -217,12 +217,12 @@ function a8csp_ai_webmcp_get_github_release( $installed_version ) {
  *
  * @return  array<string, mixed>|false
  */
-function a8csp_ai_webmcp_check_github_release_update( $update, $plugin_data, $plugin_file ) {
-	if ( \constant( 'A8CSP_AI_WEBMCP_BASENAME' ) !== $plugin_file || false !== $update ) {
+function a8csp_ai_canvas_check_github_release_update( $update, $plugin_data, $plugin_file ) {
+	if ( \constant( 'A8CSP_AI_CANVAS_BASENAME' ) !== $plugin_file || false !== $update ) {
 		return $update;
 	}
 
-	$release = a8csp_ai_webmcp_get_github_release( (string) ( $plugin_data['Version'] ?? '' ) );
+	$release = a8csp_ai_canvas_get_github_release( (string) ( $plugin_data['Version'] ?? '' ) );
 	if ( null === $release ) {
 		return false;
 	}
@@ -249,26 +249,26 @@ function a8csp_ai_webmcp_check_github_release_update( $update, $plugin_data, $pl
  *
  * @return  false|object|array<string, mixed>
  */
-function a8csp_ai_webmcp_get_github_release_information( $result, $action, $args ) {
+function a8csp_ai_canvas_get_github_release_information( $result, $action, $args ) {
 	if ( 'plugin_information' !== $action || false !== $result ) {
 		return $result;
 	}
 
-	$plugin_data = a8csp_ai_webmcp_get_plugin_metadata();
+	$plugin_data = a8csp_ai_canvas_get_plugin_metadata();
 	if ( ( $args->slug ?? null ) !== $plugin_data['TextDomain'] ) {
 		return $result;
 	}
 
 	// The plugin is not on wordpress.org, so without a known release the answer stays local: a
 	// lookup there would describe some other plugin with the same slug, or none.
-	$release = a8csp_ai_webmcp_get_github_release( $plugin_data['Version'] );
+	$release = a8csp_ai_canvas_get_github_release( $plugin_data['Version'] );
 	if ( null === $release ) {
 		return (object) array(
 			'name'     => $plugin_data['Name'],
 			'slug'     => $plugin_data['TextDomain'],
 			'version'  => $plugin_data['Version'],
 			'external' => true,
-			'sections' => array( 'changelog' => esc_html( __( 'The release notes are unavailable.', 'a8csp-ai-canvas-webmcp' ) ) ),
+			'sections' => array( 'changelog' => esc_html( __( 'The release notes are unavailable.', 'a8csp-ai-canvas' ) ) ),
 		);
 	}
 
@@ -293,7 +293,7 @@ function a8csp_ai_webmcp_get_github_release_information( $result, $action, $args
  *
  * @return  bool
  */
-function a8csp_ai_webmcp_is_wp_version_compatible( $min_wp_version ) {
+function a8csp_ai_canvas_is_wp_version_compatible( $min_wp_version ) {
 	if ( ! \function_exists( 'is_wp_version_compatible' ) ) {
 		return false;
 	}
@@ -311,7 +311,7 @@ function a8csp_ai_webmcp_is_wp_version_compatible( $min_wp_version ) {
  *
  * @return  bool
  */
-function a8csp_ai_webmcp_is_php_version_compatible( $min_php_version ) {
+function a8csp_ai_canvas_is_php_version_compatible( $min_php_version ) {
 	if ( ! \function_exists( 'is_php_version_compatible' ) ) {
 		return false;
 	}
@@ -329,13 +329,13 @@ function a8csp_ai_webmcp_is_php_version_compatible( $min_php_version ) {
  *
  * @return  true|\WP_Error
  */
-function a8csp_ai_webmcp_validate_requirements() {
+function a8csp_ai_canvas_validate_requirements() {
 	static $result = null;
 	if ( null !== $result ) {
 		return $result;
 	}
 
-	$plugin_metadata = a8csp_ai_webmcp_get_plugin_metadata();
+	$plugin_metadata = a8csp_ai_canvas_get_plugin_metadata();
 	if ( ! isset( $plugin_metadata['RequiresPHP'] ) || '' === $plugin_metadata['RequiresPHP'] ) {
 		$plugin_metadata['RequiresPHP'] = '8.5';
 	}
@@ -343,8 +343,8 @@ function a8csp_ai_webmcp_validate_requirements() {
 		$plugin_metadata['RequiresWP'] = '7.1';
 	}
 
-	$is_php_compatible = a8csp_ai_webmcp_is_php_version_compatible( $plugin_metadata['RequiresPHP'] );
-	$is_wp_compatible  = a8csp_ai_webmcp_is_wp_version_compatible( $plugin_metadata['RequiresWP'] );
+	$is_php_compatible = a8csp_ai_canvas_is_php_version_compatible( $plugin_metadata['RequiresPHP'] );
+	$is_wp_compatible  = a8csp_ai_canvas_is_wp_version_compatible( $plugin_metadata['RequiresWP'] );
 
 	$wp_error = new \WP_Error();
 	if ( ! $is_wp_compatible ) {
@@ -373,7 +373,7 @@ function a8csp_ai_webmcp_validate_requirements() {
  *
  * @return  void
  */
-function a8csp_ai_webmcp_output_requirements_error( $error ) {
+function a8csp_ai_canvas_output_requirements_error( $error ) {
 	add_action(
 		'all_admin_notices',
 		static function () use ( $error ) {
@@ -383,13 +383,13 @@ function a8csp_ai_webmcp_output_requirements_error( $error ) {
 
 			$requirements_error = wp_sprintf(
 				/* translators: 1: Plugin name, 2: Plugin version */
-				__( '<strong>%1$s (version %2$s)</strong> could not be initialized.', 'a8csp-ai-canvas-webmcp' ),
-				a8csp_ai_webmcp_get_plugin_name(),
-				a8csp_ai_webmcp_get_plugin_version()
+				__( '<strong>%1$s (version %2$s)</strong> could not be initialized.', 'a8csp-ai-canvas' ),
+				a8csp_ai_canvas_get_plugin_name(),
+				a8csp_ai_canvas_get_plugin_version()
 			);
 
 			if ( $error->has_errors() ) {
-				$requirements_error .= ' ' . __( 'Your environment does not meet all the system requirements listed below:', 'a8csp-ai-canvas-webmcp' );
+				$requirements_error .= ' ' . __( 'Your environment does not meet all the system requirements listed below:', 'a8csp-ai-canvas' );
 				$requirements_error .= '<ul class="ul-disc">';
 
 				foreach ( $error->get_error_codes() as $error_code ) {
@@ -402,7 +402,7 @@ function a8csp_ai_webmcp_output_requirements_error( $error ) {
 						case 'plugin_wp_incompatible':
 							$error_message = wp_sprintf(
 								/* translators: 1: Current WP version, 2: Minimum WP version */
-								__( 'Current <em>WordPress version (%1$s)</em> does not meet minimum required version of %2$s.', 'a8csp-ai-canvas-webmcp' ),
+								__( 'Current <em>WordPress version (%1$s)</em> does not meet minimum required version of %2$s.', 'a8csp-ai-canvas' ),
 								get_bloginfo( 'version' ),
 								$error_data['requires_wp']
 							);
@@ -410,13 +410,13 @@ function a8csp_ai_webmcp_output_requirements_error( $error ) {
 						case 'plugin_php_incompatible':
 							$error_message = wp_sprintf(
 								/* translators: 1: Current PHP version, 2: Minimum PHP version */
-								__( 'Current <em>PHP version (%1$s)</em> does not meet minimum required version of %2$s.', 'a8csp-ai-canvas-webmcp' ),
+								__( 'Current <em>PHP version (%1$s)</em> does not meet minimum required version of %2$s.', 'a8csp-ai-canvas' ),
 								PHP_VERSION,
 								$error_data['requires_php']
 							);
 							break;
 						case 'missing_autoloader':
-							$error_message = __( 'The autoloader file is missing. Please run <code>composer install</code> to generate it.', 'a8csp-ai-canvas-webmcp' );
+							$error_message = __( 'The autoloader file is missing. Please run <code>composer install</code> to generate it.', 'a8csp-ai-canvas' );
 							break;
 						default:
 							$error_message = $error->get_error_message( $error_code );

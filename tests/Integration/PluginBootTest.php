@@ -1,9 +1,9 @@
 <?php declare( strict_types=1 );
 
-namespace A8C\SpecialProjects\AICanvasWebMCP\Tests\Integration;
+namespace A8C\SpecialProjects\AICanvas\Tests\Integration;
 
-use A8C\SpecialProjects\AICanvasWebMCP\Plugin;
-use A8C\SpecialProjects\AICanvasWebMCP\Templates;
+use A8C\SpecialProjects\AICanvas\Plugin;
+use A8C\SpecialProjects\AICanvas\Templates;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -27,11 +27,11 @@ final class PluginBootTest extends TestCase {
 	 * @return  void
 	 */
 	public function test_plugin_boots_on_supported_runtime(): void {
-		self::assertTrue( a8csp_ai_webmcp_validate_requirements() );
-		self::assertTrue( \function_exists( 'a8csp_ai_webmcp_plugin' ) );
-		self::assertNotFalse( has_action( 'plugins_loaded', array( a8csp_ai_webmcp_plugin(), 'boot' ) ) );
-		self::assertInstanceOf( Plugin::class, a8csp_ai_webmcp_plugin() );
-		self::assertTrue( a8csp_ai_webmcp_plugin()->is_booted() );
+		self::assertTrue( a8csp_ai_canvas_validate_requirements() );
+		self::assertTrue( \function_exists( 'a8csp_ai_canvas_plugin' ) );
+		self::assertNotFalse( has_action( 'plugins_loaded', array( a8csp_ai_canvas_plugin(), 'boot' ) ) );
+		self::assertInstanceOf( Plugin::class, a8csp_ai_canvas_plugin() );
+		self::assertTrue( a8csp_ai_canvas_plugin()->is_booted() );
 	}
 
 	/**

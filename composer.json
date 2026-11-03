@@ -1,5 +1,5 @@
 {
-  "name": "a8csp/a8csp-ai-canvas-webmcp",
+  "name": "a8csp/a8csp-ai-canvas",
   "type": "wordpress-plugin",
 
   "description": "Lets the AI agent in your browser build a page in the page editor as a single Custom HTML block, through WebMCP.",
@@ -46,7 +46,7 @@
 
   "autoload": {
     "psr-4": {
-      "A8C\\SpecialProjects\\AICanvasWebMCP\\": "src/"
+      "A8C\\SpecialProjects\\AICanvas\\": "src/"
     },
     "classmap": [
       "models/"
@@ -54,7 +54,7 @@
   },
   "autoload-dev": {
     "psr-4": {
-      "A8C\\SpecialProjects\\AICanvasWebMCP\\Tests\\": "tests/"
+      "A8C\\SpecialProjects\\AICanvas\\Tests\\": "tests/"
     }
   },
 
@@ -83,8 +83,8 @@
       "@i18n:makejson",
       "@i18n:makephp"
     ],
-    "i18n:makepot": "wp i18n make-pot ./ --slug=a8csp-ai-canvas-webmcp",
-    "i18n:updatepo": "wp i18n update-po ./languages/a8csp-ai-canvas-webmcp.pot",
+    "i18n:makepot": "wp i18n make-pot ./ --slug=a8csp-ai-canvas",
+    "i18n:updatepo": "wp i18n update-po ./languages/a8csp-ai-canvas.pot",
     "i18n:makemo": "wp i18n make-mo ./languages/",
     "i18n:makejson": "wp i18n make-json ./languages/",
     "i18n:makephp": "wp i18n make-php ./languages/",

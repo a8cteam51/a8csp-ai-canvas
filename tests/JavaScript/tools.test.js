@@ -85,7 +85,7 @@ let apiFetch;
  */
 function load( { blocks = [], unfiltered = true } = {} ) {
 	jest.resetModules();
-	window.a8csp_ai_webmcp = { templates: TEMPLATES };
+	window.a8csp_ai_canvas = { templates: TEMPLATES };
 
 	const data = require( '@wordpress/data' );
 	apiFetch = require( '@wordpress/api-fetch' ).default;

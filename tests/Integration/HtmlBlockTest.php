@@ -1,8 +1,8 @@
 <?php declare( strict_types=1 );
 
-namespace A8C\SpecialProjects\AICanvasWebMCP\Tests\Integration;
+namespace A8C\SpecialProjects\AICanvas\Tests\Integration;
 
-use A8C\SpecialProjects\AICanvasWebMCP\HtmlBlock;
+use A8C\SpecialProjects\AICanvas\HtmlBlock;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -41,8 +41,8 @@ final class HtmlBlockTest extends TestCase {
 	 * @return  void
 	 */
 	protected function tearDown(): void {
-		wp_dequeue_script( 'a8csp-ai-canvas-webmcp-html-block' );
-		wp_dequeue_style( 'a8csp-ai-canvas-webmcp-html-block' );
+		wp_dequeue_script( 'a8csp-ai-canvas-html-block' );
+		wp_dequeue_style( 'a8csp-ai-canvas-html-block' );
 		set_current_screen( 'front' );
 
 		parent::tearDown();
@@ -113,13 +113,13 @@ final class HtmlBlockTest extends TestCase {
 	 * @return  void
 	 */
 	public function test_the_editor_script_is_enqueued(): void {
-		self::assertFalse( wp_script_is( 'a8csp-ai-canvas-webmcp-html-block', 'enqueued' ) );
+		self::assertFalse( wp_script_is( 'a8csp-ai-canvas-html-block', 'enqueued' ) );
 
 		( new HtmlBlock\Component() )->enqueue_editor_script();
 
-		self::assertTrue( wp_script_is( 'a8csp-ai-canvas-webmcp-html-block', 'enqueued' ) );
+		self::assertTrue( wp_script_is( 'a8csp-ai-canvas-html-block', 'enqueued' ) );
 
-		$script = wp_scripts()->registered['a8csp-ai-canvas-webmcp-html-block'] ?? null;
+		$script = wp_scripts()->registered['a8csp-ai-canvas-html-block'] ?? null;
 		self::assertInstanceOf( \_WP_Dependency::class, $script );
 		self::assertContains( 'wp-hooks', $script->deps );
 		self::assertContains( 'wp-compose', $script->deps );
@@ -137,12 +137,12 @@ final class HtmlBlockTest extends TestCase {
 	public function test_the_editor_script_carries_the_visual_editor(): void {
 		( new HtmlBlock\Component() )->enqueue_editor_script();
 
-		$script = wp_scripts()->registered['a8csp-ai-canvas-webmcp-html-block'] ?? null;
+		$script = wp_scripts()->registered['a8csp-ai-canvas-html-block'] ?? null;
 		self::assertInstanceOf( \_WP_Dependency::class, $script );
 		self::assertContains( 'wp-block-editor', $script->deps );
 		self::assertContains( 'wp-components', $script->deps );
 		self::assertContains( 'wp-i18n', $script->deps );
-		self::assertSame( 'a8csp-ai-canvas-webmcp', $script->textdomain );
+		self::assertSame( 'a8csp-ai-canvas', $script->textdomain );
 	}
 
 	/**
@@ -160,9 +160,9 @@ final class HtmlBlockTest extends TestCase {
 
 		( new HtmlBlock\Component() )->enqueue_editor_style();
 
-		self::assertTrue( wp_style_is( 'a8csp-ai-canvas-webmcp-html-block', 'enqueued' ) );
+		self::assertTrue( wp_style_is( 'a8csp-ai-canvas-html-block', 'enqueued' ) );
 
-		$style = wp_styles()->registered['a8csp-ai-canvas-webmcp-html-block'] ?? null;
+		$style = wp_styles()->registered['a8csp-ai-canvas-html-block'] ?? null;
 		self::assertInstanceOf( \_WP_Dependency::class, $style );
 		self::assertStringEndsWith( 'assets/js/build/html-block.css', (string) $style->src );
 		self::assertSame( 'replace', $style->extra['rtl'] ?? null );
@@ -182,7 +182,7 @@ final class HtmlBlockTest extends TestCase {
 
 		( new HtmlBlock\Component() )->enqueue_editor_style();
 
-		self::assertFalse( wp_style_is( 'a8csp-ai-canvas-webmcp-html-block', 'enqueued' ) );
+		self::assertFalse( wp_style_is( 'a8csp-ai-canvas-html-block', 'enqueued' ) );
 	}
 
 	// endregion.

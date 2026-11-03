@@ -5,7 +5,7 @@ parameters:
     # The entry file's name is per-repository, footprint.php is a root data manifest, and tests/
     # is outside the shared config's conventional directories, so all three are listed here.
     paths:
-        - %currentWorkingDirectory%/a8csp-ai-canvas-webmcp.php
+        - %currentWorkingDirectory%/a8csp-ai-canvas.php
         - %currentWorkingDirectory%/footprint.php
         - %currentWorkingDirectory%/tests
     excludePaths:
@@ -15,4 +15,4 @@ parameters:
             - %currentWorkingDirectory%/tests/Unit/*-stubs.php
     WPCompat:
         # wp-compat's fallback finds the entry file only when the checkout directory shares its name.
-        pluginFile: %currentWorkingDirectory%/a8csp-ai-canvas-webmcp.php
+        pluginFile: %currentWorkingDirectory%/a8csp-ai-canvas.php

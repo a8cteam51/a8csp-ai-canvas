@@ -1,8 +1,8 @@
 <?php declare( strict_types=1 );
 
-namespace A8C\SpecialProjects\AICanvasWebMCP\Tests\Unit;
+namespace A8C\SpecialProjects\AICanvas\Tests\Unit;
 
-use A8C\SpecialProjects\AICanvasWebMCP\AbstractComponent;
+use A8C\SpecialProjects\AICanvas\AbstractComponent;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 
@@ -26,7 +26,7 @@ final class AbstractComponentTest extends TestCase {
 	 * @return  void
 	 */
 	public function test_defaults_hold_for_an_extending_component(): void {
-		$GLOBALS['a8csp_ai_webmcp_test_hooks'] = array();
+		$GLOBALS['a8csp_ai_canvas_test_hooks'] = array();
 
 		$component = new class() extends AbstractComponent {
 			// region METHODS.
@@ -39,7 +39,7 @@ final class AbstractComponentTest extends TestCase {
 			 */
 			#[\Override]
 			public function register_hooks(): void {
-				add_action( 'a8csp_ai_webmcp_test_hook', static function (): void {} );
+				add_action( 'a8csp_ai_canvas_test_hook', static function (): void {} );
 			}
 
 			// endregion.
@@ -48,10 +48,10 @@ final class AbstractComponentTest extends TestCase {
 		self::assertTrue( $component::should_load() );
 
 		$component->initialize();
-		self::assertSame( array(), $GLOBALS['a8csp_ai_webmcp_test_hooks'] );
+		self::assertSame( array(), $GLOBALS['a8csp_ai_canvas_test_hooks'] );
 
 		$component->register_hooks();
-		self::assertSame( array( 'a8csp_ai_webmcp_test_hook' ), $GLOBALS['a8csp_ai_webmcp_test_hooks'] );
+		self::assertSame( array( 'a8csp_ai_canvas_test_hook' ), $GLOBALS['a8csp_ai_canvas_test_hooks'] );
 	}
 
 	// endregion.

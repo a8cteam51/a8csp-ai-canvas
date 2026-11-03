@@ -1,4 +1,0 @@
-Significance: minor
-Type: changed
-
-The authoring rules moved from ai-canvas-get-page to a new ai-canvas-get-instructions tool, which ai-canvas-set-page-content requires before its first write in a tab, and ai-canvas-get-page is marked as returning untrusted content.

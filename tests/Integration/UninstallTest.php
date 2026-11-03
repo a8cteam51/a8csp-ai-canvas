@@ -1,14 +1,14 @@
 <?php declare( strict_types=1 );
 
-namespace A8C\SpecialProjects\AICanvasWebMCP\Tests\Integration;
+namespace A8C\SpecialProjects\AICanvas\Tests\Integration;
 
 use PHPUnit\Framework\Attributes\RunInSeparateProcess;
 use PHPUnit\Framework\TestCase;
 
 /**
- * Verifies the real `uninstall.php` end-to-end: every option and user-meta key the `footprint.php`
- * manifest lists is gone after it runs, and a sentinel key NOT in the footprint survives —
- * proving the file deletes what it owns and nothing else.
+ * Verifies the real `uninstall.php` end-to-end: every option, user-meta and post-meta key the
+ * `footprint.php` manifest lists is gone after it runs, and a sentinel key NOT in the footprint
+ * survives — proving the file deletes what it owns and nothing else.
  *
  * `uninstall.php` and `footprint.php` both guard on `defined( 'WP_UNINSTALL_PLUGIN' )`, a constant
  * WordPress itself only defines during a real plugin-delete request. This test defines it by hand
@@ -20,11 +20,26 @@ use PHPUnit\Framework\TestCase;
  * @version 1.0.0
  */
 final class UninstallTest extends TestCase {
+	// region FIELDS AND CONSTANTS.
+
+	/**
+	 * The ID of the page the post-meta sentinels are seeded on, for tearDown to delete.
+	 *
+	 * @since   1.0.0
+	 * @version 1.0.0
+	 *
+	 * @var     int|null
+	 */
+	private ?int $proof_page_id = null;
+
+	// endregion.
+
 	// region LIFECYCLE.
 
 	/**
-	 * Removes the canary regardless of how the test finished, since this suite runs against
-	 * a persistent wp-env database with no per-test transaction rollback (see tests/README.md).
+	 * Removes the canary and the proof page regardless of how the test finished, since this suite
+	 * runs against a persistent wp-env database with no per-test transaction rollback (see
+	 * tests/README.md).
 	 *
 	 * @since   1.0.0
 	 * @version 1.0.0
@@ -32,7 +47,10 @@ final class UninstallTest extends TestCase {
 	 * @return  void
 	 */
 	protected function tearDown(): void {
-		delete_option( 'a8csp_ai_webmcp_test_uninstall_canary' );
+		delete_option( 'a8csp_ai_canvas_test_uninstall_canary' );
+		if ( null !== $this->proof_page_id ) {
+			wp_delete_post( $this->proof_page_id, true );
+		}
 
 		parent::tearDown();
 	}
@@ -68,10 +86,16 @@ final class UninstallTest extends TestCase {
 			update_user_meta( $user_id, $meta_key, 'sentinel' );
 		}
 
-		update_option( 'a8csp_ai_webmcp_test_uninstall_canary', 'sentinel' );
+		$this->proof_page_id = self::a_proof_page_id();
+		foreach ( $footprint['post_meta'] as $post_meta_key ) {
+			update_post_meta( $this->proof_page_id, $post_meta_key, 'sentinel' );
+		}
+
+		update_post_meta( $this->proof_page_id, 'a8csp_ai_canvas_test_uninstall_canary', 'sentinel' );
+		update_option( 'a8csp_ai_canvas_test_uninstall_canary', 'sentinel' );
 
 		foreach ( array( 'stable', 'prerelease' ) as $channel ) {
-			set_transient( 'a8csp_ai_webmcp_github_latest_release_' . $channel, 'sentinel', HOUR_IN_SECONDS );
+			set_transient( 'a8csp_ai_canvas_github_latest_release_' . $channel, 'sentinel', HOUR_IN_SECONDS );
 		}
 
 		require \dirname( __DIR__, 2 ) . '/uninstall.php';
@@ -81,14 +105,19 @@ final class UninstallTest extends TestCase {
 		}
 
 		foreach ( array( 'stable', 'prerelease' ) as $channel ) {
-			self::assertFalse( get_transient( 'a8csp_ai_webmcp_github_latest_release_' . $channel ), "uninstall.php must delete the '{$channel}' update-check transient" );
+			self::assertFalse( get_transient( 'a8csp_ai_canvas_github_latest_release_' . $channel ), "uninstall.php must delete the '{$channel}' update-check transient" );
 		}
 
 		foreach ( $footprint['user_meta'] as $meta_key ) {
 			self::assertSame( '', get_user_meta( $user_id, $meta_key, true ), "uninstall.php must delete the '{$meta_key}' user-meta key" );
 		}
 
-		self::assertSame( 'sentinel', get_option( 'a8csp_ai_webmcp_test_uninstall_canary' ), 'uninstall.php must not delete keys outside its footprint' );
+		foreach ( $footprint['post_meta'] as $post_meta_key ) {
+			self::assertSame( '', get_post_meta( $this->proof_page_id, $post_meta_key, true ), "uninstall.php must delete the '{$post_meta_key}' post-meta key" );
+		}
+
+		self::assertSame( 'sentinel', get_post_meta( $this->proof_page_id, 'a8csp_ai_canvas_test_uninstall_canary', true ), 'uninstall.php must not delete post meta outside its footprint' );
+		self::assertSame( 'sentinel', get_option( 'a8csp_ai_canvas_test_uninstall_canary' ), 'uninstall.php must not delete keys outside its footprint' );
 	}
 
 	// endregion.
@@ -116,6 +145,28 @@ final class UninstallTest extends TestCase {
 		self::assertNotEmpty( $users, 'wp-env must provision at least one user to seed user-meta against' );
 
 		return (int) $users[0];
+	}
+
+	/**
+	 * Creates the page the post-meta sentinels are seeded on and returns its ID. The page itself
+	 * is not the plugin's to delete: only the footprint's meta keys on it are.
+	 *
+	 * @since   1.0.0
+	 * @version 1.0.0
+	 *
+	 * @return  int
+	 */
+	private static function a_proof_page_id(): int {
+		$page_id = wp_insert_post(
+			array(
+				'post_type'  => 'page',
+				'post_title' => 'Uninstall proof',
+			)
+		);
+
+		self::assertGreaterThan( 0, $page_id, 'wp-env must allow creating a page to seed post meta against' );
+
+		return $page_id;
 	}
 
 	// endregion.

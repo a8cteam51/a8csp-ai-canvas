@@ -1,9 +1,9 @@
 <?php declare( strict_types=1 );
 
-namespace A8C\SpecialProjects\AICanvasWebMCP\WebMcp;
+namespace A8C\SpecialProjects\AICanvas\WebMcp;
 
-use A8C\SpecialProjects\AICanvasWebMCP\AbstractComponent;
-use A8C\SpecialProjects\AICanvasWebMCP\Templates;
+use A8C\SpecialProjects\AICanvas\AbstractComponent;
+use A8C\SpecialProjects\AICanvas\Templates;
 
 \defined( 'ABSPATH' ) || exit;
 
@@ -54,15 +54,15 @@ final class Component extends AbstractComponent {
 			return;
 		}
 
-		$asset_meta = a8csp_ai_webmcp_get_asset_meta( 'assets/js/build/webmcp.js' );
+		$asset_meta = a8csp_ai_canvas_get_asset_meta( 'assets/js/build/webmcp.js' );
 		if ( \is_null( $asset_meta ) ) {
 			return;
 		}
 
-		$handle = a8csp_ai_webmcp_get_plugin_slug() . '-webmcp';
+		$handle = a8csp_ai_canvas_get_plugin_slug() . '-webmcp';
 
-		wp_enqueue_script( $handle, \constant( 'A8CSP_AI_WEBMCP_DIR_URL' ) . 'assets/js/build/webmcp.js', $asset_meta['dependencies'], $asset_meta['version'], true );
-		wp_add_inline_script( $handle, 'window.a8csp_ai_webmcp = ' . wp_json_encode( array( 'templates' => Templates\Component::SLUGS ) ) . ';', 'before' );
+		wp_enqueue_script( $handle, \constant( 'A8CSP_AI_CANVAS_DIR_URL' ) . 'assets/js/build/webmcp.js', $asset_meta['dependencies'], $asset_meta['version'], true );
+		wp_add_inline_script( $handle, 'window.a8csp_ai_canvas = ' . wp_json_encode( array( 'templates' => Templates\Component::SLUGS ) ) . ';', 'before' );
 	}
 
 	// endregion

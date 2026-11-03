@@ -1,9 +1,9 @@
 <?php declare( strict_types=1 );
 
-namespace A8C\SpecialProjects\AICanvasWebMCP\Tests\Unit;
+namespace A8C\SpecialProjects\AICanvas\Tests\Unit;
 
-use A8C\SpecialProjects\AICanvasWebMCP\AbstractComponent;
-use A8C\SpecialProjects\AICanvasWebMCP\HtmlBlock;
+use A8C\SpecialProjects\AICanvas\AbstractComponent;
+use A8C\SpecialProjects\AICanvas\HtmlBlock;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\TestCase;
@@ -31,13 +31,13 @@ final class HtmlBlockComponentTest extends TestCase {
 	 * @return  void
 	 */
 	public function test_register_hooks_stages_the_filter_and_the_editor_assets(): void {
-		$GLOBALS['a8csp_ai_webmcp_test_hooks'] = array();
+		$GLOBALS['a8csp_ai_canvas_test_hooks'] = array();
 
 		$component = new HtmlBlock\Component();
 		$component->initialize();
 		$component->register_hooks();
 
-		self::assertSame( array( 'register_block_type_args', 'enqueue_block_editor_assets', 'enqueue_block_assets' ), $GLOBALS['a8csp_ai_webmcp_test_hooks'] );
+		self::assertSame( array( 'register_block_type_args', 'enqueue_block_editor_assets', 'enqueue_block_assets' ), $GLOBALS['a8csp_ai_canvas_test_hooks'] );
 	}
 
 	/**

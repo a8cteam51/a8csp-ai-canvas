@@ -1,12 +1,12 @@
 <?php declare( strict_types=1 );
 
-namespace A8C\SpecialProjects\AICanvasWebMCP\Tests\Unit;
+namespace A8C\SpecialProjects\AICanvas\Tests\Unit;
 
-use A8C\SpecialProjects\AICanvasWebMCP\AbstractComponent;
-use A8C\SpecialProjects\AICanvasWebMCP\ComponentCollection;
-use A8C\SpecialProjects\AICanvasWebMCP\ComponentInterface;
-use A8C\SpecialProjects\AICanvasWebMCP\HtmlBlock;
-use A8C\SpecialProjects\AICanvasWebMCP\Templates;
+use A8C\SpecialProjects\AICanvas\AbstractComponent;
+use A8C\SpecialProjects\AICanvas\ComponentCollection;
+use A8C\SpecialProjects\AICanvas\ComponentInterface;
+use A8C\SpecialProjects\AICanvas\HtmlBlock;
+use A8C\SpecialProjects\AICanvas\Templates;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\TestCase;
@@ -38,8 +38,8 @@ final class ComponentCollectionTest extends TestCase {
 	protected function setUp(): void {
 		parent::setUp();
 
-		$GLOBALS['a8csp_ai_webmcp_test_hooks']        = array();
-		$GLOBALS['a8csp_ai_webmcp_test_phase_events'] = array();
+		$GLOBALS['a8csp_ai_canvas_test_hooks']        = array();
+		$GLOBALS['a8csp_ai_canvas_test_phase_events'] = array();
 	}
 
 	// endregion.
@@ -61,8 +61,8 @@ final class ComponentCollectionTest extends TestCase {
 
 		self::assertTrue( $components->has( Templates\Component::class ) );
 		self::assertFalse( $components->has( ClosedGateRecordingComponent::class ) );
-		self::assertSame( array(), $GLOBALS['a8csp_ai_webmcp_test_phase_events'] );
-		self::assertSame( array(), $GLOBALS['a8csp_ai_webmcp_test_hooks'] );
+		self::assertSame( array(), $GLOBALS['a8csp_ai_canvas_test_phase_events'] );
+		self::assertSame( array(), $GLOBALS['a8csp_ai_canvas_test_hooks'] );
 	}
 
 	/**
@@ -78,13 +78,13 @@ final class ComponentCollectionTest extends TestCase {
 		$components = ComponentCollection::assemble( array( Templates\Component::class, HtmlBlock\Component::class ) );
 
 		$components->initialize();
-		self::assertSame( array(), $GLOBALS['a8csp_ai_webmcp_test_hooks'] );
+		self::assertSame( array(), $GLOBALS['a8csp_ai_canvas_test_hooks'] );
 
 		$components->register_hooks();
-		self::assertContains( 'init', $GLOBALS['a8csp_ai_webmcp_test_hooks'] );
-		self::assertContains( 'run_wptexturize', $GLOBALS['a8csp_ai_webmcp_test_hooks'] );
-		self::assertContains( 'register_block_type_args', $GLOBALS['a8csp_ai_webmcp_test_hooks'] );
-		self::assertContains( 'enqueue_block_editor_assets', $GLOBALS['a8csp_ai_webmcp_test_hooks'] );
+		self::assertContains( 'init', $GLOBALS['a8csp_ai_canvas_test_hooks'] );
+		self::assertContains( 'run_wptexturize', $GLOBALS['a8csp_ai_canvas_test_hooks'] );
+		self::assertContains( 'register_block_type_args', $GLOBALS['a8csp_ai_canvas_test_hooks'] );
+		self::assertContains( 'enqueue_block_editor_assets', $GLOBALS['a8csp_ai_canvas_test_hooks'] );
 	}
 
 	/**
@@ -103,7 +103,7 @@ final class ComponentCollectionTest extends TestCase {
 		$components->initialize();
 		$components->register_hooks();
 
-		$events         = $GLOBALS['a8csp_ai_webmcp_test_phase_events'];
+		$events         = $GLOBALS['a8csp_ai_canvas_test_phase_events'];
 		$last_readiness = self::last_index( $events, 'init:' );
 		$first_hook     = self::first_index( $events, 'hooks:' );
 
@@ -194,7 +194,7 @@ final class FirstPhaseRecordingComponent implements ComponentInterface {
 	 */
 	#[\Override]
 	public function initialize(): void {
-		$GLOBALS['a8csp_ai_webmcp_test_phase_events'][] = 'init:first';
+		$GLOBALS['a8csp_ai_canvas_test_phase_events'][] = 'init:first';
 	}
 
 	/**
@@ -205,7 +205,7 @@ final class FirstPhaseRecordingComponent implements ComponentInterface {
 	 */
 	#[\Override]
 	public function register_hooks(): void {
-		$GLOBALS['a8csp_ai_webmcp_test_phase_events'][] = 'hooks:first';
+		$GLOBALS['a8csp_ai_canvas_test_phase_events'][] = 'hooks:first';
 	}
 
 	// endregion.
@@ -240,7 +240,7 @@ final class SecondPhaseRecordingComponent implements ComponentInterface {
 	 */
 	#[\Override]
 	public function initialize(): void {
-		$GLOBALS['a8csp_ai_webmcp_test_phase_events'][] = 'init:second';
+		$GLOBALS['a8csp_ai_canvas_test_phase_events'][] = 'init:second';
 	}
 
 	/**
@@ -251,7 +251,7 @@ final class SecondPhaseRecordingComponent implements ComponentInterface {
 	 */
 	#[\Override]
 	public function register_hooks(): void {
-		$GLOBALS['a8csp_ai_webmcp_test_phase_events'][] = 'hooks:second';
+		$GLOBALS['a8csp_ai_canvas_test_phase_events'][] = 'hooks:second';
 	}
 
 	// endregion.
@@ -274,7 +274,7 @@ final class ClosedGateRecordingComponent extends AbstractComponent {
 	 * @version 1.0.0
 	 */
 	public function __construct() {
-		$GLOBALS['a8csp_ai_webmcp_test_phase_events'][] = 'construct:closed';
+		$GLOBALS['a8csp_ai_canvas_test_phase_events'][] = 'construct:closed';
 	}
 
 	// endregion.

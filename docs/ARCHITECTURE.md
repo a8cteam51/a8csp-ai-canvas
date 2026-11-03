@@ -11,7 +11,7 @@ every surviving component is initialized before any hook can fire.
 
 ## The map
 
-- `a8csp-ai-canvas-webmcp.php` defines the plugin header and constants, requires
+- `a8csp-ai-canvas.php` defines the plugin header and constants, requires
   `functions-bootstrap.php`, and wires the self-updater, the requirements gate, and the plugin
   boot.
 - `functions-bootstrap.php` provides the GitHub release updater, plugin metadata,

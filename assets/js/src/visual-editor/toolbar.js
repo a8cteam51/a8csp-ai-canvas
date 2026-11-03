@@ -141,10 +141,10 @@ function AltPanel( { selection, surface, onClose } ) {
 			>
 				<TextareaControl
 					__nextHasNoMarginBottom
-					label={ __( 'Alternative text', 'a8csp-ai-canvas-webmcp' ) }
+					label={ __( 'Alternative text', 'a8csp-ai-canvas' ) }
 					help={ __(
 						'Describe the image for people who cannot see it. Leave this empty if the image is only decoration.',
-						'a8csp-ai-canvas-webmcp'
+						'a8csp-ai-canvas'
 					) }
 					rows={ 3 }
 					value={ alt }
@@ -156,7 +156,7 @@ function AltPanel( { selection, surface, onClose } ) {
 					variant="primary"
 					type="submit"
 				>
-					{ __( 'Done', 'a8csp-ai-canvas-webmcp' ) }
+					{ __( 'Done', 'a8csp-ai-canvas' ) }
 				</Button>
 			</form>
 		</Popover>
@@ -202,10 +202,10 @@ function FocalPointPanel( { selection, surface, onClose } ) {
 			>
 				<FocalPointPicker
 					__nextHasNoMarginBottom
-					label={ __( 'Focal point', 'a8csp-ai-canvas-webmcp' ) }
+					label={ __( 'Focal point', 'a8csp-ai-canvas' ) }
 					help={ __(
 						'Choose the part of the image that stays in view when the section crops it.',
-						'a8csp-ai-canvas-webmcp'
+						'a8csp-ai-canvas'
 					) }
 					url={ selection.background.url }
 					value={ point }
@@ -217,7 +217,7 @@ function FocalPointPanel( { selection, surface, onClose } ) {
 					variant="primary"
 					type="submit"
 				>
-					{ __( 'Done', 'a8csp-ai-canvas-webmcp' ) }
+					{ __( 'Done', 'a8csp-ai-canvas' ) }
 				</Button>
 			</form>
 		</Popover>
@@ -335,7 +335,7 @@ export function SelectionToolbar( { selection, surface, panel, setPanel } ) {
 						<ToolbarGroup>
 							<ToolbarButton
 								icon={ formatBold }
-								label={ __( 'Bold', 'a8csp-ai-canvas-webmcp' ) }
+								label={ __( 'Bold', 'a8csp-ai-canvas' ) }
 								shortcut={ displayShortcut.primary( 'b' ) }
 								isPressed={ selection.isBold }
 								disabled={ ! selection.hasText }
@@ -343,10 +343,7 @@ export function SelectionToolbar( { selection, surface, panel, setPanel } ) {
 							/>
 							<ToolbarButton
 								icon={ formatItalic }
-								label={ __(
-									'Italic',
-									'a8csp-ai-canvas-webmcp'
-								) }
+								label={ __( 'Italic', 'a8csp-ai-canvas' ) }
 								shortcut={ displayShortcut.primary( 'i' ) }
 								isPressed={ selection.isItalic }
 								disabled={ ! selection.hasText }
@@ -359,26 +356,20 @@ export function SelectionToolbar( { selection, surface, panel, setPanel } ) {
 					{ kind === 'image' && (
 						<ToolbarGroup>
 							<ReplaceButton
-								label={ __(
-									'Replace',
-									'a8csp-ai-canvas-webmcp'
-								) }
+								label={ __( 'Replace', 'a8csp-ai-canvas' ) }
 								onSelect={ ( media ) =>
 									surface.replaceImage( media )
 								}
 							/>
 							<ToolbarButton onClick={ () => setPanel( 'alt' ) }>
-								{ __( 'Alt text', 'a8csp-ai-canvas-webmcp' ) }
+								{ __( 'Alt text', 'a8csp-ai-canvas' ) }
 							</ToolbarButton>
 						</ToolbarGroup>
 					) }
 					{ kind === 'background' && (
 						<ToolbarGroup>
 							<ReplaceButton
-								label={ __(
-									'Replace',
-									'a8csp-ai-canvas-webmcp'
-								) }
+								label={ __( 'Replace', 'a8csp-ai-canvas' ) }
 								onSelect={ ( media ) =>
 									surface.replaceBackground( media )
 								}
@@ -389,16 +380,13 @@ export function SelectionToolbar( { selection, surface, panel, setPanel } ) {
 								}
 								onClick={ () => setPanel( 'focal' ) }
 							>
-								{ __(
-									'Focal point',
-									'a8csp-ai-canvas-webmcp'
-								) }
+								{ __( 'Focal point', 'a8csp-ai-canvas' ) }
 							</ToolbarButton>
 							<ToolbarButton
 								disabled={ ! selection.background?.canRemove }
 								onClick={ () => surface.removeBackground() }
 							>
-								{ __( 'Remove', 'a8csp-ai-canvas-webmcp' ) }
+								{ __( 'Remove', 'a8csp-ai-canvas' ) }
 							</ToolbarButton>
 						</ToolbarGroup>
 					) }
@@ -408,14 +396,8 @@ export function SelectionToolbar( { selection, surface, panel, setPanel } ) {
 								icon={ linkIcon }
 								label={
 									link
-										? __(
-												'Change link',
-												'a8csp-ai-canvas-webmcp'
-											)
-										: __(
-												'Add link',
-												'a8csp-ai-canvas-webmcp'
-											)
+										? __( 'Change link', 'a8csp-ai-canvas' )
+										: __( 'Add link', 'a8csp-ai-canvas' )
 								}
 								shortcut={
 									kind === 'text'
@@ -431,7 +413,7 @@ export function SelectionToolbar( { selection, surface, panel, setPanel } ) {
 										{ filterURLForDisplay( link.url, 28 ) ||
 											__(
 												'No address',
-												'a8csp-ai-canvas-webmcp'
+												'a8csp-ai-canvas'
 											) }
 									</span>
 								) }
@@ -441,7 +423,7 @@ export function SelectionToolbar( { selection, surface, panel, setPanel } ) {
 									icon={ linkOff }
 									label={ __(
 										'Remove link',
-										'a8csp-ai-canvas-webmcp'
+										'a8csp-ai-canvas'
 									) }
 									onClick={ () => surface.removeLink() }
 								/>
@@ -453,7 +435,7 @@ export function SelectionToolbar( { selection, surface, panel, setPanel } ) {
 							<ToolbarButton
 								onClick={ () => surface.selectBackground() }
 							>
-								{ __( 'Background', 'a8csp-ai-canvas-webmcp' ) }
+								{ __( 'Background', 'a8csp-ai-canvas' ) }
 							</ToolbarButton>
 						</ToolbarGroup>
 					) }

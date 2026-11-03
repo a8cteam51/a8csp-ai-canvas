@@ -18,7 +18,7 @@ import {
  * The page templates, keyed by the short name `ai-canvas-set-template` takes. The editor script
  * is handed them by `WebMcp\Component`, from `Templates\Component::SLUGS`.
  */
-const TEMPLATES = window.a8csp_ai_webmcp?.templates ?? {};
+const TEMPLATES = window.a8csp_ai_canvas?.templates ?? {};
 
 /**
  * Whether the agent has read the instructions in this editor tab. `ai-canvas-set-page-content`

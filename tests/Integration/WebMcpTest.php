@@ -1,9 +1,9 @@
 <?php declare( strict_types=1 );
 
-namespace A8C\SpecialProjects\AICanvasWebMCP\Tests\Integration;
+namespace A8C\SpecialProjects\AICanvas\Tests\Integration;
 
-use A8C\SpecialProjects\AICanvasWebMCP\Templates;
-use A8C\SpecialProjects\AICanvasWebMCP\WebMcp;
+use A8C\SpecialProjects\AICanvas\Templates;
+use A8C\SpecialProjects\AICanvas\WebMcp;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -41,7 +41,7 @@ final class WebMcpTest extends TestCase {
 	 * @return  void
 	 */
 	protected function tearDown(): void {
-		wp_dequeue_script( 'a8csp-ai-canvas-webmcp-webmcp' );
+		wp_dequeue_script( 'a8csp-ai-canvas-webmcp' );
 		set_current_screen( 'front' );
 
 		parent::tearDown();
@@ -65,15 +65,15 @@ final class WebMcpTest extends TestCase {
 
 		( new WebMcp\Component() )->enqueue_editor_script();
 
-		self::assertTrue( wp_script_is( 'a8csp-ai-canvas-webmcp-webmcp', 'enqueued' ) );
+		self::assertTrue( wp_script_is( 'a8csp-ai-canvas-webmcp', 'enqueued' ) );
 
-		$script = wp_scripts()->registered['a8csp-ai-canvas-webmcp-webmcp'] ?? null;
+		$script = wp_scripts()->registered['a8csp-ai-canvas-webmcp'] ?? null;
 		self::assertInstanceOf( \_WP_Dependency::class, $script );
 		self::assertContains( 'wp-editor', $script->deps );
 		self::assertContains( 'wp-blocks', $script->deps );
 		self::assertContains( 'wp-api-fetch', $script->deps );
 
-		$before = \implode( "\n", (array) wp_scripts()->get_data( 'a8csp-ai-canvas-webmcp-webmcp', 'before' ) );
+		$before = \implode( "\n", (array) wp_scripts()->get_data( 'a8csp-ai-canvas-webmcp', 'before' ) );
 		self::assertStringContainsString( (string) wp_json_encode( array( 'templates' => Templates\Component::SLUGS ) ), $before );
 	}
 
@@ -90,7 +90,7 @@ final class WebMcpTest extends TestCase {
 
 		( new WebMcp\Component() )->enqueue_editor_script();
 
-		self::assertFalse( wp_script_is( 'a8csp-ai-canvas-webmcp-webmcp', 'enqueued' ) );
+		self::assertFalse( wp_script_is( 'a8csp-ai-canvas-webmcp', 'enqueued' ) );
 	}
 
 	/**
@@ -104,7 +104,7 @@ final class WebMcpTest extends TestCase {
 	public function test_the_script_is_not_enqueued_outside_the_editor(): void {
 		( new WebMcp\Component() )->enqueue_editor_script();
 
-		self::assertFalse( wp_script_is( 'a8csp-ai-canvas-webmcp-webmcp', 'enqueued' ) );
+		self::assertFalse( wp_script_is( 'a8csp-ai-canvas-webmcp', 'enqueued' ) );
 	}
 
 	// endregion.

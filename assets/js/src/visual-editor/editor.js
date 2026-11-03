@@ -23,18 +23,18 @@ const getMessage = ( code ) =>
 	( {
 		locked: __(
 			'This part of the page cannot be changed here. Use “Edit code” in the block toolbar to change it.',
-			'a8csp-ai-canvas-webmcp'
+			'a8csp-ai-canvas'
 		),
 		unsupported: __(
 			'This block cannot be edited by clicking on it. Use “Edit code” in the block toolbar to change it.',
-			'a8csp-ai-canvas-webmcp'
+			'a8csp-ai-canvas'
 		),
 	} )[ code ];
 
 /**
  * The key under which this browser remembers that the tip was shown.
  */
-const TIP_KEY = 'a8csp-ai-canvas-webmcp:visual-editor-tip';
+const TIP_KEY = 'a8csp-ai-canvas:visual-editor-tip';
 
 /**
  * Whether this browser has already been shown the tip, and from now on it has.
@@ -194,7 +194,7 @@ export function VisualEditor( { clientId, isSelected } ) {
 					onNotice: ( code ) =>
 						createWarningNotice( getMessage( code ), {
 							type: 'snackbar',
-							id: 'a8csp-ai-canvas-webmcp-visual-editor-' + code,
+							id: 'a8csp-ai-canvas-visual-editor-' + code,
 						} ),
 					onLink: () => setPanel( 'link' ),
 				} )
@@ -247,11 +247,11 @@ export function VisualEditor( { clientId, isSelected } ) {
 			createInfoNotice(
 				__(
 					'Tip: click any text, image or button on the page to change it.',
-					'a8csp-ai-canvas-webmcp'
+					'a8csp-ai-canvas'
 				),
 				{
 					type: 'snackbar',
-					id: 'a8csp-ai-canvas-webmcp-visual-editor-tip',
+					id: 'a8csp-ai-canvas-visual-editor-tip',
 				}
 			);
 		}

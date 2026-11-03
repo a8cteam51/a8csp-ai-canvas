@@ -1,5 +1,5 @@
 {
-  "name": "a8csp-ai-canvas-webmcp",
+  "name": "a8csp-ai-canvas",
   "version": "1.0.0",
   "description": "Lets the AI agent in your browser build a page in the page editor as a single Custom HTML block, through WebMCP.",
   "author": {
@@ -81,9 +81,9 @@
     "check:engines": "wp-scripts check-engines",
     "check:licenses": "wp-scripts check-licenses",
     "test:unit": "wp-scripts test-unit-js",
-    "test:integration": "wp-env --config .wp-env.tests.json run cli --env-cwd=wp-content/plugins/a8csp-ai-canvas-webmcp vendor/bin/phpunit --testsuite=Integration",
-    "test:requirements": "wp-env --config .wp-env.belowfloor.json run cli --env-cwd=wp-content/plugins/a8csp-ai-canvas-webmcp vendor/bin/phpunit --testsuite=Requirements",
-    "test:multisite": "wp-env --config .wp-env.multisite.json run cli --env-cwd=wp-content/plugins/a8csp-ai-canvas-webmcp vendor/bin/phpunit --testsuite=Multisite",
+    "test:integration": "wp-env --config .wp-env.tests.json run cli --env-cwd=wp-content/plugins/a8csp-ai-canvas vendor/bin/phpunit --testsuite=Integration",
+    "test:requirements": "wp-env --config .wp-env.belowfloor.json run cli --env-cwd=wp-content/plugins/a8csp-ai-canvas vendor/bin/phpunit --testsuite=Requirements",
+    "test:multisite": "wp-env --config .wp-env.multisite.json run cli --env-cwd=wp-content/plugins/a8csp-ai-canvas vendor/bin/phpunit --testsuite=Multisite",
     "test:e2e": "playwright test"
   }
 }

@@ -626,7 +626,7 @@ export class Surface {
 		} else {
 			host.setAttribute(
 				ATTR_EMPTY,
-				__( 'Type something…', 'a8csp-ai-canvas-webmcp' )
+				__( 'Type something…', 'a8csp-ai-canvas' )
 			);
 		}
 	}

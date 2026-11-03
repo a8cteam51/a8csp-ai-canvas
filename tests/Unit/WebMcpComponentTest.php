@@ -1,9 +1,9 @@
 <?php declare( strict_types=1 );
 
-namespace A8C\SpecialProjects\AICanvasWebMCP\Tests\Unit;
+namespace A8C\SpecialProjects\AICanvas\Tests\Unit;
 
-use A8C\SpecialProjects\AICanvasWebMCP\AbstractComponent;
-use A8C\SpecialProjects\AICanvasWebMCP\WebMcp;
+use A8C\SpecialProjects\AICanvas\AbstractComponent;
+use A8C\SpecialProjects\AICanvas\WebMcp;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\TestCase;
@@ -29,13 +29,13 @@ final class WebMcpComponentTest extends TestCase {
 	 * @return  void
 	 */
 	public function test_register_hooks_stages_the_editor_script(): void {
-		$GLOBALS['a8csp_ai_webmcp_test_hooks'] = array();
+		$GLOBALS['a8csp_ai_canvas_test_hooks'] = array();
 
 		$component = new WebMcp\Component();
 		$component->initialize();
 		$component->register_hooks();
 
-		self::assertSame( array( 'enqueue_block_editor_assets' ), $GLOBALS['a8csp_ai_webmcp_test_hooks'] );
+		self::assertSame( array( 'enqueue_block_editor_assets' ), $GLOBALS['a8csp_ai_canvas_test_hooks'] );
 	}
 
 	// endregion.

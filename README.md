@@ -1,4 +1,4 @@
-# A8CSP AI Canvas WebMCP
+# A8CSP AI Canvas
 
 Lets the AI agent in your browser build a page in the page editor as a single Custom HTML block, through WebMCP.
 
@@ -22,8 +22,8 @@ The plugin does three things:
 
 ## Installation
 
-1. Download `a8csp-ai-canvas-webmcp.zip` from the latest release of this repository.
-1. Upload it through **Plugins → Add New Plugin → Upload Plugin**, or unzip it into `/wp-content/plugins/`; it unpacks to an `a8csp-ai-canvas-webmcp` folder.
+1. Download `a8csp-ai-canvas.zip` from the latest release of this repository.
+1. Upload it through **Plugins → Add New Plugin → Upload Plugin**, or unzip it into `/wp-content/plugins/`; it unpacks to an `a8csp-ai-canvas` folder.
 1. Activate the plugin from the **Plugins** screen.
 
 ## Building a page with an agent
@@ -95,6 +95,15 @@ Some things it does not do. It changes what is on the page; it does not add, rem
 
 The plugin updates itself from this repository's GitHub releases through its `Update URI` header, so WordPress offers a new release like any other plugin update — as long as the repository is public, because the check calls the GitHub API without authentication. OpsOasis creates repositories private, so a plugin generated through it does not update itself. An installed prerelease (a version containing `-`) follows every release; a stable installation follows stable releases only.
 
+### Updating from AI Canvas 2.x
+
+Version 3 is the same plugin, rebuilt for WebMCP, and a site running 2.x is offered it as an ordinary update. What changes:
+
+- **The MCP tools are gone.** An MCP client such as Claude Design can no longer create or change pages through the site, and the AI Canvas card on **Settings → Connectors** goes with them. Pages are now built by an agent in the browser, in the page editor; see [WebMCP tools](#webmcp-tools).
+- **The MCP Adapter plugin is no longer needed.** It can be deactivated if nothing else uses it.
+- **PHP 8.5 is required**, where 2.x needed 8.3. On an older PHP the update still installs, then shows a notice saying what is missing and does nothing else until PHP is upgraded.
+- **Pages built with 2.x keep working.** They are already one Custom HTML block on one of the same two templates, so they open in the page editor, can be edited by clicking, and can be rebuilt through the WebMCP tools. The mark 2.x put on the pages its tools created is no longer read, and uninstalling the plugin deletes it.
+
 ## Development
 
 Install dependencies, build the assets, and start the local environment:
@@ -135,7 +144,7 @@ Releases are cut from trunk, in four steps.
    composer changelog:write -- --use-version=1.0.0
    ```
 
-2. **Bump the other two versions to the same string.** The release refuses to run unless the plugin header's `Version:` in `a8csp-ai-canvas-webmcp.php`, `"version"` in `package.json`, and the newest `CHANGELOG.md` heading all state one version. The self-updater compares an installed copy against the header rather than against the tag, so the header bump belongs in the commit that gets tagged. Commit the three together and land them on trunk.
+2. **Bump the other two versions to the same string.** The release refuses to run unless the plugin header's `Version:` in `a8csp-ai-canvas.php`, `"version"` in `package.json`, and the newest `CHANGELOG.md` heading all state one version. The self-updater compares an installed copy against the header rather than against the tag, so the header bump belongs in the commit that gets tagged. Commit the three together and land them on trunk.
 
 3. **Let trunk go green, then rehearse.** The release reuses the trunk-push Quality and Tests runs from the exact commit it tags, so tag only once those have finished. A later push to trunk cancels them if they are still running, and a cancelled run fails provenance as a red one does, so confirm this commit's own runs concluded successfully and re-run any that were cancelled. Those runs include legs outside the supported matrix, WordPress nightly and the next PHP, and every PHPUnit leg runs its tests in random order; a red leg that ships no defect still blocks provenance until a re-run passes. With them green, run the **Release** workflow from the Actions tab leaving **Create the GitHub release** off: that exercises the version check, the provenance check, the build and the smoke install without creating anything.
 

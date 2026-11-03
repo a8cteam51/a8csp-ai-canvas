@@ -9,7 +9,7 @@
 	<rule ref="WordPress.WP.I18n">
 		<properties>
 			<property name="text_domain" type="array">
-				<element value="a8csp-ai-canvas-webmcp"/>
+				<element value="a8csp-ai-canvas"/>
 			</property>
 		</properties>
 	</rule>

@@ -667,10 +667,10 @@ function looksLikeButton( link ) {
  */
 export function labelFor( target, root ) {
 	if ( target.kind === 'image' ) {
-		return __( 'Image', 'a8csp-ai-canvas-webmcp' );
+		return __( 'Image', 'a8csp-ai-canvas' );
 	}
 	if ( target.kind === 'background' ) {
-		return __( 'Background image', 'a8csp-ai-canvas-webmcp' );
+		return __( 'Background image', 'a8csp-ai-canvas' );
 	}
 
 	const element = target.kind === 'link' ? target.element : target.container;
@@ -683,13 +683,13 @@ export function labelFor( target, root ) {
 	if ( control ) {
 		const tag = tagOf( control );
 		if ( tag === 'label' ) {
-			return __( 'Label', 'a8csp-ai-canvas-webmcp' );
+			return __( 'Label', 'a8csp-ai-canvas' );
 		}
 		if ( tag !== 'a' || looksLikeButton( control ) ) {
-			return __( 'Button', 'a8csp-ai-canvas-webmcp' );
+			return __( 'Button', 'a8csp-ai-canvas' );
 		}
 
-		return __( 'Link', 'a8csp-ai-canvas-webmcp' );
+		return __( 'Link', 'a8csp-ai-canvas' );
 	}
 
 	// A paragraph is named before whatever it sits in: one in a list item is still text.
@@ -703,18 +703,18 @@ export function labelFor( target, root ) {
 		case 'h4':
 		case 'h5':
 		case 'h6':
-			return __( 'Heading', 'a8csp-ai-canvas-webmcp' );
+			return __( 'Heading', 'a8csp-ai-canvas' );
 		case 'li':
-			return __( 'List item', 'a8csp-ai-canvas-webmcp' );
+			return __( 'List item', 'a8csp-ai-canvas' );
 		case 'blockquote':
-			return __( 'Quote', 'a8csp-ai-canvas-webmcp' );
+			return __( 'Quote', 'a8csp-ai-canvas' );
 		case 'figcaption':
 		case 'caption':
-			return __( 'Caption', 'a8csp-ai-canvas-webmcp' );
+			return __( 'Caption', 'a8csp-ai-canvas' );
 		case 'th':
 		case 'td':
-			return __( 'Table cell', 'a8csp-ai-canvas-webmcp' );
+			return __( 'Table cell', 'a8csp-ai-canvas' );
 	}
 
-	return __( 'Text', 'a8csp-ai-canvas-webmcp' );
+	return __( 'Text', 'a8csp-ai-canvas' );
 }

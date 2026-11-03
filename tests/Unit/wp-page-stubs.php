@@ -1,14 +1,14 @@
 <?php declare( strict_types=1 );
 /**
  * Page-query WordPress stand-ins for Unit tests that drive the Templates component without
- * WordPress. `is_page()` answers from `$GLOBALS['a8csp_ai_webmcp_test_is_page']` and
- * `get_page_template_slug()` from `$GLOBALS['a8csp_ai_webmcp_test_page_template']`, so a test can
+ * WordPress. `is_page()` answers from `$GLOBALS['a8csp_ai_canvas_test_is_page']` and
+ * `get_page_template_slug()` from `$GLOBALS['a8csp_ai_canvas_test_page_template']`, so a test can
  * stage which request it is. The `function_exists()` guards keep this file inert wherever WordPress
  * is loaded.
  *
  * @since   1.0.0
  * @version 1.0.0
- * @package A8C\SpecialProjects\AICanvasWebMCP
+ * @package A8C\SpecialProjects\AICanvas
  */
 
 if ( ! \function_exists( 'is_page' ) ) {
@@ -21,7 +21,7 @@ if ( ! \function_exists( 'is_page' ) ) {
 	 * @return  bool
 	 */
 	function is_page() {
-		return $GLOBALS['a8csp_ai_webmcp_test_is_page'] ?? false;
+		return $GLOBALS['a8csp_ai_canvas_test_is_page'] ?? false;
 	}
 }
 
@@ -51,6 +51,6 @@ if ( ! \function_exists( 'get_page_template_slug' ) ) {
 	 * @return  string
 	 */
 	function get_page_template_slug( $post = null ) {
-		return $GLOBALS['a8csp_ai_webmcp_test_page_template'] ?? '';
+		return $GLOBALS['a8csp_ai_canvas_test_page_template'] ?? '';
 	}
 }

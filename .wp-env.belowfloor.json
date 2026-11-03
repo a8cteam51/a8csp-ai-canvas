@@ -5,7 +5,7 @@
   "port": 28565,
   "testsEnvironment": false,
   "mappings": {
-    "wp-content/plugins/a8csp-ai-canvas-webmcp": "."
+    "wp-content/plugins/a8csp-ai-canvas": "."
   },
   "config": {
     "WP_DEBUG_DISPLAY": false,

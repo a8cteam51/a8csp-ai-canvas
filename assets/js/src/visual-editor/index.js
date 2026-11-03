@@ -25,6 +25,6 @@ const withVisualEditor = createHigherOrderComponent(
 
 addFilter(
 	'editor.BlockEdit',
-	'a8csp-ai-canvas-webmcp/html-block-visual-editor',
+	'a8csp-ai-canvas/html-block-visual-editor',
 	withVisualEditor
 );

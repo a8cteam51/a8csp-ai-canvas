@@ -27,6 +27,6 @@ const withFullWidth = createHigherOrderComponent(
 
 addFilter(
 	'editor.BlockListBlock',
-	'a8csp-ai-canvas-webmcp/html-block-full-width',
+	'a8csp-ai-canvas/html-block-full-width',
 	withFullWidth
 );

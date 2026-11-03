@@ -1,9 +1,9 @@
 <?php declare( strict_types=1 );
 
-namespace A8C\SpecialProjects\AICanvasWebMCP\Tests\Unit;
+namespace A8C\SpecialProjects\AICanvas\Tests\Unit;
 
-use A8C\SpecialProjects\AICanvasWebMCP\AbstractComponent;
-use A8C\SpecialProjects\AICanvasWebMCP\Templates;
+use A8C\SpecialProjects\AICanvas\AbstractComponent;
+use A8C\SpecialProjects\AICanvas\Templates;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\TestCase;
@@ -44,9 +44,9 @@ final class TemplatesComponentTest extends TestCase {
 	protected function setUp(): void {
 		parent::setUp();
 
-		$GLOBALS['a8csp_ai_webmcp_test_hooks']         = array();
-		$GLOBALS['a8csp_ai_webmcp_test_is_page']       = true;
-		$GLOBALS['a8csp_ai_webmcp_test_page_template'] = Templates\Component::SLUGS['header-footer'];
+		$GLOBALS['a8csp_ai_canvas_test_hooks']         = array();
+		$GLOBALS['a8csp_ai_canvas_test_is_page']       = true;
+		$GLOBALS['a8csp_ai_canvas_test_page_template'] = Templates\Component::SLUGS['header-footer'];
 	}
 
 	// endregion.
@@ -67,7 +67,7 @@ final class TemplatesComponentTest extends TestCase {
 		$component->initialize();
 		$component->register_hooks();
 
-		self::assertSame( array( 'init', 'get_block_templates', 'run_wptexturize' ), $GLOBALS['a8csp_ai_webmcp_test_hooks'] );
+		self::assertSame( array( 'init', 'get_block_templates', 'run_wptexturize' ), $GLOBALS['a8csp_ai_canvas_test_hooks'] );
 	}
 
 	/**
@@ -83,7 +83,7 @@ final class TemplatesComponentTest extends TestCase {
 
 		self::assertFalse( $component->skip_texturize( true ) );
 
-		$GLOBALS['a8csp_ai_webmcp_test_page_template'] = Templates\Component::SLUGS['content-only'];
+		$GLOBALS['a8csp_ai_canvas_test_page_template'] = Templates\Component::SLUGS['content-only'];
 		self::assertFalse( $component->skip_texturize( true ) );
 	}
 
@@ -99,14 +99,14 @@ final class TemplatesComponentTest extends TestCase {
 	public function test_texturize_runs_everywhere_else(): void {
 		$component = new Templates\Component();
 
-		$GLOBALS['a8csp_ai_webmcp_test_page_template'] = 'page-no-title';
+		$GLOBALS['a8csp_ai_canvas_test_page_template'] = 'page-no-title';
 		self::assertTrue( $component->skip_texturize( true ) );
 
-		$GLOBALS['a8csp_ai_webmcp_test_page_template'] = '';
+		$GLOBALS['a8csp_ai_canvas_test_page_template'] = '';
 		self::assertTrue( $component->skip_texturize( true ) );
 
-		$GLOBALS['a8csp_ai_webmcp_test_page_template'] = Templates\Component::SLUGS['header-footer'];
-		$GLOBALS['a8csp_ai_webmcp_test_is_page']       = false;
+		$GLOBALS['a8csp_ai_canvas_test_page_template'] = Templates\Component::SLUGS['header-footer'];
+		$GLOBALS['a8csp_ai_canvas_test_is_page']       = false;
 		self::assertTrue( $component->skip_texturize( true ) );
 	}
 
@@ -119,7 +119,7 @@ final class TemplatesComponentTest extends TestCase {
 	 * @return  void
 	 */
 	public function test_texturize_already_off_stays_off(): void {
-		$GLOBALS['a8csp_ai_webmcp_test_page_template'] = 'page-no-title';
+		$GLOBALS['a8csp_ai_canvas_test_page_template'] = 'page-no-title';
 
 		self::assertFalse( ( new Templates\Component() )->skip_texturize( false ) );
 	}
@@ -138,8 +138,8 @@ final class TemplatesComponentTest extends TestCase {
 
 		$templates = ( new Templates\Component() )->reindex_block_templates(
 			array(
-				'a8csp-ai-canvas-webmcp//ai-canvas-header-footer' => $first,
-				0 => $second,
+				'a8csp-ai-canvas//ai-canvas-header-footer' => $first,
+				0                                          => $second,
 			)
 		);
 

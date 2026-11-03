@@ -4,7 +4,7 @@ test.describe( 'Custom HTML block alignment', () => {
 	let pageId;
 
 	test.beforeAll( async ( { requestUtils } ) => {
-		await requestUtils.activatePlugin( 'a8csp-ai-canvas-webmcp' );
+		await requestUtils.activatePlugin( 'a8csp-ai-canvas' );
 
 		// The second block is the control: without the alignment, the editor keeps a block in the content column.
 		const page = await requestUtils.createPage( {

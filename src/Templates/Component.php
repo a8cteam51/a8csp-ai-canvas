@@ -1,8 +1,8 @@
 <?php declare( strict_types=1 );
 
-namespace A8C\SpecialProjects\AICanvasWebMCP\Templates;
+namespace A8C\SpecialProjects\AICanvas\Templates;
 
-use A8C\SpecialProjects\AICanvasWebMCP\AbstractComponent;
+use A8C\SpecialProjects\AICanvas\AbstractComponent;
 
 \defined( 'ABSPATH' ) || exit;
 
@@ -73,13 +73,13 @@ final class Component extends AbstractComponent {
 	 * @return  void
 	 */
 	public function register_templates(): void {
-		$plugin_slug = a8csp_ai_webmcp_get_plugin_slug();
+		$plugin_slug = a8csp_ai_canvas_get_plugin_slug();
 
 		register_block_template(
 			$plugin_slug . '//' . self::SLUGS['header-footer'],
 			array(
-				'title'       => __( 'AI Canvas: Header, Content, Footer', 'a8csp-ai-canvas-webmcp' ),
-				'description' => __( 'The site header, the page content at full width, and the site footer. No page title.', 'a8csp-ai-canvas-webmcp' ),
+				'title'       => __( 'AI Canvas: Header, Content, Footer', 'a8csp-ai-canvas' ),
+				'description' => __( 'The site header, the page content at full width, and the site footer. No page title.', 'a8csp-ai-canvas' ),
 				'post_types'  => array( 'page' ),
 				'content'     => '<!-- wp:group {"style":{"spacing":{"blockGap":"0"}},"layout":{"type":"default"}} --><div class="wp-block-group">'
 					. '<!-- wp:template-part {"slug":"header","tagName":"header"} /-->'
@@ -92,8 +92,8 @@ final class Component extends AbstractComponent {
 		register_block_template(
 			$plugin_slug . '//' . self::SLUGS['content-only'],
 			array(
-				'title'       => __( 'AI Canvas: Content Only', 'a8csp-ai-canvas-webmcp' ),
-				'description' => __( 'Only the page content at full width. No header, footer, or page title.', 'a8csp-ai-canvas-webmcp' ),
+				'title'       => __( 'AI Canvas: Content Only', 'a8csp-ai-canvas' ),
+				'description' => __( 'Only the page content at full width. No header, footer, or page title.', 'a8csp-ai-canvas' ),
 				'post_types'  => array( 'page' ),
 				'content'     => '<!-- wp:post-content {"style":{"spacing":{"blockGap":"0"}},"layout":{"type":"default"}} /-->',
 			)

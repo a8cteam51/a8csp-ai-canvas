@@ -1,7 +1,7 @@
 <?php declare( strict_types=1 );
 /**
- * The plugin's persisted-footprint manifest: every durable option and user-meta key any component
- * writes, grouped by owning component so ownership stays reviewable; transient cache entries are deleted
+ * The plugin's persisted-footprint manifest: every durable option, user-meta and post-meta key any
+ * component writes, grouped by owning component so ownership stays reviewable; transient cache entries are deleted
  * directly by `uninstall.php`. Add a durable key here in the same change that introduces the write.
  *
  * WordPress's cold uninstall bootstrap loads this file (no autoloader, no Plugin or Component
@@ -12,7 +12,7 @@
  *
  * @since       1.0.0
  * @version     1.0.0
- * @package     A8C\SpecialProjects\AICanvasWebMCP
+ * @package     A8C\SpecialProjects\AICanvas
  */
 
 \defined( 'WP_UNINSTALL_PLUGIN' ) || exit;
@@ -20,4 +20,10 @@
 return array(
 	'options'   => array(),
 	'user_meta' => array(),
+	'post_meta' => array(
+		// No component writes it any more: AI Canvas 2.0.0 and earlier marked the pages its MCP
+		// tools created with it. A site that updated from those versions still has it, so the
+		// uninstall cleans it up.
+		'_a8csp_ai_canvas',
+	),
 );

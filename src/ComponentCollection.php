@@ -1,6 +1,6 @@
 <?php declare( strict_types=1 );
 
-namespace A8C\SpecialProjects\AICanvasWebMCP;
+namespace A8C\SpecialProjects\AICanvas;
 
 \defined( 'ABSPATH' ) || exit;
 

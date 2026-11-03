@@ -1,13 +1,13 @@
 <?php declare( strict_types=1 );
 
-namespace A8C\SpecialProjects\AICanvasWebMCP\Tests\Unit;
+namespace A8C\SpecialProjects\AICanvas\Tests\Unit;
 
-use A8C\SpecialProjects\AICanvasWebMCP\AbstractComponent;
-use A8C\SpecialProjects\AICanvasWebMCP\ComponentCollection;
-use A8C\SpecialProjects\AICanvasWebMCP\HtmlBlock;
-use A8C\SpecialProjects\AICanvasWebMCP\Plugin;
-use A8C\SpecialProjects\AICanvasWebMCP\Templates;
-use A8C\SpecialProjects\AICanvasWebMCP\WebMcp;
+use A8C\SpecialProjects\AICanvas\AbstractComponent;
+use A8C\SpecialProjects\AICanvas\ComponentCollection;
+use A8C\SpecialProjects\AICanvas\HtmlBlock;
+use A8C\SpecialProjects\AICanvas\Plugin;
+use A8C\SpecialProjects\AICanvas\Templates;
+use A8C\SpecialProjects\AICanvas\WebMcp;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\TestCase;
@@ -39,7 +39,7 @@ final class PluginBootGateTest extends TestCase {
 	protected function setUp(): void {
 		parent::setUp();
 
-		$GLOBALS['a8csp_ai_webmcp_test_hooks'] = array();
+		$GLOBALS['a8csp_ai_canvas_test_hooks'] = array();
 	}
 
 	// endregion.
@@ -63,10 +63,10 @@ final class PluginBootGateTest extends TestCase {
 		$plugin->boot();
 		self::assertTrue( $plugin->is_booted() );
 
-		self::assertContains( 'init', $GLOBALS['a8csp_ai_webmcp_test_hooks'] );
-		self::assertContains( 'run_wptexturize', $GLOBALS['a8csp_ai_webmcp_test_hooks'] );
-		self::assertContains( 'register_block_type_args', $GLOBALS['a8csp_ai_webmcp_test_hooks'] );
-		self::assertContains( 'enqueue_block_editor_assets', $GLOBALS['a8csp_ai_webmcp_test_hooks'] );
+		self::assertContains( 'init', $GLOBALS['a8csp_ai_canvas_test_hooks'] );
+		self::assertContains( 'run_wptexturize', $GLOBALS['a8csp_ai_canvas_test_hooks'] );
+		self::assertContains( 'register_block_type_args', $GLOBALS['a8csp_ai_canvas_test_hooks'] );
+		self::assertContains( 'enqueue_block_editor_assets', $GLOBALS['a8csp_ai_canvas_test_hooks'] );
 	}
 
 	/**
@@ -81,11 +81,11 @@ final class PluginBootGateTest extends TestCase {
 		$plugin = new Plugin();
 		$plugin->boot();
 
-		$hook_count = \count( $GLOBALS['a8csp_ai_webmcp_test_hooks'] );
+		$hook_count = \count( $GLOBALS['a8csp_ai_canvas_test_hooks'] );
 
 		$plugin->boot();
 
-		self::assertCount( $hook_count, $GLOBALS['a8csp_ai_webmcp_test_hooks'] );
+		self::assertCount( $hook_count, $GLOBALS['a8csp_ai_canvas_test_hooks'] );
 	}
 
 	// endregion.
