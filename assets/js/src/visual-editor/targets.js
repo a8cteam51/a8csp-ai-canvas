@@ -1,5 +1,6 @@
 import { __ } from '@wordpress/i18n';
 
+import { hasBackgroundImage } from './background';
 import { ATTR_EMPTY, ATTR_HOST, ATTR_RUN } from './constants';
 
 /**
@@ -10,11 +11,12 @@ import { ATTR_EMPTY, ATTR_HOST, ATTR_RUN } from './constants';
  *   that also holds things that are not text, such as a button with an icon;
  * - image: an `img`;
  * - link: a link with nothing to type in, such as an icon;
- * - background: an element with a CSS background image.
+ * - background: a CSS background image, on an element or on its `::before` or `::after`.
  *
  * @typedef {Object} Target
  * @property {'text'|'image'|'link'|'background'} kind        What the click would edit.
  * @property {Element}                            [element]   The image, link or element with the background.
+ * @property {string|null}                        [pseudo]    For a background: `::before` or `::after` when it is on that pseudo-element of the element.
  * @property {Element|null}                       [host]      For text: the element to edit, when it is edited whole.
  * @property {Element}                            [container] For text: the element that holds the text.
  * @property {{first: Node, last: Node}|null}     [run]       For text: the nodes to edit, when the container holds more than text.
@@ -352,41 +354,181 @@ function frameOf( root, text ) {
 }
 
 /**
- * Returns the nearest element, from the given one upwards, that has a CSS background image.
- *
- * @param {Element} element The element.
- * @param {Element} root    The element holding the block's content.
- *
- * @return {Element|null} The element.
+ * The pseudo-elements a background can be on, in the order they are painted over each other:
+ * `::after` over `::before`, and both over the element's own background.
  */
-function closestBackground( element, root ) {
-	const view = element.ownerDocument.defaultView;
+const PSEUDOS = [ '::after', '::before' ];
 
+/**
+ * Returns the pseudo-elements the block's own styles give anything. Only those are looked at: the
+ * rest can hold no background the block could change, and are not worth a style lookup each time
+ * the pointer moves.
+ *
+ * @param {Element} root The element holding the block's content.
+ *
+ * @return {string[]} The pseudo-elements.
+ */
+function pseudosIn( root ) {
+	const css = [ ...root.querySelectorAll( 'style' ) ]
+		.map( ( style ) => style.textContent )
+		.join( '\n' );
+
+	return PSEUDOS.filter( ( pseudo ) =>
+		new RegExp( '::?' + pseudo.slice( 2 ) + '\\b', 'i' ).test( css )
+	);
+}
+
+/**
+ * Whether an element is a layer under the content that lets the pointer through to it: placed
+ * absolutely, holding nothing to read or see, and covering the point.
+ *
+ * @param {Element}                 element The element.
+ * @param {{x: number, y: number}=} point   The point.
+ *
+ * @return {boolean} Whether it is one.
+ */
+function isLayerAt( element, point ) {
+	const style = element.ownerDocument.defaultView.getComputedStyle( element );
+	if (
+		! [ 'absolute', 'fixed' ].includes( style.position ) ||
+		element.textContent.trim() ||
+		element.querySelector( 'img, picture, svg, video, iframe' )
+	) {
+		return false;
+	}
+	if ( ! point ) {
+		return true;
+	}
+
+	const rect = element.getBoundingClientRect();
+	return (
+		point.x >= rect.left &&
+		point.x <= rect.right &&
+		point.y >= rect.top &&
+		point.y <= rect.bottom
+	);
+}
+
+/**
+ * Returns the background images at a point of the block's content, topmost first: on what is
+ * under the point and on its ancestors, on their `::before` and `::after`, and on layers beside
+ * them. A layer under the content, a sibling of it rather than an ancestor, is how many sections
+ * put an image behind their text.
+ *
+ * @param {Element}                 start The element at the point.
+ * @param {Element}                 root  The element holding the block's content.
+ * @param {{x: number, y: number}=} point The point, relative to the viewport. Without one, only the element, its ancestors and the layers beside them are looked at.
+ *
+ * @return {Array<{element: Element, pseudo: string|null}>} The backgrounds.
+ */
+export function backgroundsAt( start, root, point ) {
+	const doc = root.ownerDocument;
+	const pseudos = pseudosIn( root );
+	const seen = new Set();
+	const found = [];
+
+	const visit = ( element ) => {
+		if (
+			seen.has( element ) ||
+			element === root ||
+			! root.contains( element )
+		) {
+			return;
+		}
+		seen.add( element );
+
+		for ( const pseudo of [ ...pseudos, null ] ) {
+			if ( hasBackgroundImage( element, pseudo ) ) {
+				found.push( { element, pseudo } );
+			}
+		}
+	};
+
+	// What is painted at the point, topmost first.
+	if ( point && typeof doc.elementsFromPoint === 'function' ) {
+		doc.elementsFromPoint( point.x, point.y ).forEach( visit );
+	}
+
+	// And what the browser leaves out of that: a layer the pointer passes through.
 	for (
-		let node = element;
+		let node = start;
 		node && node !== root && root.contains( node );
 		node = node.parentElement
 	) {
-		if (
-			view.getComputedStyle( node ).backgroundImage.includes( 'url(' )
-		) {
-			return node;
+		visit( node );
+		for ( const sibling of node.parentElement?.children || [] ) {
+			if ( sibling !== node && isLayerAt( sibling, point ) ) {
+				visit( sibling );
+			}
 		}
 	}
 
-	return null;
+	return found;
+}
+
+/**
+ * Returns the background behind something selected: the topmost one under its middle that is not
+ * its own or inside it.
+ *
+ * @param {Target}                                                          target   The selected text, image or link.
+ * @param {Element}                                                         root     The element holding the block's content.
+ * @param {(candidate: {element: Element, pseudo: string|null}) => boolean} [accept] Whether a background can be changed.
+ *
+ * @return {Target|null} The background, or nothing when there is none.
+ */
+export function backgroundBehind( target, root, accept = () => true ) {
+	const element =
+		target.kind === 'text'
+			? target.frame || target.host || target.container
+			: target.element;
+	if ( ! element || ! root.contains( element ) ) {
+		return null;
+	}
+
+	// The middle of what is on screen of it: a point off the screen hits nothing.
+	const view = root.ownerDocument.defaultView;
+	const rect = element.getBoundingClientRect();
+	const left = Math.max( rect.left, 0 );
+	const right = Math.min( rect.right, view.innerWidth );
+	const top = Math.max( rect.top, 0 );
+	const bottom = Math.min( rect.bottom, view.innerHeight );
+	const point =
+		right > left && bottom > top
+			? { x: ( left + right ) / 2, y: ( top + bottom ) / 2 }
+			: undefined;
+
+	const found = backgroundsAt( element, root, point ).find(
+		( candidate ) =>
+			! element.contains( candidate.element ) && accept( candidate )
+	);
+
+	return found
+		? {
+				kind: 'background',
+				element: found.element,
+				pseudo: found.pseudo,
+				point,
+			}
+		: null;
 }
 
 /**
  * Works out what a click on an element of the block's content would edit.
  *
- * @param {Element}                 root    The element holding the block's content.
- * @param {Element|null}            element The element that was clicked.
- * @param {{x: number, y: number}=} point   Where it was clicked, relative to the viewport.
+ * @param {Element}                                                         root                       The element holding the block's content.
+ * @param {Element|null}                                                    element                    The element that was clicked.
+ * @param {{x: number, y: number}=}                                         point                      Where it was clicked, relative to the viewport.
+ * @param {Object}                                                          [options]
+ * @param {(candidate: {element: Element, pseudo: string|null}) => boolean} [options.acceptBackground] Whether a background can be changed. One that cannot is passed over for the next one under it.
  *
  * @return {Target|null} The target, or nothing when the click edits nothing.
  */
-export function resolveTarget( root, element, point ) {
+export function resolveTarget(
+	root,
+	element,
+	point,
+	{ acceptBackground = () => true } = {}
+) {
 	if ( ! element || element === root || ! root.contains( element ) ) {
 		return null;
 	}
@@ -427,9 +569,16 @@ export function resolveTarget( root, element, point ) {
 		return { kind: 'link', element: link, link };
 	}
 
-	const background = closestBackground( start, root );
+	const background = backgroundsAt( start, root, point ).find(
+		acceptBackground
+	);
 	if ( background ) {
-		return { kind: 'background', element: background, point };
+		return {
+			kind: 'background',
+			element: background.element,
+			pseudo: background.pseudo,
+			point,
+		};
 	}
 
 	return null;
@@ -448,7 +597,10 @@ export function isSameTarget( a, b ) {
 		return false;
 	}
 	if ( a.kind !== 'text' ) {
-		return a.element === b.element;
+		return (
+			a.element === b.element &&
+			( a.pseudo || null ) === ( b.pseudo || null )
+		);
 	}
 	if ( a.host || b.host ) {
 		return a.host === b.host;

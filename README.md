@@ -83,7 +83,7 @@ A page an agent built is still the site owner's to change. Open it in the WordPr
 - **Text.** Click a heading, a paragraph or a button and type. Select a stretch of text for a small toolbar with bold, italic and link; **Ctrl**/**⌘** + **B**, **I** and **K** do the same. **Enter** starts a new line, and in a button finishes the edit.
 - **Links and buttons.** Click one and its toolbar shows where it goes. Choose it to type a new address, or search for a page of the site by its title, and to have the link open in a new tab. A link inside a sentence can also be removed.
 - **Images.** Click one to replace it from the Media Library or to change its alternative text. The replacement keeps the size of the spot it fills.
-- **Background images.** Click an empty part of a section that has one, and replace it.
+- **Background images.** Click an empty part of a section that has one, or click the text, image or button in front of it and choose **Background** in its toolbar. Replace the image from the Media Library, choose its **Focal point**, the part that stays in view when the section crops it, or **Remove** it to leave the colour or gradient under it. This works for an image on the section itself, on a layer under its content, or on its `::before` or `::after`. Replace changes the image showing at the editor's width; one a media query swaps in at another width stays as it is.
 
 Moving the pointer over the page outlines what a click would change, and names it. **Esc** lets go of what is selected. Everything is an ordinary edit to the page: **Save**, undo and redo work as they do for any other, and nothing reaches visitors until the page is saved.
 

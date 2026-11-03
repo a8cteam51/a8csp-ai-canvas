@@ -140,9 +140,29 @@ a caret does not survive that.
 
 The other modules are the pieces a `Surface` puts together: `targets.js` decides what a click
 edits, `formatting.js` does bold, italic and links on the text being edited, `background.js`
-finds the `url()` behind a background image, `media.js` picks the file of a Media Library image
-to use, `overlay.js` draws the boxes over the content, and `toolbar.js` is the toolbar, built from
-the block editor's own components.
+finds the `url()` behind a background image and edits the declarations around it, `media.js` picks
+the file of a Media Library image to use, `overlay.js` draws the boxes over the content, and
+`toolbar.js` is the toolbar, built from the block editor's own components.
+
+**Background images are found where they are painted.** A section often puts its image on a layer
+under its content, a sibling of the content rather than an ancestor, or on its `::before` or
+`::after`. So `targets.js` looks at what `elementsFromPoint()` says is under the pointer, and at
+each element's pseudo-elements, as well as up the ancestors, and adds the layers beside the
+ancestors that the pointer passes through (`pointer-events: none`). A background is offered only
+when `background.js` finds its `url()` in the block: in the element's style attribute, or in a
+style element, preferring the last rule whose selector names the element or that pseudo-element.
+Text, an image or a link in front of a background has a **Background** button that selects it, so a
+background is never only reachable through the gaps in its content; for text being typed in, the
+button's toolbar shows until the typing starts, and again once the pointer moves.
+
+A background's three changes each rewrite as little as possible. Replace swaps the one `url()`.
+Remove writes `none` in its place, which is a whole layer of its own, so the declaration stays
+valid however many layers it has; an image inside another function, such as `image-set()`, is
+not offered. The focal point is a `background-position`, set in the rule or attribute the image is
+written in when that is the element's own, or else in the element's style attribute, which comes
+after every rule. Each place is tried on the page first and kept only if the image moves there,
+so a more specific rule that would win is not written under; a pseudo-element, having no style
+attribute, has only its own rule.
 
 Scripts in the block do not run in the editor, and inline event handlers are renamed for as long
 as the block is shown there, as core's own rendering strips them. The visual editor is off for a
