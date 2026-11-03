@@ -17,7 +17,7 @@
  * @wordpress-plugin
  * Plugin Name:             A8CSP AI Canvas WebMCP
  * Plugin URI:              https://specialprojects.automattic.com
- * Update URI:              https://github.com/a8cteam51/a8csp-ai-canvas-webmcp
+ * Update URI:              https://github.com/a8cteam51/a8csp-ai-canvas
  * Description:             Lets the AI agent in your browser build a page in the page editor as a single Custom HTML block, through WebMCP.
  * Version:                 1.0.0
  * Requires at least:       7.1

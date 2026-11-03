@@ -3,7 +3,7 @@
   "type": "wordpress-plugin",
 
   "description": "Lets the AI agent in your browser build a page in the page editor as a single Custom HTML block, through WebMCP.",
-  "homepage": "https://github.com/a8cteam51/a8csp-ai-canvas-webmcp",
+  "homepage": "https://github.com/a8cteam51/a8csp-ai-canvas",
   "license": "GPL-2.0-or-later",
   "authors": [
     {
@@ -12,7 +12,7 @@
     },
     {
       "name": "Contributors",
-      "homepage": "https://github.com/a8cteam51/a8csp-ai-canvas-webmcp/graphs/contributors"
+      "homepage": "https://github.com/a8cteam51/a8csp-ai-canvas/graphs/contributors"
     }
   ],
 

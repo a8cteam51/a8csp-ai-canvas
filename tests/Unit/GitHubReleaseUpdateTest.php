@@ -66,7 +66,7 @@ final class GitHubReleaseUpdateTest extends TestCase {
 		$GLOBALS['a8csp_ai_webmcp_test_http_response'] = self::a_release_response(
 			array(
 				'tag_name' => 'v2.0.0',
-				'html_url' => 'https://github.com/a8cteam51/a8csp-ai-canvas-webmcp/releases/tag/v2.0.0',
+				'html_url' => 'https://github.com/a8cteam51/a8csp-ai-canvas/releases/tag/v2.0.0',
 				'assets'   => array(
 					array(
 						'name'                 => 'not-the-plugin.zip',
@@ -108,7 +108,7 @@ final class GitHubReleaseUpdateTest extends TestCase {
 				array(
 					'draft'    => false,
 					'tag_name' => 'v1.2.0-beta.1',
-					'html_url' => 'https://github.com/a8cteam51/a8csp-ai-canvas-webmcp/releases/tag/v1.2.0-beta.1',
+					'html_url' => 'https://github.com/a8cteam51/a8csp-ai-canvas/releases/tag/v1.2.0-beta.1',
 					'assets'   => array(
 						array(
 							'name'                 => 'a8csp-ai-canvas-webmcp.zip',
@@ -144,7 +144,7 @@ final class GitHubReleaseUpdateTest extends TestCase {
 				array(
 					'draft'    => false,
 					'tag_name' => 'v1.2.0-beta.1',
-					'html_url' => 'https://github.com/a8cteam51/a8csp-ai-canvas-webmcp/releases/tag/v1.2.0-beta.1',
+					'html_url' => 'https://github.com/a8cteam51/a8csp-ai-canvas/releases/tag/v1.2.0-beta.1',
 					'assets'   => array(
 						array(
 							'name'                 => 'a8csp-ai-canvas-webmcp.zip',
@@ -155,7 +155,7 @@ final class GitHubReleaseUpdateTest extends TestCase {
 				array(
 					'draft'    => false,
 					'tag_name' => 'v1.2.0-beta.2',
-					'html_url' => 'https://github.com/a8cteam51/a8csp-ai-canvas-webmcp/releases/tag/v1.2.0-beta.2',
+					'html_url' => 'https://github.com/a8cteam51/a8csp-ai-canvas/releases/tag/v1.2.0-beta.2',
 					'assets'   => array(
 						array(
 							'name'                 => 'a8csp-ai-canvas-webmcp.zip',
@@ -189,7 +189,7 @@ final class GitHubReleaseUpdateTest extends TestCase {
 				array(
 					'draft'    => false,
 					'tag_name' => 'v1.2.0',
-					'html_url' => 'https://github.com/a8cteam51/a8csp-ai-canvas-webmcp/releases/tag/v1.2.0',
+					'html_url' => 'https://github.com/a8cteam51/a8csp-ai-canvas/releases/tag/v1.2.0',
 					'assets'   => array(
 						array(
 							'name'                 => 'a8csp-ai-canvas-webmcp.zip',
@@ -200,7 +200,7 @@ final class GitHubReleaseUpdateTest extends TestCase {
 				array(
 					'draft'    => false,
 					'tag_name' => 'v1.2.0-beta.2',
-					'html_url' => 'https://github.com/a8cteam51/a8csp-ai-canvas-webmcp/releases/tag/v1.2.0-beta.2',
+					'html_url' => 'https://github.com/a8cteam51/a8csp-ai-canvas/releases/tag/v1.2.0-beta.2',
 					'assets'   => array(
 						array(
 							'name'                 => 'a8csp-ai-canvas-webmcp.zip',
@@ -234,7 +234,7 @@ final class GitHubReleaseUpdateTest extends TestCase {
 		$GLOBALS['a8csp_ai_webmcp_test_http_response'] = self::a_release_response(
 			array(
 				'tag_name' => 'v2.0.0',
-				'html_url' => 'https://github.com/a8cteam51/a8csp-ai-canvas-webmcp/releases/tag/v2.0.0',
+				'html_url' => 'https://github.com/a8cteam51/a8csp-ai-canvas/releases/tag/v2.0.0',
 				'assets'   => array(
 					array(
 						'name'                 => 'a8csp-ai-canvas-webmcp.zip',
@@ -288,7 +288,7 @@ final class GitHubReleaseUpdateTest extends TestCase {
 		$GLOBALS['a8csp_ai_webmcp_test_http_response'] = self::a_release_response(
 			array(
 				'tag_name' => 'v2.0.0',
-				'html_url' => 'https://github.com/a8cteam51/a8csp-ai-canvas-webmcp/releases/tag/v2.0.0',
+				'html_url' => 'https://github.com/a8cteam51/a8csp-ai-canvas/releases/tag/v2.0.0',
 				'assets'   => array(),
 			)
 		);
@@ -314,7 +314,7 @@ final class GitHubReleaseUpdateTest extends TestCase {
 		$GLOBALS['a8csp_ai_webmcp_test_http_response'] = self::a_release_response(
 			array(
 				'tag_name' => 'v2.0.0',
-				'html_url' => 'https://github.com/a8cteam51/a8csp-ai-canvas-webmcp/releases/tag/v2.0.0',
+				'html_url' => 'https://github.com/a8cteam51/a8csp-ai-canvas/releases/tag/v2.0.0',
 				'assets'   => array(
 					array(
 						'name'                 => 'checksums.txt',
@@ -369,7 +369,7 @@ final class GitHubReleaseUpdateTest extends TestCase {
 				array(
 					'draft'    => false,
 					'tag_name' => 'v3.0.0-beta.1',
-					'html_url' => 'https://github.com/a8cteam51/a8csp-ai-canvas-webmcp/releases/tag/v3.0.0-beta.1',
+					'html_url' => 'https://github.com/a8cteam51/a8csp-ai-canvas/releases/tag/v3.0.0-beta.1',
 					'assets'   => array(
 						array(
 							'name'                 => 'a8csp-ai-canvas-webmcp.zip',
@@ -385,7 +385,7 @@ final class GitHubReleaseUpdateTest extends TestCase {
 		$GLOBALS['a8csp_ai_webmcp_test_http_response'] = self::a_release_response(
 			array(
 				'tag_name' => 'v2.0.0',
-				'html_url' => 'https://github.com/a8cteam51/a8csp-ai-canvas-webmcp/releases/tag/v2.0.0',
+				'html_url' => 'https://github.com/a8cteam51/a8csp-ai-canvas/releases/tag/v2.0.0',
 				'assets'   => array(
 					array(
 						'name'                 => 'a8csp-ai-canvas-webmcp.zip',
@@ -420,7 +420,7 @@ final class GitHubReleaseUpdateTest extends TestCase {
 		$GLOBALS['a8csp_ai_webmcp_test_http_response'] = self::a_release_response(
 			array(
 				'tag_name' => 'v2.0.0',
-				'html_url' => 'https://github.com/a8cteam51/a8csp-ai-canvas-webmcp/releases/tag/v2.0.0',
+				'html_url' => 'https://github.com/a8cteam51/a8csp-ai-canvas/releases/tag/v2.0.0',
 				'assets'   => array(
 					array(
 						'name'                 => 'a8csp-ai-canvas-webmcp.zip',
@@ -437,7 +437,7 @@ final class GitHubReleaseUpdateTest extends TestCase {
 				array(
 					'draft'    => false,
 					'tag_name' => 'v3.0.0-beta.1',
-					'html_url' => 'https://github.com/a8cteam51/a8csp-ai-canvas-webmcp/releases/tag/v3.0.0-beta.1',
+					'html_url' => 'https://github.com/a8cteam51/a8csp-ai-canvas/releases/tag/v3.0.0-beta.1',
 					'assets'   => array(
 						array(
 							'name'                 => 'a8csp-ai-canvas-webmcp.zip',
@@ -473,7 +473,7 @@ final class GitHubReleaseUpdateTest extends TestCase {
 		$GLOBALS['a8csp_ai_webmcp_test_http_response'] = self::a_release_response(
 			array(
 				'tag_name' => 'v2.0.0',
-				'html_url' => 'https://github.com/a8cteam51/a8csp-ai-canvas-webmcp/releases/tag/v2.0.0',
+				'html_url' => 'https://github.com/a8cteam51/a8csp-ai-canvas/releases/tag/v2.0.0',
 				'body'     => "Fixes the widget.\nAdds a setting.",
 				'assets'   => array(
 					array(

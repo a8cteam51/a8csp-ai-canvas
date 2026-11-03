@@ -131,7 +131,7 @@ function a8csp_ai_webmcp_get_github_release( $installed_version ) {
 	$latest_release_info = get_transient( $transient_key );
 	if ( false === $latest_release_info ) {
 		$release_url_path    = $prerelease_channel ? 'releases?per_page=10' : 'releases/latest';
-		$response            = wp_remote_get( 'https://api.github.com/repos/a8cteam51/a8csp-ai-canvas-webmcp/' . $release_url_path );
+		$response            = wp_remote_get( 'https://api.github.com/repos/a8cteam51/a8csp-ai-canvas/' . $release_url_path );
 		$latest_release_info = is_wp_error( $response ) || 200 !== wp_remote_retrieve_response_code( $response ) ? array() : \json_decode( wp_remote_retrieve_body( $response ), true );
 	}
 
