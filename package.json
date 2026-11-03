@@ -1,6 +1,6 @@
 {
   "name": "a8csp-ai-canvas",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "Lets the AI agent in your browser build a page in the page editor as a single Custom HTML block, through WebMCP.",
   "author": {
     "name": "A8C Special Projects",
