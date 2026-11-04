@@ -1,7 +1,15 @@
 import { safeHTML } from '@wordpress/dom';
 import { __ } from '@wordpress/i18n';
 
-import { formatUrl, locateBackground } from './background';
+import {
+	applyEdit,
+	focalPointOf,
+	formatPosition,
+	formatUrl,
+	locateBackground,
+	removalOf,
+	setDeclaration,
+} from './background';
 import {
 	ATTR_EMPTY,
 	ATTR_HOST,
@@ -28,6 +36,7 @@ import {
 import { linkAttributes, pickSize, readMedia, sizeAttributes } from './media';
 import { Overlay } from './overlay';
 import {
+	backgroundBehind,
 	closestLink,
 	findRuns,
 	isSameTarget,
@@ -109,6 +118,7 @@ export class Surface {
 		this.hovered = null;
 		this.pointer = null;
 		this.isPointerDown = false;
+		this.isTyping = false;
 		this.rangeAnchor = null;
 		this.changeable = new WeakMap();
 		this.commitTimer = 0;
@@ -339,6 +349,7 @@ export class Surface {
 
 		this.stopEditing();
 		this.selection = null;
+		this.isTyping = false;
 
 		if ( target && this.isActive ) {
 			const label = labelFor( target, this.root );
@@ -384,16 +395,62 @@ export class Surface {
 	 */
 	canChange( target ) {
 		const { element } = target;
-		if ( ! this.changeable.has( element ) ) {
-			this.changeable.set(
-				element,
-				target.kind === 'background'
-					? !! locateBackground( element, this.root, this.map )
+		const isBackground = target.kind === 'background';
+		const key = isBackground ? target.pseudo || '' : 'tag';
+
+		let known = this.changeable.get( element );
+		if ( ! known ) {
+			known = new Map();
+			this.changeable.set( element, known );
+		}
+		if ( ! known.has( key ) ) {
+			known.set(
+				key,
+				isBackground
+					? !! locateBackground(
+							element,
+							this.root,
+							this.map,
+							target.pseudo
+						)
 					: this.map.hasEditableTag( element )
 			);
 		}
 
-		return this.changeable.get( element );
+		return known.get( key );
+	}
+
+	/**
+	 * Whether a background found under the pointer is one this class can change.
+	 *
+	 * @param {{element: Element, pseudo: string|null}} candidate The background.
+	 *
+	 * @return {boolean} Whether it can be changed.
+	 */
+	acceptsBackground( candidate ) {
+		return this.canChange( { kind: 'background', ...candidate } );
+	}
+
+	/**
+	 * Returns the background behind what is selected, which its toolbar offers to select instead.
+	 * It is worked out once for each selection.
+	 *
+	 * @return {import('./targets').Target|null} The background, or nothing.
+	 */
+	behind() {
+		const { selection } = this;
+		if ( ! selection || selection.target.kind === 'background' ) {
+			return null;
+		}
+		if ( selection.behind === undefined ) {
+			selection.behind = backgroundBehind(
+				selection.target,
+				this.root,
+				( candidate ) => this.acceptsBackground( candidate )
+			);
+		}
+
+		return selection.behind;
 	}
 
 	/**
@@ -405,7 +462,10 @@ export class Surface {
 	 * @return {import('./targets').Target|null} The target.
 	 */
 	targetAt( element, point ) {
-		const target = resolveTarget( this.root, element, point );
+		const target = resolveTarget( this.root, element, point, {
+			acceptBackground: ( candidate ) =>
+				this.acceptsBackground( candidate ),
+		} );
 
 		return target && ( target.kind === 'text' || this.canChange( target ) )
 			? target
@@ -429,7 +489,14 @@ export class Surface {
 		}
 
 		if ( target.kind === 'background' ) {
-			if ( ! locateBackground( target.element, this.root, this.map ) ) {
+			if (
+				! locateBackground(
+					target.element,
+					this.root,
+					this.map,
+					target.pseudo
+				)
+			) {
 				return null;
 			}
 
@@ -603,6 +670,7 @@ export class Surface {
 			hadFocus:
 				!! this.editing && this.doc.activeElement === this.editing.host,
 			point: target.point,
+			pseudo: target.pseudo || null,
 		};
 	}
 
@@ -626,7 +694,12 @@ export class Surface {
 
 		let target;
 		if ( memory.kind === 'background' ) {
-			target = { kind: 'background', element, point: memory.point };
+			target = {
+				kind: 'background',
+				element,
+				pseudo: memory.pseudo,
+				point: memory.point,
+			};
 		} else if ( memory.isRun ) {
 			const node = element.childNodes[ memory.runIndex ];
 			const run = findRuns( element ).find( ( candidate ) =>
@@ -1041,7 +1114,12 @@ export class Surface {
 			return;
 		}
 
-		const found = locateBackground( element, this.root, this.map );
+		const found = locateBackground(
+			element,
+			this.root,
+			this.map,
+			this.selection.target.pseudo
+		);
 		const box = element.getBoundingClientRect();
 		const file = pickSize( readMedia( media ), box.width, box.height );
 		if ( ! found || ! file.url ) {
@@ -1066,6 +1144,203 @@ export class Surface {
 			this.onNotice( 'locked' );
 		}
 		this.emit();
+	}
+
+	/**
+	 * Selects the background behind what is selected.
+	 */
+	selectBackground() {
+		const background = this.behind();
+		if ( ! background ) {
+			return;
+		}
+
+		this.block.focus( { preventScroll: true } );
+		this.select( background );
+	}
+
+	/**
+	 * Returns the selected background, when the selection is one that is still on the page.
+	 *
+	 * @return {{element: Element, pseudo: string|null, found: ReturnType<typeof locateBackground>}|null} The background and where its image is written.
+	 */
+	selectedBackground() {
+		const target = this.selection?.target;
+		if ( target?.kind !== 'background' || ! target.element.isConnected ) {
+			return null;
+		}
+
+		const pseudo = target.pseudo || null;
+		return {
+			element: target.element,
+			pseudo,
+			found: locateBackground(
+				target.element,
+				this.root,
+				this.map,
+				pseudo
+			),
+		};
+	}
+
+	/**
+	 * Sets which part of the selected background image stays in view: its `background-position`.
+	 *
+	 * The position goes into the rule or attribute the image is written in, when that is the
+	 * element's own. When it is not, or when another rule would win over it there, it goes into
+	 * the element's style attribute, which comes after every rule. Each place is tried on the
+	 * page before it is written, and kept only if the image moves there; a pseudo-element has no
+	 * style attribute to fall back on.
+	 *
+	 * @param {{x: number, y: number}} point The focal point, as fractions across and down.
+	 */
+	setFocalPoint( point ) {
+		const background = this.selectedBackground();
+		if ( ! background ) {
+			return;
+		}
+
+		const { element, pseudo, found } = background;
+		const value = formatPosition( point );
+		const places = [];
+		if ( found?.named ) {
+			places.push( {
+				style: found.style,
+				text: found.text,
+				block: found.token.block || {
+					start: 0,
+					end: found.text.length,
+				},
+			} );
+		}
+		if ( found && ! pseudo && found.style ) {
+			const inline = element.getAttribute( 'style' ) || '';
+			places.push( {
+				style: null,
+				text: inline,
+				block: { start: 0, end: inline.length },
+			} );
+		}
+
+		const place = places.find( ( candidate ) =>
+			this.movesImage( element, pseudo, candidate, value, point )
+		);
+		const edit =
+			place &&
+			setDeclaration(
+				place.text,
+				place.block,
+				'background-position',
+				value
+			);
+		let isWritten = false;
+		if ( edit ) {
+			isWritten = place.style
+				? this.map.replaceRawText(
+						place.style,
+						edit.start,
+						edit.end,
+						edit.text
+					)
+				: this.map.setAttributes( element, {
+						style: applyEdit( place.text, edit ),
+					} );
+		}
+
+		if ( isWritten ) {
+			this.push();
+		} else {
+			this.onNotice( 'locked' );
+		}
+		this.emit();
+	}
+
+	/**
+	 * Tries a `background-position` in one place on the page, and puts the page back.
+	 *
+	 * @param {Element}                                                                  element The element with the background.
+	 * @param {string|null}                                                              pseudo  Its pseudo-element, if the background is on one.
+	 * @param {{style: Element|null, text: string, block: {start: number, end: number}}} place   The style element or style attribute, with its text and the block to write in.
+	 * @param {string}                                                                   value   The position.
+	 * @param {{x: number, y: number}}                                                   point   The focal point it stands for.
+	 *
+	 * @return {boolean} Whether the image would move there.
+	 */
+	movesImage( element, pseudo, place, value, point ) {
+		const text = applyEdit(
+			place.text,
+			setDeclaration(
+				place.text,
+				place.block,
+				'background-position',
+				value
+			)
+		);
+		const before = place.style
+			? place.style.textContent
+			: element.getAttribute( 'style' );
+
+		try {
+			if ( place.style ) {
+				place.style.textContent = text;
+			} else {
+				element.setAttribute( 'style', text );
+			}
+			const now = focalPointOf( element, pseudo );
+
+			return (
+				Math.abs( now.x - point.x ) < 0.002 &&
+				Math.abs( now.y - point.y ) < 0.002
+			);
+		} finally {
+			if ( place.style ) {
+				place.style.textContent = before;
+			} else if ( before === null ) {
+				element.removeAttribute( 'style' );
+			} else {
+				element.setAttribute( 'style', before );
+			}
+		}
+	}
+
+	/**
+	 * Takes the selected background image away, leaving whatever colour or gradient was under it.
+	 * The image's `url()` becomes `none`. The selection stays only if another image now shows.
+	 */
+	removeBackground() {
+		const background = this.selectedBackground();
+		if ( ! background ) {
+			return;
+		}
+
+		const { element, pseudo, found } = background;
+		const edit = found && removalOf( found.text, found.token );
+		let isWritten = false;
+		if ( edit ) {
+			isWritten = found.style
+				? this.map.replaceRawText(
+						found.style,
+						edit.start,
+						edit.end,
+						edit.text
+					)
+				: this.map.setAttributes( element, {
+						style: applyEdit( found.text, edit ),
+					} );
+		}
+		if ( ! isWritten ) {
+			this.onNotice( 'locked' );
+			this.emit();
+			return;
+		}
+
+		this.push();
+		this.changeable.delete( element );
+		if ( this.canChange( { kind: 'background', element, pseudo } ) ) {
+			this.emit();
+		} else {
+			this.select( null, { focusBlock: true } );
+		}
 	}
 
 	// endregion
@@ -1102,6 +1377,8 @@ export class Surface {
 					link.element.getAttribute( 'target' ) === '_blank',
 				isInline: link.isInline,
 			},
+			// Whether there is a background behind it, which the toolbar offers to select.
+			hasBackground: !! this.behind(),
 		};
 
 		if ( this.editing ) {
@@ -1112,14 +1389,21 @@ export class Surface {
 			selection.hasText = /\S/.test( host.textContent );
 
 			// Bold, italic and link are for a stretch of text, once the mouse has let go of it.
-			// The link itself is for a caret inside one. Plain typing gets no toolbar: it would
-			// only sit on top of whatever is above the text.
+			// The link itself is for a caret inside one, and the background for text in front of
+			// one, until the typing starts. Plain typing gets no toolbar: it would only sit on top
+			// of whatever is above the text.
 			if ( offsets.start !== offsets.end && ! this.isPointerDown ) {
 				selection.anchor = this.anchorOf( host, offsets );
 			} else if ( link ) {
 				selection.anchor = link.isInline
 					? link.element
 					: selection.element;
+			} else if (
+				selection.hasBackground &&
+				! this.isTyping &&
+				! this.isPointerDown
+			) {
+				selection.anchor = selection.element;
 			}
 		}
 		if ( target.kind === 'image' ) {
@@ -1127,6 +1411,21 @@ export class Surface {
 				src: target.element.currentSrc || target.element.src,
 				alt: target.element.getAttribute( 'alt' ) || '',
 			};
+		}
+		if ( target.kind === 'background' ) {
+			const { found } = this.selectedBackground() || {};
+			selection.background = found
+				? {
+						url: found.url,
+						focalPoint: focalPointOf(
+							target.element,
+							target.pseudo
+						),
+						// A pseudo-element's position can only go into a rule of its own.
+						canSetFocalPoint: ! target.pseudo || found.named,
+						canRemove: !! removalOf( found.text, found.token ),
+					}
+				: null;
 		}
 
 		return { status: 'ready', selection };
@@ -1310,6 +1609,12 @@ export class Surface {
 	onPointerMove( event ) {
 		if ( ! this.isActive || event.buttons ) {
 			return;
+		}
+
+		// The pointer moving again is the end of the typing: the toolbar it hid can come back.
+		if ( this.isTyping ) {
+			this.isTyping = false;
+			this.emitSoon();
 		}
 
 		this.pointer = {
@@ -1496,6 +1801,7 @@ export class Surface {
 		if ( ! event?.isComposing ) {
 			this.tidy();
 		}
+		this.isTyping = true;
 		this.scheduleCommit();
 		this.emitSoon();
 	}

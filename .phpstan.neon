@@ -2,13 +2,6 @@ includes:
     - vendor/a8csp/configs/php/quality-assurance/phpstan.dist.neon
 
 parameters:
-    # The plugin runs from PHP 8.3; the tooling runs on a newer PHP. Without this range the analysis
-    # takes the running PHP's built-ins as given and passes a function the floor does not have.
-    phpVersion:
-        min: 80300
-        max: 80599
-    scanDirectories:
-        - vendor/wp-plugin/mcp-adapter
     # The entry file's name is per-repository, footprint.php is a root data manifest, and tests/
     # is outside the shared config's conventional directories, so all three are listed here.
     paths:

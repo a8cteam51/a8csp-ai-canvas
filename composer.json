@@ -2,7 +2,7 @@
   "name": "a8csp/a8csp-ai-canvas",
   "type": "wordpress-plugin",
 
-  "description": "Lets Claude Design, or any MCP client, build pages on this site as a single Custom HTML block, and adds the page templates those pages render on.",
+  "description": "Lets the AI agent in your browser build a page in the page editor as a single Custom HTML block, through WebMCP.",
   "homepage": "https://github.com/a8cteam51/a8csp-ai-canvas",
   "license": "GPL-2.0-or-later",
   "authors": [
@@ -27,7 +27,7 @@
     }
   ],
   "require": {
-    "php": ">=8.3",
+    "php": ">=8.4",
     "ext-json": "*"
   },
   "require-dev": {
@@ -41,8 +41,6 @@
     "infection/infection": "^0.35",
     "phpunit/phpunit": "^13",
     "wp-cli/i18n-command": "^2",
-
-    "wp-plugin/mcp-adapter": "^0.7",
     "roave/security-advisories": "dev-latest"
   },
 
@@ -68,13 +66,13 @@
       "@composer update --prefer-stable --ignore-platform-req=php+ --no-interaction"
     ],
 
-    "format:php": "phpcbf --standard=./.phpcs.xml --basepath=. --runtime-set testVersion 8.3- ./ -v",
+    "format:php": "phpcbf --standard=./.phpcs.xml --basepath=. ./ -v",
     "lint:php": [
       "@lint:php:phpcs",
       "@lint:php:phpcs:tests",
       "@lint:php:phpstan"
     ],
-    "lint:php:phpcs": "phpcs --standard=./.phpcs.xml --basepath=. --runtime-set testVersion 8.3- ./ -v",
+    "lint:php:phpcs": "phpcs --standard=./.phpcs.xml --basepath=. ./ -v",
     "lint:php:phpcs:tests": "phpcs --standard=./.phpcs.tests.xml --basepath=. ./tests -v",
     "lint:php:phpstan": "phpstan analyse -c ./.phpstan.neon -v --memory-limit=1G",
 

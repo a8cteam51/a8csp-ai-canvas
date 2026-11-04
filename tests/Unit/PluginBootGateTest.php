@@ -4,20 +4,17 @@ namespace A8C\SpecialProjects\AICanvas\Tests\Unit;
 
 use A8C\SpecialProjects\AICanvas\AbstractComponent;
 use A8C\SpecialProjects\AICanvas\ComponentCollection;
-use A8C\SpecialProjects\AICanvas\Connector;
 use A8C\SpecialProjects\AICanvas\HtmlBlock;
-use A8C\SpecialProjects\AICanvas\Mcp;
-use A8C\SpecialProjects\AICanvas\PageAccess;
 use A8C\SpecialProjects\AICanvas\Plugin;
 use A8C\SpecialProjects\AICanvas\Templates;
+use A8C\SpecialProjects\AICanvas\WebMcp;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\TestCase;
 
 /**
  * Exercises the real `Plugin::boot()` pipeline outside WordPress through the recording hook
- * stubs — open-gate components register their hooks, the MCP component registers nothing while
- * MCP Adapter is absent, and a second boot is a no-op.
+ * stubs — every component registers its hooks, and a second boot is a no-op.
  *
  * @since   1.0.0
  * @version 1.0.0
@@ -25,16 +22,14 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass( Plugin::class )]
 #[UsesClass( AbstractComponent::class )]
 #[UsesClass( ComponentCollection::class )]
-#[UsesClass( Connector\Component::class )]
 #[UsesClass( HtmlBlock\Component::class )]
-#[UsesClass( Mcp\Component::class )]
-#[UsesClass( PageAccess\Component::class )]
 #[UsesClass( Templates\Component::class )]
+#[UsesClass( WebMcp\Component::class )]
 final class PluginBootGateTest extends TestCase {
 	// region LIFECYCLE.
 
 	/**
-	 * Starts each test with empty hook ledgers.
+	 * Starts each test with an empty hook ledger.
 	 *
 	 * @since   1.0.0
 	 * @version 1.0.0
@@ -44,8 +39,7 @@ final class PluginBootGateTest extends TestCase {
 	protected function setUp(): void {
 		parent::setUp();
 
-		$GLOBALS['a8csp_ai_canvas_test_hooks']          = array();
-		$GLOBALS['a8csp_ai_canvas_test_hook_callbacks'] = array();
+		$GLOBALS['a8csp_ai_canvas_test_hooks'] = array();
 	}
 
 	// endregion.
@@ -53,15 +47,16 @@ final class PluginBootGateTest extends TestCase {
 	// region TESTS.
 
 	/**
-	 * The boot flag reads false before the pipeline and true after it; open-gate components
-	 * register their hooks while the MCP component registers nothing when MCP Adapter is absent.
+	 * The boot flag reads false before the pipeline and true after it, and the components have
+	 * registered their hooks: the templates, the Custom HTML block's support and editor assets,
+	 * and the tools script.
 	 *
 	 * @since   1.0.0
 	 * @version 1.0.0
 	 *
 	 * @return  void
 	 */
-	public function test_boot_initializes_open_gate_components_and_skips_closed_gates(): void {
+	public function test_boot_registers_every_components_hooks(): void {
 		$plugin = new Plugin();
 		self::assertFalse( $plugin->is_booted() );
 
@@ -70,11 +65,8 @@ final class PluginBootGateTest extends TestCase {
 
 		self::assertContains( 'init', $GLOBALS['a8csp_ai_canvas_test_hooks'] );
 		self::assertContains( 'run_wptexturize', $GLOBALS['a8csp_ai_canvas_test_hooks'] );
-		self::assertContains( 'wp_connectors_init', $GLOBALS['a8csp_ai_canvas_test_hooks'] );
-		self::assertContains( 'manage_pages_columns', $GLOBALS['a8csp_ai_canvas_test_hooks'] );
-
-		self::assertNotContains( 'wp_abilities_api_init', $GLOBALS['a8csp_ai_canvas_test_hooks'] );
-		self::assertNotContains( 'mcp_adapter_init', $GLOBALS['a8csp_ai_canvas_test_hooks'] );
+		self::assertContains( 'register_block_type_args', $GLOBALS['a8csp_ai_canvas_test_hooks'] );
+		self::assertContains( 'enqueue_block_editor_assets', $GLOBALS['a8csp_ai_canvas_test_hooks'] );
 	}
 
 	/**

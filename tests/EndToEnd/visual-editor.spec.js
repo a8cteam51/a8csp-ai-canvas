@@ -37,9 +37,7 @@ const CONTENT =
 test.describe( 'Visual editor of the Custom HTML block', () => {
 	let pageId;
 
-	// The plugin header requires MCP Adapter: WordPress refuses to activate the plugin without it.
 	test.beforeAll( async ( { requestUtils } ) => {
-		await requestUtils.activatePlugin( 'mcp-adapter' );
 		await requestUtils.activatePlugin( 'a8csp-ai-canvas' );
 	} );
 

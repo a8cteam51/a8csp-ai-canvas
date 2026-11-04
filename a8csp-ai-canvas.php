@@ -7,7 +7,7 @@
  * directly against the older PHP versions.
  *
  * @since       1.0.0
- * @version     2.0.0
+ * @version     1.0.0
  * @package     A8C\SpecialProjects\AICanvas
  * @author      A8C Special Projects
  * @license     GPL-2.0-or-later
@@ -18,12 +18,11 @@
  * Plugin Name:             A8CSP AI Canvas
  * Plugin URI:              https://specialprojects.automattic.com
  * Update URI:              https://github.com/a8cteam51/a8csp-ai-canvas
- * Description:             Lets Claude Design, or any MCP client, build pages on this site as a single Custom HTML block, and adds the page templates those pages render on.
+ * Description:             Lets the AI agent in your browser build a page in the page editor as a single Custom HTML block, through WebMCP.
  * Version:                 2.0.0
  * Requires at least:       7.1
  * Tested up to:            7.1
- * Requires PHP:            8.3
- * Requires Plugins:        mcp-adapter
+ * Requires PHP:            8.4
  * Author:                  A8C Special Projects
  * Author URI:              https://specialprojects.automattic.com
  * License:                 GPL v2 or later

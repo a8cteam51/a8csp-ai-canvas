@@ -1,7 +1,7 @@
 {
   "name": "a8csp-ai-canvas",
   "version": "2.0.0",
-  "description": "Lets Claude Design, or any MCP client, build pages on this site as a single Custom HTML block, and adds the page templates those pages render on.",
+  "description": "Lets the AI agent in your browser build a page in the page editor as a single Custom HTML block, through WebMCP.",
   "author": {
     "name": "A8C Special Projects",
     "url": "https://specialprojects.automattic.com/"
@@ -20,9 +20,9 @@
   "devDependencies": {
     "@a8csp/configs": "github:a8cteam51/a8csp-configs#semver:^1",
     "@playwright/test": "^1.61.1",
-    "@wordpress/a11y": "^4.56.0",
     "@wordpress/api-fetch": "^7.56.0",
     "@wordpress/block-editor": "^18.0.0",
+    "@wordpress/blocks": "^16.2.0",
     "@wordpress/browserslist-config": "^6.55.0",
     "@wordpress/components": "^41.0.0",
     "@wordpress/compose": "^8.9.0",
@@ -34,11 +34,11 @@
     "@wordpress/element": "^8.8.0",
     "@wordpress/env": "^11.15.0",
     "@wordpress/hooks": "^4.56.0",
+    "@wordpress/html-entities": "^4.57.0",
     "@wordpress/i18n": "^6.29.0",
     "@wordpress/icons": "^17.0.0",
     "@wordpress/keycodes": "^4.56.0",
     "@wordpress/notices": "^5.56.0",
-    "@wordpress/plugins": "^7.56.0",
     "@wordpress/postcss-plugins-preset": "^5.55.0",
     "@wordpress/scripts": "^35.0.0",
     "@wordpress/url": "^4.56.0",

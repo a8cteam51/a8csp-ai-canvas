@@ -27,9 +27,7 @@ final class Plugin {
 	private const array COMPONENTS = array(
 		Templates\Component::class,
 		HtmlBlock\Component::class,
-		Mcp\Component::class,
-		PageAccess\Component::class,
-		Connector\Component::class,
+		WebMcp\Component::class,
 	);
 
 	/**

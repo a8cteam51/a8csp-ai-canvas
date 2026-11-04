@@ -337,7 +337,7 @@ function a8csp_ai_canvas_validate_requirements() {
 
 	$plugin_metadata = a8csp_ai_canvas_get_plugin_metadata();
 	if ( ! isset( $plugin_metadata['RequiresPHP'] ) || '' === $plugin_metadata['RequiresPHP'] ) {
-		$plugin_metadata['RequiresPHP'] = '8.3';
+		$plugin_metadata['RequiresPHP'] = '8.4';
 	}
 	if ( ! isset( $plugin_metadata['RequiresWP'] ) || '' === $plugin_metadata['RequiresWP'] ) {
 		$plugin_metadata['RequiresWP'] = '7.1';

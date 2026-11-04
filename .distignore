@@ -1,5 +1,5 @@
 # wp dist-archive walks the disk, not git, so this file lists everything the release zip must not
-# carry. `/build` holds Infection's logs; the assets/*/build directories ship.
+# carry. `/build` holds Infection's logs; blocks/build and the assets/*/build directories ship.
 
 .git*
 .idea

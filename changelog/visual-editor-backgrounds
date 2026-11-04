@@ -1,0 +1,4 @@
+Significance: minor
+Type: added
+
+Background images in the visual editor can be selected from the text, image or button in front of them, given a focal point, or removed, and are found on a layer under a section's content and on its ::before or ::after as well as on the section itself.

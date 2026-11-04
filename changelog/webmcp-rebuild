@@ -1,0 +1,4 @@
+Significance: major
+Type: changed
+
+Rebuilt for WebMCP: the page is built by an agent in the browser, in the page editor, instead of by an MCP client calling the site. The plugin no longer requires the MCP Adapter plugin, and needs PHP 8.4.

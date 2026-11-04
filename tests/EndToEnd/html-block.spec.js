@@ -3,9 +3,7 @@ const { test, expect } = require( '@wordpress/e2e-test-utils-playwright' );
 test.describe( 'Custom HTML block alignment', () => {
 	let pageId;
 
-	// The plugin header requires MCP Adapter: WordPress refuses to activate the plugin without it.
 	test.beforeAll( async ( { requestUtils } ) => {
-		await requestUtils.activatePlugin( 'mcp-adapter' );
 		await requestUtils.activatePlugin( 'a8csp-ai-canvas' );
 
 		// The second block is the control: without the alignment, the editor keeps a block in the content column.

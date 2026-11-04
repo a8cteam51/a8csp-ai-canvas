@@ -21,7 +21,9 @@ return array(
 	'options'   => array(),
 	'user_meta' => array(),
 	'post_meta' => array(
-		// PageAccess\Flag owns:
+		// No component writes it any more: AI Canvas 2.0.0 and earlier marked the pages its MCP
+		// tools created with it. A site that updated from those versions still has it, so the
+		// uninstall cleans it up.
 		'_a8csp_ai_canvas',
 	),
 );

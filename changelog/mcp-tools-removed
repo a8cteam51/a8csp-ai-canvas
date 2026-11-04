@@ -1,0 +1,4 @@
+Significance: major
+Type: removed
+
+The MCP tools (`create-page`, `get-page`, `update-page`, `list-pages`, `delete-page`, `list-media` and `get-instructions`), the AI Canvas card and its Authorization header generator on the Settings → Connectors screen, and the flag on the pages those tools created, which uninstalling now deletes.

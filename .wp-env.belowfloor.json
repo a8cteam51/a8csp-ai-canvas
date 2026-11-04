@@ -2,11 +2,10 @@
   "$schema": "https://schemas.wp.org/trunk/wp-env.json",
   "core": "WordPress/WordPress#tags/7.0.4",
   "phpVersion": "8.5",
-  "port": 24953,
+  "port": 28565,
   "testsEnvironment": false,
   "mappings": {
-    "wp-content/plugins/a8csp-ai-canvas": ".",
-    "wp-content/plugins/mcp-adapter": "./vendor/wp-plugin/mcp-adapter"
+    "wp-content/plugins/a8csp-ai-canvas": "."
   },
   "config": {
     "WP_DEBUG_DISPLAY": false,

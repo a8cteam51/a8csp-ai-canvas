@@ -5,8 +5,7 @@ namespace A8C\SpecialProjects\AICanvas\Tests\Unit;
 use A8C\SpecialProjects\AICanvas\AbstractComponent;
 use A8C\SpecialProjects\AICanvas\ComponentCollection;
 use A8C\SpecialProjects\AICanvas\ComponentInterface;
-use A8C\SpecialProjects\AICanvas\Connector;
-use A8C\SpecialProjects\AICanvas\Mcp;
+use A8C\SpecialProjects\AICanvas\HtmlBlock;
 use A8C\SpecialProjects\AICanvas\Templates;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\UsesClass;
@@ -23,8 +22,7 @@ use PHPUnit\Framework\TestCase;
  */
 #[CoversClass( ComponentCollection::class )]
 #[UsesClass( AbstractComponent::class )]
-#[UsesClass( Connector\Component::class )]
-#[UsesClass( Mcp\Component::class )]
+#[UsesClass( HtmlBlock\Component::class )]
 #[UsesClass( Templates\Component::class )]
 final class ComponentCollectionTest extends TestCase {
 	// region LIFECYCLE.
@@ -50,8 +48,7 @@ final class ComponentCollectionTest extends TestCase {
 
 	/**
 	 * A closed gate keeps its component out of the collection — no construction, no activity —
-	 * while an open gate admits its component; assembly itself registers nothing. The MCP
-	 * component's gate is closed here because MCP Adapter is not loaded, and the closed-gate
+	 * while an open gate admits its component; assembly itself registers nothing. The closed-gate
 	 * recording fixture logs its own construction, so an empty event log proves it was never built.
 	 *
 	 * @since   1.0.0
@@ -60,10 +57,10 @@ final class ComponentCollectionTest extends TestCase {
 	 * @return  void
 	 */
 	public function test_assemble_gates_before_construction(): void {
-		$components = ComponentCollection::assemble( array( Connector\Component::class, Mcp\Component::class, ClosedGateRecordingComponent::class ) );
+		$components = ComponentCollection::assemble( array( Templates\Component::class, ClosedGateRecordingComponent::class ) );
 
-		self::assertTrue( $components->has( Connector\Component::class ) );
-		self::assertFalse( $components->has( Mcp\Component::class ) );
+		self::assertTrue( $components->has( Templates\Component::class ) );
+		self::assertFalse( $components->has( ClosedGateRecordingComponent::class ) );
 		self::assertSame( array(), $GLOBALS['a8csp_ai_canvas_test_phase_events'] );
 		self::assertSame( array(), $GLOBALS['a8csp_ai_canvas_test_hooks'] );
 	}
@@ -78,7 +75,7 @@ final class ComponentCollectionTest extends TestCase {
 	 * @return  void
 	 */
 	public function test_hook_phase_registers_every_survivors_hooks(): void {
-		$components = ComponentCollection::assemble( array( Templates\Component::class, Connector\Component::class ) );
+		$components = ComponentCollection::assemble( array( Templates\Component::class, HtmlBlock\Component::class ) );
 
 		$components->initialize();
 		self::assertSame( array(), $GLOBALS['a8csp_ai_canvas_test_hooks'] );
@@ -86,8 +83,8 @@ final class ComponentCollectionTest extends TestCase {
 		$components->register_hooks();
 		self::assertContains( 'init', $GLOBALS['a8csp_ai_canvas_test_hooks'] );
 		self::assertContains( 'run_wptexturize', $GLOBALS['a8csp_ai_canvas_test_hooks'] );
-		self::assertContains( 'wp_connectors_init', $GLOBALS['a8csp_ai_canvas_test_hooks'] );
-		self::assertContains( 'options-connectors-wp-admin_init', $GLOBALS['a8csp_ai_canvas_test_hooks'] );
+		self::assertContains( 'register_block_type_args', $GLOBALS['a8csp_ai_canvas_test_hooks'] );
+		self::assertContains( 'enqueue_block_editor_assets', $GLOBALS['a8csp_ai_canvas_test_hooks'] );
 	}
 
 	/**

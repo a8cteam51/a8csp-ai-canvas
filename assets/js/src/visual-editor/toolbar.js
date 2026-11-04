@@ -5,6 +5,7 @@ import {
 } from '@wordpress/block-editor';
 import {
 	Button,
+	FocalPointPicker,
 	Popover,
 	TextareaControl,
 	Toolbar,
@@ -163,6 +164,67 @@ function AltPanel( { selection, surface, onClose } ) {
 }
 
 /**
+ * The control for which part of a background image stays in view when its element crops it. Like
+ * the alternative text, it saves when it closes, however it is closed, and only if the point moved.
+ *
+ * @param {Object}     props
+ * @param {Object}     props.selection What is selected.
+ * @param {Object}     props.surface   The block's content.
+ * @param {() => void} props.onClose   Closes the control.
+ *
+ * @return {Element} The control.
+ */
+function FocalPointPanel( { selection, surface, onClose } ) {
+	const [ initial ] = useState( selection.background.focalPoint );
+	const [ point, setPoint ] = useState( initial );
+	const save = () => {
+		const next = { x: Number( point.x ), y: Number( point.y ) };
+		if ( next.x !== initial.x || next.y !== initial.y ) {
+			surface.setFocalPoint( next );
+		}
+		onClose();
+	};
+
+	return (
+		<Popover
+			className="a8csp-ve-panel"
+			{ ...PLACEMENT }
+			anchor={ selection.anchor || selection.element }
+			focusOnMount="firstElement"
+			onClose={ save }
+		>
+			<form
+				className="a8csp-ve-panel__form"
+				onSubmit={ ( event ) => {
+					event.preventDefault();
+					save();
+				} }
+			>
+				<FocalPointPicker
+					__nextHasNoMarginBottom
+					label={ __( 'Focal point', 'a8csp-ai-canvas' ) }
+					help={ __(
+						'Choose the part of the image that stays in view when the section crops it.',
+						'a8csp-ai-canvas'
+					) }
+					url={ selection.background.url }
+					value={ point }
+					onChange={ setPoint }
+				/>
+				<Button
+					__next40pxDefaultSize
+					className="a8csp-ve-panel__done"
+					variant="primary"
+					type="submit"
+				>
+					{ __( 'Done', 'a8csp-ai-canvas' ) }
+				</Button>
+			</form>
+		</Popover>
+	);
+}
+
+/**
  * A toolbar button that opens the Media Library to pick an image.
  *
  * @param {Object}                  props
@@ -187,15 +249,18 @@ function ReplaceButton( { label, onSelect } ) {
 
 /**
  * The toolbar for what is selected in the block's content, shown beside it: bold, italic and
- * link for text; replace, alternative text and link for an image; replace for a background.
+ * link for text; replace, alternative text and link for an image; replace, focal point and remove
+ * for a background. Text, an image or a link in front of a background also offers to select the
+ * background, which a click on them cannot reach.
  *
  * Text that is only being typed in has no toolbar. One appears for a stretch of selected text,
- * and for a link or a button, which is when there is something for it to do.
+ * for a link or a button, and for text in front of a background until the typing starts, which
+ * is when there is something for it to do.
  *
  * @param {Object}                   props
  * @param {Object}                   props.selection What is selected.
  * @param {Object}                   props.surface   The block's content.
- * @param {?string}                  props.panel     Which of the toolbar's panels is open: `link`, `alt`, or none.
+ * @param {?string}                  props.panel     Which of the toolbar's panels is open: `link`, `alt`, `focal`, or none.
  * @param {(panel: ?string) => void} props.setPanel  Opens a panel, or closes the open one.
  *
  * @return {Element} The toolbar.
@@ -221,6 +286,19 @@ export function SelectionToolbar( { selection, surface, panel, setPanel } ) {
 	if ( panel === 'alt' && kind === 'image' ) {
 		return (
 			<AltPanel
+				selection={ selection }
+				surface={ surface }
+				onClose={ closePanel }
+			/>
+		);
+	}
+	if (
+		panel === 'focal' &&
+		kind === 'background' &&
+		selection.background?.canSetFocalPoint
+	) {
+		return (
+			<FocalPointPanel
 				selection={ selection }
 				surface={ surface }
 				onClose={ closePanel }
@@ -296,6 +374,20 @@ export function SelectionToolbar( { selection, surface, panel, setPanel } ) {
 									surface.replaceBackground( media )
 								}
 							/>
+							<ToolbarButton
+								disabled={
+									! selection.background?.canSetFocalPoint
+								}
+								onClick={ () => setPanel( 'focal' ) }
+							>
+								{ __( 'Focal point', 'a8csp-ai-canvas' ) }
+							</ToolbarButton>
+							<ToolbarButton
+								disabled={ ! selection.background?.canRemove }
+								onClick={ () => surface.removeBackground() }
+							>
+								{ __( 'Remove', 'a8csp-ai-canvas' ) }
+							</ToolbarButton>
 						</ToolbarGroup>
 					) }
 					{ ( kind === 'text' || link ) && (
@@ -336,6 +428,15 @@ export function SelectionToolbar( { selection, surface, panel, setPanel } ) {
 									onClick={ () => surface.removeLink() }
 								/>
 							) }
+						</ToolbarGroup>
+					) }
+					{ selection.hasBackground && (
+						<ToolbarGroup>
+							<ToolbarButton
+								onClick={ () => surface.selectBackground() }
+							>
+								{ __( 'Background', 'a8csp-ai-canvas' ) }
+							</ToolbarButton>
 						</ToolbarGroup>
 					) }
 				</Toolbar>

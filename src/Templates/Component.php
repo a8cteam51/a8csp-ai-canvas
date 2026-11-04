@@ -21,7 +21,7 @@ final class Component extends AbstractComponent {
 	// region FIELDS AND CONSTANTS
 
 	/**
-	 * The template slugs, keyed by the short name the MCP page tools accept. The slug is what
+	 * The template slugs, keyed by the short name the set-template tool accepts. The slug is what
 	 * WordPress stores in a page's `_wp_page_template` meta.
 	 *
 	 * @since   1.0.0

@@ -1,5 +1,7 @@
 import { ATTR_EMPTY } from '../../assets/js/src/visual-editor/constants';
 import {
+	backgroundBehind,
+	backgroundsAt,
 	findRuns,
 	isSameTarget,
 	labelFor,
@@ -216,6 +218,7 @@ describe( 'resolveTarget', () => {
 		expect( target ).toEqual( {
 			kind: 'background',
 			element: root.querySelector( 'section' ),
+			pseudo: null,
 			point: { x: 4, y: 5 },
 		} );
 	} );
@@ -354,5 +357,163 @@ describe( 'labelFor', () => {
 				'div'
 			)
 		).toBe( 'Background image' );
+	} );
+} );
+
+describe( 'backgroundsAt', () => {
+	const point = { x: 10, y: 10 };
+
+	afterEach( () => {
+		delete document.elementsFromPoint;
+		jest.restoreAllMocks();
+	} );
+
+	it( 'finds a layer under the content: beside it, not around it', () => {
+		const root = rootOf(
+			'<section><div class="bg" style="position: absolute; background-image: url(hero.png)"></div><div class="content"><h2>Title</h2></div></section>'
+		);
+		const content = root.querySelector( '.content' );
+		const layer = root.querySelector( '.bg' );
+		document.elementsFromPoint = jest.fn( () => [
+			content,
+			layer,
+			root.querySelector( 'section' ),
+			root,
+			document.body,
+		] );
+
+		expect( backgroundsAt( content, root, point ) ).toEqual( [
+			{ element: layer, pseudo: null },
+		] );
+	} );
+
+	it( 'finds a layer the pointer passes through', () => {
+		const root = rootOf(
+			'<section><div class="bg" style="position: absolute; pointer-events: none; background-image: url(hero.png)"></div><div class="content"><h2>Title</h2></div></section>'
+		);
+		const layer = root.querySelector( '.bg' );
+		jest.spyOn( layer, 'getBoundingClientRect' ).mockReturnValue( {
+			left: 0,
+			top: 0,
+			right: 100,
+			bottom: 100,
+		} );
+
+		expect(
+			backgroundsAt( root.querySelector( '.content' ), root, point )
+		).toEqual( [ { element: layer, pseudo: null } ] );
+		expect(
+			backgroundsAt( root.querySelector( '.content' ), root, {
+				x: 500,
+				y: 500,
+			} )
+		).toEqual( [] );
+	} );
+
+	it( 'finds a background on a ::before, before the element’s own', () => {
+		const root = rootOf(
+			'<style>.hero::before { content: ""; background-image: url(a.png); }</style><section class="hero" style="background-image: url(b.png)"><h2>Title</h2></section>'
+		);
+		const view = document.defaultView;
+		const computed = view.getComputedStyle.bind( view );
+		jest.spyOn( view, 'getComputedStyle' ).mockImplementation(
+			( element, pseudo ) => {
+				if ( ! pseudo ) {
+					return computed( element );
+				}
+				return pseudo === '::before' && element.matches( '.hero' )
+					? { content: '""', backgroundImage: 'url("a.png")' }
+					: { content: 'none', backgroundImage: 'url("a.png")' };
+			}
+		);
+		const hero = root.querySelector( '.hero' );
+
+		expect( backgroundsAt( root.querySelector( 'h2' ), root ) ).toEqual( [
+			{ element: hero, pseudo: '::before' },
+			{ element: hero, pseudo: null },
+		] );
+	} );
+
+	it( 'does not look at pseudo-elements the block’s styles do not mention', () => {
+		const root = rootOf(
+			'<style>.hero { color: red; }</style><section class="hero" style="background-image: url(b.png)"><h2>Title</h2></section>'
+		);
+		const view = document.defaultView;
+		const spy = jest.spyOn( view, 'getComputedStyle' );
+
+		backgroundsAt( root.querySelector( 'h2' ), root );
+
+		expect( spy.mock.calls.some( ( [ , pseudo ] ) => !! pseudo ) ).toBe(
+			false
+		);
+	} );
+
+	it( 'passes over a background that cannot be changed for the one under it', () => {
+		const root = rootOf(
+			'<section style="background-image: url(a.png)"><div class="card" style="background-image: url(b.png)"><div class="pad"></div></div></section>'
+		);
+
+		const target = resolveTarget(
+			root,
+			root.querySelector( '.pad' ),
+			point,
+			{
+				acceptBackground: ( candidate ) =>
+					candidate.element.tagName === 'SECTION',
+			}
+		);
+
+		expect( target.element ).toBe( root.querySelector( 'section' ) );
+	} );
+} );
+
+describe( 'backgroundBehind', () => {
+	it( 'finds the background behind a heading', () => {
+		const root = rootOf(
+			'<section style="background-image: url(a.png)"><div><h2>Title</h2></div></section>'
+		);
+
+		expect( backgroundBehind( resolve( root, 'h2' ), root ) ).toMatchObject(
+			{
+				kind: 'background',
+				element: root.querySelector( 'section' ),
+				pseudo: null,
+			}
+		);
+	} );
+
+	it( 'does not offer something its own background', () => {
+		const root = rootOf(
+			'<section><a href="/x" style="background-image: url(icon.png)">Go</a></section>'
+		);
+
+		expect( backgroundBehind( resolve( root, 'a' ), root ) ).toBeNull();
+	} );
+
+	it( 'leaves out a background that cannot be changed', () => {
+		const root = rootOf(
+			'<section style="background-image: url(a.png)"><img src="x.png" alt=""></section>'
+		);
+
+		expect(
+			backgroundBehind( resolve( root, 'img' ), root, () => false )
+		).toBeNull();
+	} );
+
+	it( 'tells a background apart from one on its element’s ::before', () => {
+		const element = document.createElement( 'section' );
+
+		expect(
+			isSameTarget(
+				{ kind: 'background', element, pseudo: null },
+				{ kind: 'background', element, pseudo: '::before' }
+			)
+		).toBe( false );
+		expect(
+			isSameTarget(
+				{ kind: 'background', element },
+				{ kind: 'background', element, pseudo: null }
+			)
+		).toBe( true );
 	} );
 } );

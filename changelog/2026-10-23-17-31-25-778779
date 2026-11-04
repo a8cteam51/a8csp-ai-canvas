@@ -1,0 +1,4 @@
+Significance: minor
+Type: added
+
+WebMCP tools in the page editor, for an agent in the browser: `ai-canvas-get-instructions` returns the authoring rules, `ai-canvas-get-page` reads the page, `ai-canvas-set-page-content` writes it as one full-width Custom HTML block once the rules have been read, refusing a stale revision, `ai-canvas-set-template` chooses its template, and `ai-canvas-list-media` finds images in the Media Library. The tools register all or none, and need a browser with WebMCP, such as Chrome with `chrome://flags/#enable-webmcp-testing` turned on.

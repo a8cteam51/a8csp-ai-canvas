@@ -249,7 +249,10 @@ export function VisualEditor( { clientId, isSelected } ) {
 					'Tip: click any text, image or button on the page to change it.',
 					'a8csp-ai-canvas'
 				),
-				{ type: 'snackbar', id: 'a8csp-ai-canvas-visual-editor-tip' }
+				{
+					type: 'snackbar',
+					id: 'a8csp-ai-canvas-visual-editor-tip',
+				}
 			);
 		}
 	}, [ status, createInfoNotice ] );
