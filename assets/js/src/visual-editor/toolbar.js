@@ -6,17 +6,26 @@ import {
 import {
 	Button,
 	FocalPointPicker,
+	MenuGroup,
+	MenuItem,
 	Popover,
 	TextareaControl,
 	Toolbar,
 	ToolbarButton,
+	ToolbarDropdownMenu,
 	ToolbarGroup,
 } from '@wordpress/components';
 import { useState } from '@wordpress/element';
-import { __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
 import {
 	formatBold,
 	formatItalic,
+	headingLevel1,
+	headingLevel2,
+	headingLevel3,
+	headingLevel4,
+	headingLevel5,
+	headingLevel6,
 	link as linkIcon,
 	linkOff,
 } from '@wordpress/icons';
@@ -27,6 +36,8 @@ import {
 	prependHTTP,
 	prependHTTPS,
 } from '@wordpress/url';
+
+import { LEVELS } from './heading-level';
 
 /**
  * Where the toolbar and its panels go: above what is selected, or below it when there is no room
@@ -247,15 +258,80 @@ function ReplaceButton( { label, onSelect } ) {
 	);
 }
 
+const LEVEL_ICONS = {
+	1: headingLevel1,
+	2: headingLevel2,
+	3: headingLevel3,
+	4: headingLevel4,
+	5: headingLevel5,
+	6: headingLevel6,
+};
+
+/**
+ * The heading's level, and the other levels to choose from. A level at which the page's CSS
+ * would style the heading differently, because it styles it by its level, says so.
+ *
+ * @param {Object} props
+ * @param {number} props.level   The heading's level.
+ * @param {Object} props.surface The block's content.
+ *
+ * @return {Element} The menu.
+ */
+function HeadingLevelMenu( { level, surface } ) {
+	return (
+		<ToolbarDropdownMenu
+			icon={ LEVEL_ICONS[ level ] }
+			label={ __( 'Change level', 'a8csp-ai-canvas' ) }
+		>
+			{ ( { onClose } ) => {
+				// Worked out when the menu opens, not each time the toolbar is drawn.
+				const changing = surface.levelsChangingLook();
+
+				return (
+					<MenuGroup>
+						{ LEVELS.map( ( option ) => (
+							<MenuItem
+								key={ option }
+								icon={ LEVEL_ICONS[ option ] }
+								role="menuitemradio"
+								isSelected={ option === level }
+								info={
+									changing.includes( option )
+										? __(
+												'Changes how it looks',
+												'a8csp-ai-canvas'
+											)
+										: undefined
+								}
+								onClick={ () => {
+									surface.setHeadingLevel( option );
+									onClose();
+								} }
+							>
+								{ sprintf(
+									/* translators: %d: A heading level, from 1 to 6. */
+									__( 'Heading %d', 'a8csp-ai-canvas' ),
+									option
+								) }
+							</MenuItem>
+						) ) }
+					</MenuGroup>
+				);
+			} }
+		</ToolbarDropdownMenu>
+	);
+}
+
 /**
  * The toolbar for what is selected in the block's content, shown beside it: bold, italic and
- * link for text; replace, alternative text and link for an image; replace, focal point and remove
- * for a background. Text, an image or a link in front of a background also offers to select the
- * background, which a click on them cannot reach.
+ * link for text, and the level for a heading; replace, alternative text and link for an image;
+ * replace, focal point and remove for a background. Text, an image or a link in front of a
+ * background also offers to select the background, which a click on them cannot reach. A link to
+ * an anchor on the page offers to go there, which a click on it no longer does.
  *
  * Text that is only being typed in has no toolbar. One appears for a stretch of selected text,
- * for a link or a button, and for text in front of a background until the typing starts, which
- * is when there is something for it to do.
+ * for a link or a button, and for text in a heading or in front of a background until the typing
+ * starts, which is when there is something for it to do.
  *
  * @param {Object}                   props
  * @param {Object}                   props.selection What is selected.
@@ -331,6 +407,14 @@ export function SelectionToolbar( { selection, surface, panel, setPanel } ) {
 					<div className="a8csp-ve-toolbar__label">
 						{ selection.label }
 					</div>
+					{ selection.headingLevel && (
+						<ToolbarGroup>
+							<HeadingLevelMenu
+								level={ selection.headingLevel }
+								surface={ surface }
+							/>
+						</ToolbarGroup>
+					) }
 					{ kind === 'text' && (
 						<ToolbarGroup>
 							<ToolbarButton
@@ -427,6 +511,13 @@ export function SelectionToolbar( { selection, surface, panel, setPanel } ) {
 									) }
 									onClick={ () => surface.removeLink() }
 								/>
+							) }
+							{ link?.hasTarget && (
+								<ToolbarButton
+									onClick={ () => surface.followLink() }
+								>
+									{ __( 'Go to anchor', 'a8csp-ai-canvas' ) }
+								</ToolbarButton>
 							) }
 						</ToolbarGroup>
 					) }

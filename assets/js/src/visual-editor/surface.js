@@ -18,6 +18,7 @@ import {
 	ATTR_RUN,
 } from './constants';
 import { DomMap } from './dom-map';
+import { levelsChangingLook, selectorsOf } from './heading-level';
 import {
 	addLink,
 	cleanForSave,
@@ -61,6 +62,8 @@ const BLOCKS =
  * The space between a target and the box drawn around it.
  */
 const PADDING = { text: 4, link: 4, image: 0, background: -4 };
+
+const HEADINGS = 'h1, h2, h3, h4, h5, h6';
 
 const indexIn = ( list, item ) => Array.prototype.indexOf.call( list, item );
 
@@ -1001,6 +1004,109 @@ export class Surface {
 	}
 
 	/**
+	 * Returns the heading the selected text is in.
+	 *
+	 * @return {Element|null} The heading, or nothing when the selection is not text in one.
+	 */
+	heading() {
+		const target = this.selection?.target;
+		const heading =
+			target?.kind === 'text' && target.container.closest( HEADINGS );
+
+		return heading && heading !== this.root && this.root.contains( heading )
+			? heading
+			: null;
+	}
+
+	/**
+	 * Works out the levels at which the heading the selected text is in would look different,
+	 * because the page's CSS styles it, or something in it, by its level.
+	 *
+	 * @return {number[]} The levels.
+	 */
+	levelsChangingLook() {
+		const heading = this.heading();
+		if ( ! heading ) {
+			return [];
+		}
+
+		const selectors = Array.from(
+			this.root.querySelectorAll( 'style' )
+		).flatMap( ( style ) =>
+			style.sheet ? selectorsOf( style.sheet ) : []
+		);
+
+		return levelsChangingLook( this.root, heading, selectors );
+	}
+
+	/**
+	 * Makes the heading the selected text is in one of another level, keeping its attributes
+	 * and content, and selects it again.
+	 *
+	 * @param {number} level The level, from 1 to 6.
+	 */
+	setHeadingLevel( level ) {
+		const heading = this.heading();
+		if ( ! heading || heading.localName === `h${ level }` ) {
+			return;
+		}
+
+		// What was typed is written first, and the heading is no longer being edited when it is replaced.
+		this.select( null );
+
+		const renamed = this.map.rename( heading, `h${ level }` );
+		if ( ! renamed ) {
+			this.onNotice( 'locked' );
+			this.select( resolveTarget( this.root, heading ) );
+			return;
+		}
+
+		const isInStep = this.map.reindex( this.root );
+		this.push();
+		if ( ! isInStep ) {
+			this.render();
+			return;
+		}
+
+		this.select( resolveTarget( this.root, renamed ) );
+	}
+
+	/**
+	 * Returns the element on the page that the selected link points to with `#…`.
+	 *
+	 * @return {?Element} The element, or null when the link goes elsewhere or nothing has that id.
+	 */
+	linkTarget() {
+		const href = this.link()?.element.getAttribute( 'href' ) || '';
+		if ( ! href.startsWith( '#' ) || href.length < 2 ) {
+			return null;
+		}
+
+		let id = href.slice( 1 );
+		try {
+			id = decodeURIComponent( id );
+		} catch {
+			// A stray `%` in the id: the browser looks it up as written, and so does this.
+		}
+
+		return this.doc.getElementById( id );
+	}
+
+	/**
+	 * Scrolls to what the selected link points to on the page, as following it on the live page
+	 * would, and leaves nothing selected.
+	 */
+	followLink() {
+		const target = this.linkTarget();
+		if ( ! target ) {
+			return;
+		}
+
+		this.select( null, { focusBlock: true } );
+		target.scrollIntoView( { block: 'start' } );
+	}
+
+	/**
 	 * Removes the link the selection is in, and keeps its text.
 	 */
 	removeLink() {
@@ -1376,9 +1482,14 @@ export class Surface {
 				opensInNewTab:
 					link.element.getAttribute( 'target' ) === '_blank',
 				isInline: link.isInline,
+				// Whether it points to something on this page, which the toolbar offers to go to.
+				hasTarget: !! this.linkTarget(),
 			},
 			// Whether there is a background behind it, which the toolbar offers to select.
 			hasBackground: !! this.behind(),
+			// For text in a heading: the heading's level, which the toolbar offers to change.
+			headingLevel:
+				Number( this.heading()?.localName.slice( 1 ) ) || null,
 		};
 
 		if ( this.editing ) {
@@ -1389,9 +1500,9 @@ export class Surface {
 			selection.hasText = /\S/.test( host.textContent );
 
 			// Bold, italic and link are for a stretch of text, once the mouse has let go of it.
-			// The link itself is for a caret inside one, and the background for text in front of
-			// one, until the typing starts. Plain typing gets no toolbar: it would only sit on top
-			// of whatever is above the text.
+			// The link itself is for a caret inside one, and the background or the heading level
+			// for text in front of one or in one, until the typing starts. Plain typing gets no
+			// toolbar: it would only sit on top of whatever is above the text.
 			if ( offsets.start !== offsets.end && ! this.isPointerDown ) {
 				selection.anchor = this.anchorOf( host, offsets );
 			} else if ( link ) {
@@ -1399,7 +1510,7 @@ export class Surface {
 					? link.element
 					: selection.element;
 			} else if (
-				selection.hasBackground &&
+				( selection.hasBackground || selection.headingLevel ) &&
 				! this.isTyping &&
 				! this.isPointerDown
 			) {
@@ -1579,6 +1690,17 @@ export class Surface {
 
 		if ( event.target.closest( 'a, button, label, input, select, area' ) ) {
 			event.preventDefault();
+		}
+
+		// The editor's canvas follows a link to `#…` itself, cancelled or not, which scrolls the
+		// page away from what is being edited. The toolbar offers to go there instead.
+		if (
+			event.target
+				.closest( 'a' )
+				?.getAttribute( 'href' )
+				?.startsWith( '#' )
+		) {
+			event.stopPropagation();
 		}
 	}
 

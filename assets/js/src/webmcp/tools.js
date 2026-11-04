@@ -6,6 +6,7 @@ import { store as editorStore } from '@wordpress/editor';
 import { decodeEntities } from '@wordpress/html-entities';
 import { addQueryArgs } from '@wordpress/url';
 
+import { formatCss } from './format-css';
 import { INSTRUCTIONS } from './instructions';
 import {
 	checkContent,
@@ -167,7 +168,7 @@ export const TOOLS = [
 				css: {
 					type: 'string',
 					description:
-						'The stylesheet, without its <style> element. Every selector starts with the root class.',
+						'The stylesheet, without its <style> element. Every selector starts with the root class. The tool lays it out, one declaration per line, so it can be sent compact.',
 				},
 				js: {
 					type: 'string',
@@ -239,7 +240,8 @@ export const TOOLS = [
 				);
 			}
 
-			const html = joinContent( { css, js, markup } );
+			// The CSS is laid out for the block's CSS tab, however compactly it was sent.
+			const html = joinContent( { css: formatCss( css ), js, markup } );
 			const block =
 				'canvas' === page.state
 					? {
