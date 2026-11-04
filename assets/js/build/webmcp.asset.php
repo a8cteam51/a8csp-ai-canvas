@@ -9,5 +9,5 @@
 		'wp-html-entities',
 		'wp-url'
 	),
-	'version' => 'b334eebf8c5956a87136'
+	'version' => 'b22ff6d3c6af46ccad63'
 );
