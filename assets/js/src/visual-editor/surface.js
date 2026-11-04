@@ -1001,6 +1001,41 @@ export class Surface {
 	}
 
 	/**
+	 * Returns the element on the page that the selected link points to with `#…`.
+	 *
+	 * @return {?Element} The element, or null when the link goes elsewhere or nothing has that id.
+	 */
+	linkTarget() {
+		const href = this.link()?.element.getAttribute( 'href' ) || '';
+		if ( ! href.startsWith( '#' ) || href.length < 2 ) {
+			return null;
+		}
+
+		let id = href.slice( 1 );
+		try {
+			id = decodeURIComponent( id );
+		} catch {
+			// A stray `%` in the id: the browser looks it up as written, and so does this.
+		}
+
+		return this.doc.getElementById( id );
+	}
+
+	/**
+	 * Scrolls to what the selected link points to on the page, as following it on the live page
+	 * would, and leaves nothing selected.
+	 */
+	followLink() {
+		const target = this.linkTarget();
+		if ( ! target ) {
+			return;
+		}
+
+		this.select( null, { focusBlock: true } );
+		target.scrollIntoView( { block: 'start' } );
+	}
+
+	/**
 	 * Removes the link the selection is in, and keeps its text.
 	 */
 	removeLink() {
@@ -1376,6 +1411,8 @@ export class Surface {
 				opensInNewTab:
 					link.element.getAttribute( 'target' ) === '_blank',
 				isInline: link.isInline,
+				// Whether it points to something on this page, which the toolbar offers to go to.
+				hasTarget: !! this.linkTarget(),
 			},
 			// Whether there is a background behind it, which the toolbar offers to select.
 			hasBackground: !! this.behind(),
@@ -1579,6 +1616,17 @@ export class Surface {
 
 		if ( event.target.closest( 'a, button, label, input, select, area' ) ) {
 			event.preventDefault();
+		}
+
+		// The editor's canvas follows a link to `#…` itself, cancelled or not, which scrolls the
+		// page away from what is being edited. The toolbar offers to go there instead.
+		if (
+			event.target
+				.closest( 'a' )
+				?.getAttribute( 'href' )
+				?.startsWith( '#' )
+		) {
+			event.stopPropagation();
 		}
 	}
 

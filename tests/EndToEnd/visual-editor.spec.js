@@ -219,3 +219,57 @@ test.describe( 'Visual editor of the Custom HTML block', () => {
 		);
 	} );
 } );
+
+test.describe( 'Links to an anchor in the visual editor', () => {
+	let pageId;
+
+	test.beforeAll( async ( { requestUtils } ) => {
+		await requestUtils.activatePlugin( 'a8csp-ai-canvas' );
+	} );
+
+	test.beforeEach( async ( { requestUtils, admin } ) => {
+		const page = await requestUtils.createPage( {
+			title: 'Anchor link proof',
+			status: 'publish',
+			template: 'ai-canvas-content-only',
+			content:
+				'<!-- wp:html {"align":"full"} -->' +
+				'<div class="canvas-anchors"><a class="jump" href="#faq">Questions</a>' +
+				'<div style="height: 3000px"></div>' +
+				'<h2 id="faq">Questions and answers</h2></div>' +
+				'<!-- /wp:html -->',
+		} );
+		pageId = page.id;
+
+		await admin.editPost( pageId );
+	} );
+
+	test.afterEach( async ( { requestUtils } ) => {
+		await requestUtils.rest( {
+			method: 'DELETE',
+			path: `/wp/v2/pages/${ pageId }`,
+			params: { force: true },
+		} );
+	} );
+
+	test( 'a click on the link leaves the view where it is, and the toolbar goes to the anchor', async ( {
+		editor,
+		page,
+	} ) => {
+		const view = () =>
+			editor.canvas.locator( 'body' ).evaluate( () => ( {
+				top: document.scrollingElement.scrollTop,
+				hash: window.location.hash,
+			} ) );
+		const goTo = page.getByRole( 'button', { name: 'Go to anchor' } );
+
+		await editor.canvas.locator( '.canvas-anchors .jump' ).click();
+		await expect( goTo ).toBeVisible();
+		expect( await view() ).toEqual( { top: 0, hash: '' } );
+
+		await goTo.click();
+		await expect( editor.canvas.locator( '#faq' ) ).toBeInViewport();
+		await expect( goTo ).toBeHidden();
+		expect( ( await view() ).hash ).toBe( '' );
+	} );
+} );

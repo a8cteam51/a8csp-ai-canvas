@@ -251,7 +251,8 @@ function ReplaceButton( { label, onSelect } ) {
  * The toolbar for what is selected in the block's content, shown beside it: bold, italic and
  * link for text; replace, alternative text and link for an image; replace, focal point and remove
  * for a background. Text, an image or a link in front of a background also offers to select the
- * background, which a click on them cannot reach.
+ * background, which a click on them cannot reach. A link to an anchor on the page offers to go
+ * there, which a click on it no longer does.
  *
  * Text that is only being typed in has no toolbar. One appears for a stretch of selected text,
  * for a link or a button, and for text in front of a background until the typing starts, which
@@ -427,6 +428,13 @@ export function SelectionToolbar( { selection, surface, panel, setPanel } ) {
 									) }
 									onClick={ () => surface.removeLink() }
 								/>
+							) }
+							{ link?.hasTarget && (
+								<ToolbarButton
+									onClick={ () => surface.followLink() }
+								>
+									{ __( 'Go to anchor', 'a8csp-ai-canvas' ) }
+								</ToolbarButton>
 							) }
 						</ToolbarGroup>
 					) }
