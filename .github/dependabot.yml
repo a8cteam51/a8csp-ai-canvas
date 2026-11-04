@@ -53,6 +53,9 @@ updates:
     ignore:
       - dependency-name: "@a8csp/configs"
         update-types: ["version-update:semver-major"]
+      # From 36, test-unit-js runs Vitest, and the unit tests are Jest. Moves with a8csp-plugin-template.
+      - dependency-name: "@wordpress/scripts"
+        update-types: ["version-update:semver-major"]
     commit-message:
       prefix: "npm"
     open-pull-requests-limit: 5
