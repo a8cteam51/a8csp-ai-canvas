@@ -474,6 +474,46 @@ describe( 'DomMap', () => {
 		} );
 	} );
 
+	describe( 'rename', () => {
+		it( 'renames the start and end tags and keeps the rest as written', () => {
+			const html =
+				'<div><H2 class=\'a\' data-x="1">The city <span>sleeps</span></H2 ><p>Run.</p></div>';
+			const { map, root } = load( html );
+			const heading = root.querySelector( 'h2' );
+			const renamed = map.rename( heading, 'h3' );
+
+			expect( map.html ).toBe(
+				'<div><h3 class=\'a\' data-x="1">The city <span>sleeps</span></h3 ><p>Run.</p></div>'
+			);
+			expect( renamed.localName ).toBe( 'h3' );
+			expect( renamed.isConnected ).toBe( true );
+			expect( heading.isConnected ).toBe( false );
+			expect( renamed.outerHTML ).toBe(
+				'<h3 class="a" data-x="1">The city <span>sleeps</span></h3>'
+			);
+			expect( map.reindex( root ) ).toBe( true );
+			expect( map.isWritable( renamed ) ).toBe( true );
+		} );
+
+		it( 'keeps an attribute setAttribute() refuses', () => {
+			const { map, root } = load( '<h4 @click="go()">Hi</h4>' );
+			const renamed = map.rename( root.querySelector( 'h4' ), 'h6' );
+
+			expect( map.html ).toBe( '<h6 @click="go()">Hi</h6>' );
+			expect( renamed.getAttribute( '@click' ) ).toBe( 'go()' );
+		} );
+
+		it( 'renames nothing without an end tag to rename', () => {
+			const html = '<ul><li>One<li>Two</ul>';
+			const { map, root } = load( html );
+
+			expect( map.rename( root.querySelector( 'li' ), 'p' ) ).toBe(
+				null
+			);
+			expect( map.html ).toBe( html );
+		} );
+	} );
+
 	describe( 'raw text', () => {
 		it( 'reads and replaces part of a style', () => {
 			const { map, root } = load(

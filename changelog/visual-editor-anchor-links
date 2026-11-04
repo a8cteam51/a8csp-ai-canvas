@@ -1,0 +1,4 @@
+Significance: patch
+Type: fixed
+
+A click on a link to an anchor on the page, such as `#pricing`, no longer scrolls the visual editor away from what is being edited; the link's toolbar has Go to anchor instead.
