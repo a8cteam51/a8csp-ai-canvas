@@ -1,0 +1,4 @@
+Significance: minor
+Type: changed
+
+`ai-canvas-set-page-content` lays out the page's CSS before writing it, one declaration per line with a blank line between rules, so it reads well in the Custom HTML block's CSS tab whatever the agent sent. Only the space between tokens changes.

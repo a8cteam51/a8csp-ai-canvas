@@ -7,6 +7,7 @@ import {
 	joinContent,
 	revisionOf,
 } from '../../assets/js/src/webmcp/page-content';
+import { formatCss } from '../../assets/js/src/webmcp/format-css';
 import { INSTRUCTIONS } from '../../assets/js/src/webmcp/instructions';
 
 jest.mock( '@wordpress/data', () => ( {
@@ -216,7 +217,9 @@ describe( 'ai-canvas-set-page-content', () => {
 			revision: revisionOf( '' ),
 		} );
 
-		const html = joinContent( page );
+		// The CSS is laid out on its way in.
+		const html = joinContent( { ...page, css: formatCss( page.css ) } );
+		expect( html ).toContain( '.canvas-proof {\n  color: red;\n}' );
 		expect( editor.resetEditorBlocks ).toHaveBeenCalledWith( [
 			{
 				name: 'core/html',
@@ -244,7 +247,7 @@ describe( 'ai-canvas-set-page-content', () => {
 		const [ [ block ] ] = editor.resetEditorBlocks.mock.calls[ 0 ];
 		expect( block.clientId ).toBe( 'html' );
 		expect( block.innerContent ).toEqual( [
-			joinContent( { ...page, markup } ),
+			joinContent( { ...page, css: formatCss( page.css ), markup } ),
 		] );
 	} );
 
