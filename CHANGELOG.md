@@ -4,14 +4,20 @@ Entries in this file are generated from fragments in the `changelog/` directory 
 
 ## 3.0.0 - 2026-11-04
 ### Added
+- A heading in the visual editor can be given another level, from H1 to H6, from its toolbar, which now shows when the heading is clicked. Only the tag's name changes in the page's HTML; its attributes and content stay as written. A level at which the page's CSS would style the heading differently, because a rule is written for its current level, says so in the menu.
 - Background images in the visual editor can be selected from the text, image or button in front of them, given a focal point, or removed, and are found on a layer under a section's content and on its ::before or ::after as well as on the section itself.
 - WebMCP tools in the page editor, for an agent in the browser: `ai-canvas-get-instructions` returns the authoring rules, `ai-canvas-get-page` reads the page, `ai-canvas-set-page-content` writes it as one full-width Custom HTML block once the rules have been read, refusing a stale revision, `ai-canvas-set-template` chooses its template, and `ai-canvas-list-media` finds images in the Media Library. The tools register all or none, and need a browser with WebMCP, such as Chrome with `chrome://flags/#enable-webmcp-testing` turned on.
 
 ### Changed
 - Rebuilt for WebMCP: the page is built by an agent in the browser, in the page editor, instead of by an MCP client calling the site. The plugin no longer requires the MCP Adapter plugin, and needs PHP 8.4.
+- The authoring rules ask the agent to style a heading by a class rather than by its level, so that changing its level in the editor keeps its look.
+- `ai-canvas-set-page-content` lays out the page's CSS before writing it, one declaration per line with a blank line between rules, so it reads well in the Custom HTML block's CSS tab whatever the agent sent. Only the space between tokens changes.
 
 ### Removed
 - The MCP tools (`create-page`, `get-page`, `update-page`, `list-pages`, `delete-page`, `list-media` and `get-instructions`), the AI Canvas card and its Authorization header generator on the Settings → Connectors screen, and the flag on the pages those tools created, which uninstalling now deletes.
+
+### Fixed
+- A click on a link to an anchor on the page, such as `#pricing`, no longer scrolls the visual editor away from what is being edited; the link's toolbar has Go to anchor instead.
 
 ## 2.0.0 - 2026-10-13
 ### Changed
