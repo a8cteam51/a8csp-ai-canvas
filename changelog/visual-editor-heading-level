@@ -1,0 +1,4 @@
+Significance: minor
+Type: added
+
+A heading in the visual editor can be given another level, from H1 to H6, from its toolbar, which now shows when the heading is clicked. Only the tag's name changes in the page's HTML; its attributes and content stay as written. A level at which the page's CSS would style the heading differently, because a rule is written for its current level, says so in the menu.

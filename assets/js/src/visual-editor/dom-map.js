@@ -7,6 +7,7 @@ import {
 	VOID_ELEMENTS,
 } from './constants';
 import { wasMade } from './formatting';
+import { swapTag } from './heading-level';
 import { SourceDocument, escapeAttribute } from './source-document';
 
 /**
@@ -555,6 +556,60 @@ export class DomMap {
 		}
 
 		return true;
+	}
+
+	/**
+	 * Renames an element, such as an `h2` to an `h3`: its start and end tags in the source, and
+	 * the element on the page, which another element with the same attributes and content
+	 * replaces. The rest of each tag is as written.
+	 *
+	 * The renamed source is read back before anything is kept: the renamed start tag must still
+	 * pair with the renamed end tag around the same content.
+	 *
+	 * @param {Element} element The element.
+	 * @param {string}  name    The new name, lowercased.
+	 *
+	 * @return {Element|null} The element that took its place, or nothing when the source could not be changed.
+	 */
+	rename( element, name ) {
+		const tag = this.isReal( element ) && this.tagOf( element );
+		const range = tag && this.source.innerRange( tag );
+		const close =
+			range &&
+			this.source.tags.find(
+				( other ) => other.type === 'end' && other.start === range.end
+			);
+		if ( ! close ) {
+			return null;
+		}
+
+		const { html } = this.source;
+		const renamed =
+			html.slice( 0, tag.nameEnd - tag.name.length ) +
+			name +
+			html.slice( tag.nameEnd, close.nameEnd - close.name.length ) +
+			name +
+			html.slice( close.nameEnd );
+
+		const shift = name.length - tag.name.length;
+		const check = new SourceDocument( renamed );
+		const moved = check.startTags[ tag.index ];
+		const movedRange = moved?.name === name && check.innerRange( moved );
+		if (
+			! movedRange ||
+			check.startTags.length !== this.source.startTags.length ||
+			movedRange.start !== range.start + shift ||
+			movedRange.end !== range.end + shift
+		) {
+			return null;
+		}
+
+		this.source.replaceRange( 0, html.length, renamed );
+
+		const replacement = swapTag( element, name );
+		this.indexes.set( replacement, this.indexes.get( element ) );
+
+		return replacement;
 	}
 
 	/**
